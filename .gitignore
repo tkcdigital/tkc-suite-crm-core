@@ -69,5 +69,5 @@ composer.phar
 /.htaccess
 
 # SASS
-/public/legacy/themes/suite8/css/Dawn/style.css
-/public/legacy/themes/suite8/css/Noon/style.css
+# /public/legacy/themes/suite8/css/Dawn/style.css
+# /public/legacy/themes/suite8/css/Noon/style.css
