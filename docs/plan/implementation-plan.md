@@ -369,3 +369,131 @@ W10 roles + Finance module ──> leak test ──> gate B ──> real import
 | S11 | Does the 8.10 Angular edit view update `probability` when `sales_stage` changes? | Set it in the `tkc_opportunity_won` hook (on save) |
 
 S2 (dependent dropdown) is no longer needed (flat Product/Category lists). S4 (API Platform path) is needed only if a TKC API resource is added; none is planned.
+
+---
+
+## 11. Addendum — answers to the backlog-draft gaps (architect, 2026-11-20)
+
+Answers gaps 2, 4, 5, 6, 7 and 14 of `docs/plan/backlog-draft.md` §6.2 and corrects §1–§10 (see 11.7).
+
+### 11.1 Which data-model assumptions must be decided before Sprint 1
+
+Schema changes happen only through vardefs + `tkc:repair` (D2). **Adding** a field later is cheap (one small story + `--only-fields` re-import). **Changing** a type, list keys or a relationship after the import is expensive (data conversion). **Removing** leaves a dead column. So decide before Sprint 1 only the items that fix a type, key set, relationship or name; "keep or drop" items default to **do not build** and can be added later.
+
+| Assumption | Fixes type / keys / structure? | Decide before | If late |
+|---|---|---|---|
+| A8 naming | yes (all column names) | **Sprint 1** | Rename = data migration |
+| A2 status / priority keys | yes | **Sprint 1** | Key remap of all cases |
+| A3 three-state enum vs. bool | yes (9 fields) | **Sprint 1** | Type conversion; "not set" lost |
+| A4 primary contact relate | yes | **Sprint 1** | Back-fill from M:N; some cases ambiguous |
+| A5 queue only | queue keys yes; group field additive | Queue: **Sprint 1**; group: later | Group field = S |
+| A6 Finance module vs. fields | yes | **Sprint 1** | Move data between tables |
+| A12 case reference field | yes | **Sprint 1** | Rename + re-index |
+| A14 `name` len 255; `tkc_approach_c` vs. `lead_source` | yes | **Sprint 1** | Names > 50 chars cut on import |
+| A7 quote-number field + `tkc_sequences` | field/table yes; AOS copy additive | Field: **Sprint 1**; AOS: Sprint 4 | AOS link = M |
+| A13 AOS_Contracts vs. `tkc_` module | yes | **before Sprint 4** (E11 builds contract vardefs then) | — |
+| A10 Disposition | additive | later | S + re-import of the column |
+| A11 customer priority, dropped fields | additive | later | S each |
+| A15 phones / SPAM import | import rules only | before Sprint 2 | Re-run the import |
+| A16 CRM modules, rate-class fields | additive | later | **Not built in Sprint 1** (changes A16, see 11.7) |
+
+**New E4 requirement:** `tkc:osc:import <entity> --only-fields=<f1,f2>` updates only the named columns on existing rows, so a late field never overwrites user edits after go-live.
+
+### 11.2 Roles and permission sets
+
+**Two roles plus the admin flag.** Finance staff work the Finance queue and use **TKC Service**. Admin = SuiteCRM `is_admin` (bypasses ACL; the security officer must accept that admins see Finance data). A "TKC Finance" role only if Finance staff must see `tkc_AccountFinance` (ASSUMPTION: no). ACL levels All / Owner / None; Import = None for both (data enters only via `tkc:osc:import`).
+
+| Module | TKC Sales: access · view · list · edit · delete · export · mass update | TKC Service: same columns |
+|---|---|---|
+| Accounts | ✓ · All · All · All · Owner · None · All | ✓ · All · All · All · None · None · None |
+| Contacts | ✓ · All · All · All · Owner · None · All | ✓ · All · All · All · None · None · None |
+| Opportunities | ✓ · All · All · All · Owner · None · All | ✓ · All · All · None · None · None · None |
+| Cases | ✓ · All · All · All · None · None · None | ✓ · All · All · All · None · None · All |
+| Case Updates (AOP) | ✓ · All · All · Owner · None · None · None | ✓ · All · All · Owner · None · None · None |
+| AOS_Contracts | ✓ · All · All · All · Owner · None · None | ✓ · All · All · None · None · None · None |
+| `tkc_AccountFinance` | ✓ · All · All · All · None · None · None | **Disabled** |
+| Quotes, Products | ✓ · All · All · All · Owner · None · None | ✓ · All · All · None · None · None · None |
+| Calls, Meetings, Tasks, Notes, Documents, Emails | ✓ · All · All · Owner · Owner · None · None | same as Sales |
+
+- **Cases delete = None** for all roles (OSC archives incidents). **Export = None** for all roles (PII minimisation; owner may relax with the security officer). "Mark as spam" checks Cases edit + Contacts edit.
+- Seeding: idempotent extension migration `extensions/tkc/Migrations/Version…SeedRoles.php` (data only); roles recorded in `docs/admin-guide.md`. No security groups in phase 1.
+
+### 11.3 Process handlers in E8 and E10
+
+**11 process types** (10 in E8, 1 in E10) and **3 abstract bases**, under `extensions/tkc/backend/Process/Service/RecordActions/`:
+
+| # | Epic | Process type | Class | Extends | Required ACLs |
+|---|---|---|---|---|---|
+| 1 | E8 | `record-tkc-case-waiting` | `Cases/CaseSetWaitingAction` | `Cases/AbstractCaseSetStatusAction` | Cases edit |
+| 2 | E8 | `record-tkc-case-updated` | `Cases/CaseSetUpdatedAction` | same | Cases edit |
+| 3 | E8 | `record-tkc-case-unresolved` | `Cases/CaseSetUnresolvedAction` | same | Cases edit |
+| 4 | E8 | `record-tkc-case-solved` | `Cases/CaseSetSolvedAction` | same | Cases edit |
+| 5 | E8 | `record-tkc-case-assign-to-me` | `Cases/CaseAssignToMeAction` | — | Cases edit |
+| 6 | E8 | `record-tkc-case-solve-cx` | `Cases/CaseSolveCxAction` | `Cases/AbstractCaseSolveAsAction` | Cases edit |
+| 7 | E8 | `record-tkc-case-solve-egain` | `Cases/CaseSolveEgainAction` | same | Cases edit |
+| 8 | E8 | `record-tkc-case-route-finance` | `Cases/CaseRouteFinanceAction` | — | Cases edit |
+| 9 | E8 | `record-tkc-case-mark-spam` | `Cases/CaseMarkSpamAction` | `Cases/AbstractCaseSpamAction` | Cases edit + Contacts edit |
+| 10 | E8 | `record-tkc-case-not-spam` | `Cases/CaseNotSpamAction` | same | Cases edit + Contacts edit |
+| 11 | E10 | `record-tkc-opportunity-quote-number` | `Opportunities/OpportunityQuoteNumberAction` | — | Opportunities edit |
+
+Other code: E10 validator `QuoteNumberUniqueValidator`; E8 3 Cases hooks; E10 1 Opportunities hook; E8 (only if S9 no-go) `Process/Availability/CaseSpamActionAvailability`.
+
+### 11.4 Fields on AOP_Case_Updates
+
+File `public/legacy/custom/Extension/modules/AOP_Case_Updates/Ext/Vardefs/tkc_thread.php` (+ `Language/en_us.tkc_thread.php`).
+
+| Field | Type / len | List | Required | Default | Index | UI |
+|---|---|---|---|---|---|---|
+| `tkc_entry_type_c` | enum / 20 | `tkc_entry_type_list` | no (hook sets it) | `staff` | no | thread item (`dynamicClass`), composer |
+| `tkc_channel_c` | enum / 20 | `tkc_channel_list` | no | empty (composer sets `phone` for a customer entry) | no | thread item pill, composer |
+| `osc_id_c` | varchar / 20 | — | no | — | `idx_aop_case_updates_osc_id_c` (non-unique) | hidden |
+| `description` (core override) | `longtext` | — | — | — | — | OSC text up to 1 MB |
+
+`tkc_entry_type_list`: `note` Internal note (OSC 1 Opmerking; 6/7 rule note — ASSUMPTION; internal = 1) · `staff` Agent reply (2) · `customer` Customer (3; 5 Chat — ASSUMPTION) · `customer_proxy` Customer (logged by agent) (4; 8 voice — ASSUMPTION). The importer sets `internal` from the key.
+
+`tkc_channel_list` (Q20 short list): `email` (OSC 1, 2, 9) · `phone` (3) · `web` (6, 7) · `chat` (8) · `fax` (4) · `social` (10–12, 14, 16–43) · `other` (5, 1001–1008, unknown ids — logged).
+
+Import rules per entry: staff `account` → `assigned_user_id` via the staff map; `contact` → `contact_id` via contact `osc_id_c`; `createdTime` → `date_entered`. Plain text (contentType 1): escape + newlines to `<br>`. HTML (contentType 2): clean with `SugarCleaner::cleanHtml` before save (the thread renders `description` as HTML) — **security-officer item (XSS)**. `mailHeader` dropped.
+
+### 11.5 `priority` vs. `tkc_priority_c`
+
+| | Core `priority` | `tkc_priority_c` |
+|---|---|---|
+| OSC source | `Incident.SeverityId`, "Prioriteit" (4 items) | `Incident.C$TkcPrioriteit`, "TKC Prioriteit" (ids 209–212) |
+| Meaning | Priority number (severity) | Impact on the customer's operation |
+| UI label | **Priority** | **Impact** (not "TKC priority", to avoid confusion) |
+| List | `case_priority_dom` override: `P1`–`P4` "Priority 1–4" (P4 new) | `tkc_impact_list`: `no_impact`, `some_impact`, `production_disrupted`, `immediate_action` |
+| Default | Empty — ASSUMPTION: override `case_priority_default_key` (core `P2`) to empty; E3 checks core code that reads it | Empty |
+| Pill | P1 danger · P2 warning · P3 neutral · P4 neutral plain | immediate_action solid-danger · production_disrupted danger · some_impact warning · no_impact neutral |
+| Shown in | Header pill, list column, list filter, Categorisation | Categorisation, list filter (not a default column) |
+| tst1 usage | 17 of 4053 cases | not counted |
+
+If the import shows agents use Impact more, swap them in header and list (metadata, S).
+
+### 11.6 `tkc_AccountFinance` — files, location, upgrade safety
+
+**Hand-written files, not Module Builder.** Module Builder keeps its working copy in `custom/modulebuilder/` (gitignored), writes a package zip to `upload/` (gitignored) and a row in `upgrade_history` — none reproducible from git.
+
+| Path (under `public/legacy/`) | Content |
+|---|---|
+| `modules/tkc_AccountFinance/tkc_AccountFinance.php` | Bean class, extends `Basic` |
+| `modules/tkc_AccountFinance/vardefs.php` | Table `tkc_accountfinance`, 6 audited text fields, indexed `account_id`, 1:N relationship `tkc_accounts_tkc_accountfinance` declared inline, ACL implements |
+| `modules/tkc_AccountFinance/language/en_us.lang.php` | Labels |
+| `modules/tkc_AccountFinance/metadata/{detailviewdefs,editviewdefs,listviewdefs,searchdefs,SearchFields}.php`, `metadata/subpanels/default.php` | Layouts, subpanel columns |
+| `modules/tkc_AccountFinance/Menu.php` | Empty (no create from navbar) |
+| `custom/Extension/application/Ext/Include/tkc_AccountFinance.php` | `$beanList`, `$beanFiles`, `$moduleList` |
+| `custom/Extension/application/Ext/Language/en_us.tkc_AccountFinance.php` | Module label "Finance" |
+| `custom/Extension/modules/Accounts/Ext/Vardefs/tkc_finance_link.php` | `link` on Accounts |
+| `custom/Extension/modules/Accounts/Ext/Layoutdefs/tkc_finance_subpanel.php` | Finance subpanel |
+| `extensions/tkc/Migrations/Version…SeedFinanceAcl.php` | Idempotent `ACLAction::addActions('tkc_AccountFinance', 'module')` + role grants (11.2) |
+
+Upgrade safety (D11): new `tkc_` directory (no upstream conflict); all else in `custom/Extension/` or `extensions/tkc/`; remaining dependency is the legacy `Basic` template + bean API, re-checked by the metadata contract test. In `$moduleList` → Angular renders it and role ACL lists it; Display Modules hides it from the navbar (record in `docs/admin-guide.md`). **To verify in E3:** a record opened from the Accounts subpanel gets an Angular route while hidden from the navbar.
+
+**Rule for all TKC relationships:** `custom/metadata/` is **gitignored** (`custom/*` with only `Extension/`, `modules/`, `themes/`, `include/`, `language/` re-included), so Studio/Module-Builder `custom/metadata/<rel>MetaData.php` files would be lost. Every TKC relationship is therefore a **1:N foreign-key relationship declared in a vardef** (no join table): `tkc_accounts_tkc_accountfinance` (module vardefs), `tkc_contacts_cases_primary` and `tkc_cases_opportunities` (`custom/Extension/modules/{Cases,Opportunities}/Ext/Vardefs/`). `tkc_sequences` is defined in `custom/Extension/application/Ext/TableDictionary/tkc_sequences.php`; E3 confirms with `tkc:repair --dry-run` that Repair creates it. If an M:N relationship is ever needed, re-include `custom/metadata/` in `public/legacy/.gitignore` in the same story.
+
+### 11.7 Corrections to §1–§10
+
+1. §7 E8: "11 process handlers" → **10** (E8 + E10 = 11, see 11.3).
+2. §2 A16: `tkc_crm_modules_c` is **not built in Sprint 1**; added when the owner answers org Q5 / contact Q2. The mockups show it as pending.
+3. §3 W10 and §7 E13: roles = **TKC Sales, TKC Service + admin flag** (not four roles).
+4. §5.1: add `--only-fields` to `tkc:osc:import`.
