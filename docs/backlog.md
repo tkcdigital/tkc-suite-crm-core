@@ -9,11 +9,11 @@
 | 1 | Claude Code project setup | done (see setup follow-ups) |
 | 2 | Assessment — what can change (DB, settings, views) | done — approved 2026-11-20 (`docs/assessment/`) |
 | 2b | OSC field mapping per screen | drafts done; REST verification next |
-| 3 | Design system | to do |
-| 4 | Screen designs (mockups for evaluation) | to do |
-| 5 | Plan (`docs/architecture.md`, this file) | to do |
-| 6 | Epics / stories / tasks in SUITE | to do |
-| 7 | Sprints | to do |
+| 3 | Design system | done — v0.1 approved 2026-11-20 (`designs/system/`) |
+| 4 | Screen designs (mockups for evaluation) | in review — 7 mockups published 2026-11-20 (SUITE-17) |
+| 5 | Plan | draft — `docs/plan/implementation-plan.md` (assumptions A1–A20 to confirm) |
+| 6 | Epics / stories / tasks in SUITE | draft — `docs/plan/backlog-draft.md` (not yet in the planning tool) |
+| 7 | Sprints | draft — sprint plan in `docs/plan/backlog-draft.md` |
 | 8 | Run the sprints | to do |
 | 9 | Seed SuiteCRM with OSC data (anonymized sample first) | to do |
 
@@ -36,7 +36,7 @@
 - [x] User: Azure resource group `TKC-SUITE-CRM-RG` + service principal `tkc-suite-crm-manager-sp` (Contributor on the RG).
 - [x] Commit the setup + the installer-generated `public/legacy/custom/` baseline on `tkc/main`.
 - [x] azure-engineer: Docker Compose dev environment (PHP 8.3 + Apache + MySQL 8.0) — the only dev setup since 2026-11-20 (`php -S` retired).
-- [ ] architect: scaffold `extensions/tkc/` (from `extensions/defaultExt`).
+- [x] architect: scaffold `extensions/tkc/` (SUITE-9; browser check still open).
 
 ## Decisions
 - 2026-11-20 — Assessment decisions D1–D12 approved (main-table vardefs, delta config, `tkc:repair`, import command with notification guards, Docker PHP 8.3, …) — see `docs/assessment/customization-feasibility.md` §9.
