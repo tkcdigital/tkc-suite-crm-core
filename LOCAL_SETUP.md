@@ -4,7 +4,7 @@
 
 | Tool | Required | Status |
 |------|----------|--------|
-| PHP | >= 8.1 | ✅ 8.5.3 installed |
+| PHP | 8.3 (composer platform; 8.5 works with the flags below) | ⚠️ 8.5.3 installed |
 | Composer | any | ✅ installed |
 | Node.js | any | ✅ installed |
 | Yarn | 4.10.3 (via Corepack) | ❌ see Step 4 |
@@ -61,7 +61,7 @@ DATABASE_URL="mysql://suitecrm:yourpassword@127.0.0.1:3306/suitecrm?serverVersio
 composer install --ignore-platform-reqs
 ```
 
-> `--ignore-platform-reqs` is needed because `composer.json` pins the platform to PHP 8.1.0,
+> `--ignore-platform-reqs` is needed because `composer.json` pins the platform to PHP 8.3,
 > but the installed version is 8.5.x. The app will still work at runtime.
 
 ---
