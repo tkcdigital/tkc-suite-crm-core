@@ -61,6 +61,11 @@ Decision: Studio is **allowed with a check** for the four redesign modules. Rule
 3. Commit the Studio result as a normal change. Do not edit the same file by hand and in Studio at the same time.
 Not tested: the Studio UI itself, the Edit view and Quick create files, and a browser run.
 
+## Console commands (D10, D12)
+- `php bin/console tkc:repair [--dry-run|--execute] [--module=<Module>]`: Quick Repair and Rebuild from the CLI. Dry run is the default and shows the SQL.
+- `php bin/console tkc:config:apply [--dry-run]`: merges `scripts/config/config_override.template.php` (secret-free) into `public/legacy/config_override.php`.
+- Code in `extensions/tkc/backend/Console/` and `Config/`. Details in `scripts/config/README.md`.
+
 ## Core patches
 | Patch | File | Reason | Issue | Re-check on upgrade |
 |---|---|---|---|---|

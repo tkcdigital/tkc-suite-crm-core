@@ -95,3 +95,7 @@ PROJECT_SETUP.md
 /.yarn/
 .DS_Store
 /public/legacy/.installed_checked
+
+# Docker dev environment (secrets and container state stay local)
+/docker/.env
+/docker/state/

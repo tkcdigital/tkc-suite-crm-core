@@ -1,0 +1,56 @@
+# SuiteCRM 8.10 dev environment (PHP 8.3 + Apache, MySQL 8.0).
+# Run through docker/dc.sh or: docker compose --env-file docker/.env ...   See docker/README.md.
+name: tkc-suitecrm
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    image: tkc-suitecrm-app:dev
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8081:80"
+    environment:
+      DATABASE_URL: "mysql://${DB_USER:?}:${DB_PASSWORD:?}@db:3306/${DB_NAME:?}?serverVersion=8.0.46&charset=utf8mb4"
+      APP_ENV: prod
+    volumes:
+      - .:/var/www/html
+      # Named volumes keep generated/volatile paths off the slow macOS bind mount.
+      # Install files (config.php, config_si.php, config_override.php, .env.local) are written
+      # into the bind mount (gitignored). DATABASE_URL above beats .env.local.
+      - app_var:/var/www/html/var
+      - app_cache:/var/www/html/cache
+      - app_logs:/var/www/html/logs
+      - app_legacy_cache:/var/www/html/public/legacy/cache
+      - app_legacy_upload:/var/www/html/public/legacy/upload
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  db:
+    image: mysql:8.0.46
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:?}
+      MYSQL_USER: ${DB_USER:?}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?}
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/suitecrm.cnf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  db_data:
+  app_var:
+  app_cache:
+  app_logs:
+  app_legacy_cache:
+  app_legacy_upload:

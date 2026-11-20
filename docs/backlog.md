@@ -35,7 +35,7 @@
 - [x] User: add OSC workspace XML exports to `designs/screens/<screen>/` (accounts, contacts, cases, opportunities).
 - [x] User: Azure resource group `TKC-SUITE-CRM-RG` + service principal `tkc-suite-crm-manager-sp` (Contributor on the RG).
 - [x] Commit the setup + the installer-generated `public/legacy/custom/` baseline on `tkc/main`.
-- [ ] azure-engineer: Docker Compose dev environment (PHP 8.3 + Apache + MySQL 8) to replace `php -S` on PHP 8.5.
+- [x] azure-engineer: Docker Compose dev environment (PHP 8.3 + Apache + MySQL 8.0) — the only dev setup since 2026-11-20 (`php -S` retired).
 - [ ] architect: scaffold `extensions/tkc/` (from `extensions/defaultExt`).
 
 ## Decisions

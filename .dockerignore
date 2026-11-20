@@ -1,0 +1,10 @@
+.git
+node_modules
+vendor
+var
+logs
+data
+docker/.env
+docker/state
+.claude
+designs

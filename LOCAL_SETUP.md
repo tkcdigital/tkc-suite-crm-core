@@ -1,181 +1,61 @@
-# Local Development Setup — SuiteCRM 8
+# Local Development Setup — SuiteCRM 8 (Docker)
+
+Docker Compose is the only supported dev setup: PHP 8.3 + Apache (`mod_rewrite`) and MySQL 8.0.
+It matches the Azure runtime. Details: [`docker/README.md`](docker/README.md).
+
+| Item | Value |
+|---|---|
+| App | http://localhost:8081 |
+| MySQL | 127.0.0.1:3307 (container `db`, MySQL 8.0.46) |
+| Admin | user `admin`; password in `docker/.env`, variable `SITE_ADMIN_PASSWORD` (gitignored) |
 
 ## Prerequisites
+Docker Desktop. For the Angular build on the host: Node.js with Corepack (Yarn 4.10.3).
 
-| Tool | Required | Status |
-|------|----------|--------|
-| PHP | 8.3 (composer platform; 8.5 works with the flags below) | ⚠️ 8.5.3 installed |
-| Composer | any | ✅ installed |
-| Node.js | any | ✅ installed |
-| Yarn | 4.10.3 (via Corepack) | ❌ see Step 4 |
-| MySQL / MariaDB | required | ❌ needs installing |
-| PHP extensions | pdo_mysql, gd, intl, curl, zip, openssl, iconv, ctype, json, mbstring | ✅ all present |
-
----
-
-## Step 1: Install MySQL
-
+## First setup
 ```bash
-brew install mysql
-brew services start mysql
-mysql_secure_installation
+docker/init.sh                       # creates docker/.env with random dev-only passwords
+docker/dc.sh up -d --build
+docker/dc.sh exec app composer install        # only if vendor/ is missing
+yarn install && yarn merge-angular-json && yarn build    # host; fills public/dist (Step "Angular build")
+set -a; . docker/.env; set +a
+docker/dc.sh exec -T -u www-data app php bin/console suitecrm:app:install -n \
+  -U "$DB_USER" -P "$DB_PASSWORD" -H db -Z 3306 -N "$DB_NAME" \
+  -u "$SITE_ADMIN_USER" -p "$SITE_ADMIN_PASSWORD" -S http://localhost:8081/ -d no -W true
+docker/dc.sh console scrm:copy-legacy-assets
+docker/dc.sh exec -T app vendor/bin/pscss --style=compressed \
+  public/legacy/themes/suite8/css/Dawn/style.scss > public/legacy/themes/suite8/css/Dawn/style.css
+docker/dc.sh console tkc:config:apply --dry-run && docker/dc.sh console tkc:config:apply
+docker/dc.sh console tkc:repair --dry-run     # review the SQL; run without --dry-run only after review
+docker/dc.sh console cache:clear
 ```
+Use `-d no` for demo data. The value `false` is NOT "no" and installs demo data.
+`docker/dc.sh console <args>` runs `php bin/console <args>` as `www-data`, so cache files stay writable for Apache.
+Do not run console commands as root (`exec app php ...` without `-u www-data`): root-owned cache files give HTTP 500.
 
-Then create a database and user:
-
+## Daily use
 ```bash
-mysql -u root -p
+docker/dc.sh up -d | down | logs -f app | sh
 ```
+`docker/dc.sh down -v` deletes the database and the container volumes (destructive; then re-run the install).
 
-```sql
-CREATE DATABASE suitecrm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'suitecrm'@'localhost' IDENTIFIED BY 'yourpassword';
-GRANT ALL PRIVILEGES ON suitecrm.* TO 'suitecrm'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-```
+## After a change
+- Metadata, vardef or language change: `docker/dc.sh console tkc:repair` (review first), then `docker/dc.sh console cache:clear`.
+- Angular change: `yarn merge-angular-json && yarn build` on the host (writes `public/dist`, served from the bind mount).
+- Legacy theme SCSS change: re-run the `pscss` command above.
 
----
+## Angular build
+The build runs on the host, not in the container. It only needs Node and Yarn 4 (Corepack:
+`npm install -g corepack --force && corepack enable`); it does not need PHP or MySQL.
+The container serves the result from the bind mount.
 
-## Step 2: Configure `.env.local`
+## Legacy host setup (retired)
 
-Create a local env override file (this file is not committed to git):
+Retired on 2026-11-20 (SUITE-12): Docker is the only dev setup. The old host setup (`php -S` on 8080,
+Homebrew MySQL, `.env.local` with `DATABASE_URL` to 127.0.0.1:3306, `composer install --ignore-platform-reqs`)
+is not supported. Stop the `php -S` server and the Homebrew MySQL (`brew services stop mysql`).
+Backups of the old host config are in `data/backup/host-setup-2026-11-20/` (gitignored, contain credentials).
 
-```bash
-cp .env .env.local
-```
-
-Edit `.env.local` and set the `DATABASE_URL`:
-
-```dotenv
-DATABASE_URL="mysql://suitecrm:yourpassword@127.0.0.1:3306/suitecrm?serverVersion=8.0.32&charset=utf8mb4"
-```
-
-> Replace `yourpassword` with the password you set in Step 1.
-
----
-
-## Step 3: Install PHP Dependencies
-
-```bash
-composer install --ignore-platform-reqs
-```
-
-> `--ignore-platform-reqs` is needed because `composer.json` pins the platform to PHP 8.3,
-> but the installed version is 8.5.x. The app will still work at runtime.
-
----
-
-## Step 4: Install JS Dependencies & Build Frontend
-
-This project uses **Yarn 4.x**, managed via [Corepack](https://yarnpkg.com/corepack) (bundled with Node.js ≥ 16.9). The global `yarn` 1.x will not work.
-
-### 4a. Enable Corepack
-
-```bash
-npm install -g corepack --force
-corepack enable
-```
-
-Verify the correct version is active (should print `4.10.3`):
-
-```bash
-yarn --version
-```
-
-### 4b. Install dependencies
-
-```bash
-yarn install
-```
-
-### 4c. Generate `angular.json`
-
-The project uses a custom Yarn plugin to merge extension configs into a single `angular.json`. This file is **not committed** and must be generated before every build:
-
-```bash
-yarn merge-angular-json
-```
-
-### 4d. Build the frontend
-
-```bash
-yarn build
-```
-
-> The production build compiles both the `core` and `shell` Angular apps and outputs to `public/dist/`. It takes a few minutes.
-
----
-
-## Step 5: Set File Permissions
-
-Create any missing directories first, then set permissions:
-
-```bash
-mkdir -p var public/legacy/cache
-chmod -R 755 var/ logs/ public/legacy/cache/ public/legacy/upload/
-```
-
----
-
-## Step 6: Run the Web Installer
-
-Start PHP's built-in server with multiple workers (required — the installer makes self-referencing cURL calls that deadlock on a single-threaded server):
-
-```bash
-PHP_CLI_SERVER_WORKERS=8 php -d error_reporting="E_ALL & ~E_DEPRECATED" -d display_errors=0 -d log_errors=1 -S localhost:8080 -t public/
-```
-
-Open **http://localhost:8080/install.php** in your browser and follow the installer wizard. It will:
-- Run database migrations
-- Create `config.php` and `config_si.php` for the legacy layer
-- Set up the admin user
-
----
-
-## Step 6b: Legacy UI assets (not in git)
-
-The legacy screens (Home dashboard, Admin, Emails, etc.) need two generated assets:
-
-```bash
-# Copy TinyMCE and other legacy JS vendors into public/legacy/vendor
-php bin/console scrm:copy-legacy-assets
-
-# Compile the legacy suite8 theme (Dawn is the default sub-theme; Noon fails to compile upstream)
-vendor/bin/pscss --style=compressed public/legacy/themes/suite8/css/Dawn/style.scss > public/legacy/themes/suite8/css/Dawn/style.css
-```
-
-> PHP 8.5 emits deprecation notices for SuiteCRM code. If they are printed to the page they break
-> sessions/API calls ("Error occurred while retrieving records"), hence the `-d` flags on the server command.
-
----
-
-## Step 7: Post-Install Cache Clear
-
-After the installer completes:
-
-```bash
-php bin/console cache:clear
-```
-
----
-
-## Returning to Development (after initial setup)
-
-```bash
-# Start MySQL (if not running)
-brew services start mysql
-
-# Start the dev server (multi-worker to avoid self-referencing cURL deadlocks)
-PHP_CLI_SERVER_WORKERS=8 php -d error_reporting="E_ALL & ~E_DEPRECATED" -d display_errors=0 -d log_errors=1 -S localhost:8080 -t public/
-```
-
----
-
-## Tips & Common Issues
-
-- **Apache/Nginx** is preferred over PHP's built-in server for full functionality — the legacy layer relies on `mod_rewrite`. Install via `brew install httpd`.
-- **Platform mismatch**: Always use `--ignore-platform-reqs` with Composer commands locally.
-- **Writable directories**: If you see permission errors, re-run the `chmod` command in Step 5.
-- **Database connection errors**: Double-check the `DATABASE_URL` in `.env.local` matches your MySQL credentials.
-- **Official docs**: [SuiteCRM 8 Installation Guide](https://docs.suitecrm.com/8.x/admin/installation-guide/) and [Compatibility Matrix](https://docs.suitecrm.com/8.x/admin/compatibility-matrix/).
+## Official docs
+[SuiteCRM 8 Installation Guide](https://docs.suitecrm.com/8.x/admin/installation-guide/) and
+[Compatibility Matrix](https://docs.suitecrm.com/8.x/admin/compatibility-matrix/).

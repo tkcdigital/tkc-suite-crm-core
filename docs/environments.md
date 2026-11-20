@@ -4,7 +4,7 @@
 
 | Environment | Where | URL | How to run / deploy |
 |---|---|---|---|
-| Local dev | developer Mac (PHP built-in server, MySQL via Homebrew) | http://localhost:8080 | `LOCAL_SETUP.md`, `/run-suitecrm` |
+| Local dev (Docker, only dev setup) | Compose: PHP 8.3 + Apache, MySQL 8.0.46 | http://localhost:8081 (DB 127.0.0.1:3307) | `LOCAL_SETUP.md`, `docker/README.md`, `docker/dc.sh up -d`; stop: `docker/dc.sh down`; reset: `docker/dc.sh down -v` then reinstall |
 | Azure (later phase) | resource group `TKC-SUITE-CRM-RG` | — | to be defined by the azure-engineer |
 
 ## Azure access
