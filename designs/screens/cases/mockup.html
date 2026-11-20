@@ -1,0 +1,415 @@
+<title>TKC Cases Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../system/tkc-ds.css">
+<style>
+[hidden]{display:none!important}
+.page{max-width:var(--tkc-layout-content-max);margin:0 auto;padding:var(--tkc-space-4)}
+.doc-mark{width:1.75rem;height:1.75rem;border-radius:var(--tkc-radius-md);background:var(--tkc-navbar-indicator);color:var(--tkc-navbar-bg);display:grid;place-items:center;font-weight:700}
+.mockbar{display:flex;flex-wrap:wrap;gap:var(--tkc-space-3);align-items:center;background:var(--tkc-surface-sunken);border-bottom:1px solid var(--tkc-border-default);padding:var(--tkc-space-2) var(--tkc-space-4);font-size:var(--tkc-font-size-sm);color:var(--tkc-text-muted)}
+.mockbar a{margin-left:auto}
+.cap{font-size:var(--tkc-font-size-xs);color:var(--tkc-text-muted);text-transform:uppercase;letter-spacing:var(--tkc-letter-spacing-caps);font-weight:var(--tkc-font-weight-semibold);margin:0}
+.note{color:var(--tkc-text-muted);font-size:var(--tkc-font-size-sm);margin:var(--tkc-space-2) 0;max-width:62rem}
+.row{display:flex;flex-wrap:wrap;gap:var(--tkc-space-2);align-items:center}
+.scroll-x{overflow-x:auto}
+.cx{display:inline-block;font-size:var(--tkc-font-size-2xs);font-weight:var(--tkc-font-weight-semibold);background:var(--tkc-accent-subtle-bg);color:var(--tkc-accent-subtle-text);border:1px solid var(--tkc-accent-subtle-border);border-radius:var(--tkc-radius-sm);padding:0 .3rem;margin-left:var(--tkc-space-1);vertical-align:middle;white-space:nowrap;line-height:1.5}
+.crumbs{font-size:var(--tkc-font-size-sm);color:var(--tkc-text-muted);margin:0 0 var(--tkc-space-3)}
+.pagehead{display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--tkc-space-2) var(--tkc-space-4);margin-bottom:var(--tkc-space-3)}
+.pagehead h1{font-size:var(--tkc-font-size-3xl)}
+.pagehead span{color:var(--tkc-text-muted)}
+.pop{position:relative;display:inline-block}
+.pop .tkc-menu{right:auto;left:0}
+.pop.end .tkc-menu{left:auto;right:0}
+.tkc-menu .grp{font-size:var(--tkc-font-size-xs);color:var(--tkc-text-muted);padding:var(--tkc-space-2) var(--tkc-space-3) 0;text-transform:uppercase;letter-spacing:var(--tkc-letter-spacing-caps);list-style:none}
+.tkc-menu hr{border:0;border-top:1px solid var(--tkc-border-default);margin:var(--tkc-space-1) 0}
+.tkc-menu .danger{color:var(--tkc-header-action-danger-text)}
+.filterpanel{margin:0 var(--tkc-space-4) var(--tkc-space-3)}
+.panelbar{display:flex;justify-content:flex-end;gap:var(--tkc-space-2);margin:calc(-1*var(--tkc-space-2)) 0 var(--tkc-space-2)}
+.formfoot{display:flex;flex-wrap:wrap;gap:var(--tkc-space-2);justify-content:flex-end;margin-top:var(--tkc-space-4);padding-top:var(--tkc-space-3);border-top:1px solid var(--tkc-border-default)}
+.tkc-record-header{margin-bottom:var(--tkc-space-3)}
+.tabwrap{border:1px solid var(--tkc-border-default);border-radius:var(--tkc-radius-lg);overflow:hidden;background:var(--tkc-surface-default);margin-bottom:var(--tkc-space-4)}
+.tabbody{padding:var(--tkc-space-4);background:var(--tkc-surface-canvas)}
+.tkc-value.ro{color:var(--tkc-text-muted)}
+.ccrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:var(--tkc-space-3);padding:var(--tkc-space-2) var(--tkc-space-3);border-bottom:1px solid var(--tkc-border-default)}
+.thread-h{display:flex;justify-content:space-between;align-items:center;margin:var(--tkc-space-5) 0 var(--tkc-space-3)}
+.thread-h h2{font-size:var(--tkc-font-size-lg)}
+.notes{border-top:2px solid var(--tkc-border-strong);margin-top:var(--tkc-space-8);padding-top:var(--tkc-space-5)}
+.notes h2{font-size:var(--tkc-font-size-2xl);margin-bottom:var(--tkc-space-3)}
+.notes h3{font-size:var(--tkc-font-size-lg);margin:var(--tkc-space-6) 0 var(--tkc-space-2)}
+.notes li{margin-bottom:var(--tkc-space-1);max-width:62rem}
+.notes table{border-collapse:collapse;font-size:var(--tkc-font-size-sm);min-width:40rem}
+.notes th,.notes td{text-align:left;vertical-align:top;padding:var(--tkc-space-2) var(--tkc-space-3);border-bottom:1px solid var(--tkc-border-default)}
+.notes th{background:var(--tkc-table-header-bg);color:var(--tkc-table-header-text)}
+@media (max-width:750px){.page{padding:var(--tkc-space-4)}.pagehead h1{font-size:var(--tkc-font-size-2xl)}.tkc-actions{width:100%}.tkc-statusbar{width:100%}.tkc-statusbar button{flex:1;padding:0 var(--tkc-space-1)}.tkc-statusbar button svg{display:none}.tkc-btn,.tkc-statusbar button,.tkc-qt,.tkc-menu button{min-height:var(--tkc-size-touch-min)}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V4h10v17M14 9h6v12M8 8h2M8 12h2M8 16h2M4 21h16"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+<symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+<symbol id="i-clip" viewBox="0 0 24 24"><path d="m20 11-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 7"/></symbol>
+<symbol id="i-cols" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM9 5v14M15 5v14"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></symbol>
+<symbol id="i-err" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6zM14 3v5h5"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+<symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-reply" viewBox="0 0 24 24"><path d="M10 8 4 13l6 5v-3.5c5 0 8 1 10 4-.5-5-3.5-8.500-10-9z"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m4 12 16-8-6 16-2-7z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol></svg>
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="tkc-navbar" aria-label="Main">
+<div class="tkc-navbar__logo"><span class="doc-mark" aria-hidden="true">T</span><span>TKC CRM</span></div>
+<div class="tkc-navbar__items">
+<a class="tkc-navbar__item hide-sm" href="#main">Home</a><a class="tkc-navbar__item hide-sm" href="#main">Accounts</a><a class="tkc-navbar__item hide-sm" href="#main">Contacts</a>
+<a class="tkc-navbar__item" href="#main" aria-current="page">Cases</a><a class="tkc-navbar__item hide-sm" href="#main">Opportunities</a><a class="tkc-navbar__item hide-sm" href="#main">Emails</a>
+</div>
+<div class="tkc-navbar__search" role="search"><svg aria-hidden="true" class="i sm"><use href="#i-search"/></svg><input type="search" placeholder="Search records (/)" aria-label="Global search"></div>
+<div class="tkc-navbar__tools"><button class="tkc-navbar__tool" type="button" aria-label="Notifications, 3 unread"><svg aria-hidden="true" class="i"><use href="#i-bell"/></svg></button><button class="tkc-navbar__tool" type="button" aria-label="User menu"><span class="tkc-avatar">SV</span></button></div>
+</nav>
+
+<div class="mockbar">
+<span>Mockup view</span>
+<div class="tkc-seg" role="radiogroup" aria-label="Mockup view"><label><input type="radio" name="mockview" value="list" checked>List</label><label><input type="radio" name="mockview" value="record">Record</label></div>
+<span>Tag <span class="cx">[custom]</span> = needs work beyond standard SuiteCRM metadata.</span>
+<a href="#notes">Design notes</a>
+</div>
+
+<main id="main" class="page">
+
+<!-- ============ LIST VIEW ============ -->
+<section data-view="list" aria-labelledby="h-list">
+<div class="pagehead"><h1 id="h-list">Cases</h1><span>128 cases, 41 open in your queues</span></div>
+<div class="tkc-list">
+<div class="tkc-list__toolbar">
+<div class="grow"><label class="tkc-searchfield"><span class="sr-only">Filter cases</span><svg aria-hidden="true" class="i sm"><use href="#i-search"/></svg><input class="tkc-input" placeholder="Filter by subject or reference" type="search"></label></div>
+<div class="pop"><button class="tkc-btn tkc-btn--secondary" type="button" aria-haspopup="menu" aria-expanded="false" data-pop="saved">My open cases <svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg></button>
+<ul class="tkc-menu" id="saved" role="menu" aria-label="Saved filters" hidden>
+<li class="grp" role="presentation">Saved filters</li>
+<li role="none"><button role="menuitem" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-check"/></svg>My open cases</button></li>
+<li role="none"><button role="menuitem" type="button">Unassigned, 1st line</button></li>
+<li role="none"><button role="menuitem" type="button">Finance queue, open</button></li>
+<li role="none"><button role="menuitem" type="button">Solved this week</button></li></ul></div>
+<button class="tkc-btn tkc-btn--secondary" type="button" aria-expanded="true" aria-controls="fp" data-toggle="fp"><svg aria-hidden="true" class="i sm"><use href="#i-filter"/></svg>Filters <span class="tkc-count" style="background:var(--tkc-primary-default);color:var(--tkc-primary-on)">3</span></button>
+<button class="tkc-btn tkc-btn--secondary tkc-btn--icon" type="button" aria-label="Choose columns"><svg aria-hidden="true" class="i"><use href="#i-cols"/></svg></button>
+<button class="tkc-btn tkc-btn--primary" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-plus"/></svg>Create case</button>
+</div>
+
+<form class="tkc-panel filterpanel" id="fp" aria-label="Filter cases" onsubmit="return false">
+<div class="tkc-panel__body"><div class="tkc-fieldgrid">
+<div class="tkc-field"><label for="f-q">Queue</label><select id="f-q" class="tkc-select"><option>TKC - Support 1e lijn, TKC - Support 2e lijn</option><option>All queues</option><option>Finance</option><option>InfoTKCDigital</option><option>TKC - Change Request</option><option>Offertes</option><option>SPAM</option></select></div>
+<div class="tkc-field"><label for="f-s">Status</label><select id="f-s" class="tkc-select"><option>All open (Unresolved, Waiting)</option><option>Unresolved</option><option>Waiting</option><option>Solved</option><option>Archived</option></select></div>
+<div class="tkc-field"><label for="f-p">Priority</label><select id="f-p" class="tkc-select"><option>Any</option><option>P1</option><option>P2</option><option>P3</option><option>P4</option></select></div>
+<div class="tkc-field"><label for="f-a">Assigned to</label><select id="f-a" class="tkc-select"><option>Me</option><option>Anyone</option><option>Unassigned</option></select></div>
+<div class="tkc-field"><label for="f-pr">Product</label><select id="f-pr" class="tkc-select"><option>Any</option><option>Oracle Service Cloud</option><option>eGain</option></select></div>
+<div class="tkc-field"><label for="f-u">Updated</label><select id="f-u" class="tkc-select"><option>Any time</option><option>Today</option><option>Last 7 days</option></select></div>
+</div>
+<div class="formfoot"><button class="tkc-btn tkc-btn--ghost" type="button">Reset</button><button class="tkc-btn tkc-btn--secondary" type="button">Save as filter…</button><button class="tkc-btn tkc-btn--primary" type="submit">Apply filters</button></div></div>
+</form>
+
+<div class="tkc-filterchips"><span class="cap">Active filters</span><span class="tkc-chip">Assigned to: Me<button type="button" aria-label="Remove assigned filter"><svg aria-hidden="true" class="i sm"><use href="#i-x"/></svg></button></span><span class="tkc-chip">Status: All open<button type="button" aria-label="Remove status filter"><svg aria-hidden="true" class="i sm"><use href="#i-x"/></svg></button></span><span class="tkc-chip">Queue: 1e lijn, 2e lijn<button type="button" aria-label="Remove queue filter"><svg aria-hidden="true" class="i sm"><use href="#i-x"/></svg></button></span><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button">Clear all</button></div>
+
+<div class="tkc-bulk" role="status" id="bulk"><span><b id="bulk-n">2</b> selected</span><button class="tkc-btn tkc-btn--secondary tkc-btn--sm" type="button">Assign to…</button><button class="tkc-btn tkc-btn--secondary tkc-btn--sm" type="button">Change status</button><button class="tkc-btn tkc-btn--secondary tkc-btn--sm" type="button">Change queue</button><button class="tkc-btn tkc-btn--danger-quiet tkc-btn--sm" type="button">Delete</button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" style="margin-left:auto">Select all 41</button></div>
+
+<div class="scroll-x"><table class="tkc-table" style="min-width:68rem"><caption class="sr-only">Cases, newest update first</caption><thead><tr>
+<th class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select all rows" id="all"><span class="sr-only">Select all</span></label></th>
+<th><button type="button">Reference</button></th><th><button type="button">Subject</button></th><th><button type="button">Contact</button></th><th><button type="button">Account</button></th><th>Status</th><th>Priority</th><th><button type="button">Queue</button></th><th><button type="button">Assigned to</button></th><th class="num" aria-sort="descending"><button type="button">Updated <svg aria-hidden="true" class="i sm"><use href="#i-up"/></svg></button></th></tr></thead>
+<tbody>
+<tr class="is-selected"><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" checked aria-label="Select 261120-004217"></label></td><td class="mono">261120-004217</td><td><a href="#" data-goto="record">Printer portal login fails after SSO change</a></td><td>Jan de Vries</td><td>Acme Facilities BV</td><td><span class="tkc-pill tkc-pill--info">In progress</span></td><td><span class="tkc-pill tkc-pill--warning tkc-pill--plain"><span class="sr-only">Priority </span>P2</span></td><td>TKC - Support 2e lijn</td><td>Sam Vermeer</td><td class="num">20 Nov 14:12</td></tr>
+<tr class="is-selected"><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" checked aria-label="Select 261120-004209"></label></td><td class="mono">261120-004209</td><td><a href="#" data-goto="record">Invoice 2026-0412 shows the wrong VAT rate</a></td><td>Noor Bakker</td><td>Fjord Retail BV</td><td><span class="tkc-pill tkc-pill--accent">Updated</span></td><td><span class="tkc-pill tkc-pill--neutral tkc-pill--plain"><span class="sr-only">Priority </span>P3</span></td><td>Finance</td><td>Lena Smit</td><td class="num">20 Nov 13:48</td></tr>
+<tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select 261120-004188"></label></td><td class="mono">261120-004188</td><td><a href="#" data-goto="record">Add a second approver to the workflow</a></td><td>Pim Jansen</td><td>Nordwind Logistics BV</td><td><span class="tkc-pill tkc-pill--warning">Waiting: requester</span></td><td><span class="tkc-pill tkc-pill--neutral tkc-pill--plain"><span class="sr-only">Priority </span>P4</span></td><td>TKC - Change Request</td><td>Sam Vermeer</td><td class="num">20 Nov 10:30</td></tr>
+<tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select 261119-004150"></label></td><td class="mono">261119-004150</td><td><a href="#" data-goto="record">Console crashes when the incident list opens</a></td><td>Eva Mulder</td><td>Kade Services BV</td><td><span class="tkc-pill tkc-pill--info">Unresolved</span></td><td><span class="tkc-pill tkc-pill--solid-danger tkc-pill--plain"><span class="sr-only">Priority </span>P1</span></td><td>TKC - Support 1e lijn</td><td><em style="color:var(--tkc-text-muted)">Unassigned</em></td><td class="num">19 Nov 17:05</td></tr>
+<tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select 261119-004131"></label></td><td class="mono">261119-004131</td><td><a href="#" data-goto="record">Quote for 10 extra licences</a></td><td>Daan Visser</td><td>Linde Techniek BV</td><td><span class="tkc-pill tkc-pill--warning">Waiting: Oracle</span></td><td><span class="tkc-pill tkc-pill--neutral tkc-pill--plain"><span class="sr-only">Priority </span>P3</span></td><td>Offertes</td><td>Lena Smit</td><td class="num">19 Nov 15:21</td></tr>
+<tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select 261119-004102"></label></td><td class="mono">261119-004102</td><td><a href="#" data-goto="record">Unknown sender, newsletter unsubscribe</a></td><td>Unknown sender</td><td>-</td><td><span class="tkc-pill tkc-pill--success">Solved</span></td><td><span class="tkc-help">-</span></td><td>SPAM</td><td>Sam Vermeer</td><td class="num">19 Nov 09:02</td></tr>
+<tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select 261118-004077"></label></td><td class="mono">261118-004077</td><td><a href="#" data-goto="record">Feature request: bulk export of threads</a></td><td>Mila Koster</td><td>Acme Facilities BV</td><td><span class="tkc-pill tkc-pill--neutral">Feature request</span></td><td><span class="tkc-pill tkc-pill--neutral tkc-pill--plain"><span class="sr-only">Priority </span>P4</span></td><td>TKC - Support 2e lijn</td><td>Sam Vermeer</td><td class="num">18 Nov 16:40</td></tr>
+<tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select 261118-004050"></label></td><td class="mono">261118-004050</td><td><a href="#" data-goto="record">Mailbox rules need an update</a></td><td>Ruben Peters</td><td>Fjord Retail BV</td><td><span class="tkc-pill tkc-pill--neutral">On hold</span></td><td><span class="tkc-pill tkc-pill--warning tkc-pill--plain"><span class="sr-only">Priority </span>P2</span></td><td>InfoTKCDigital</td><td>Lena Smit</td><td class="num">18 Nov 11:15</td></tr>
+</tbody></table></div>
+<div class="tkc-list__foot"><span>1-8 of 41</span><nav class="tkc-pager" aria-label="Pagination"><button type="button" disabled aria-label="Previous page"><svg aria-hidden="true" class="i"><use href="#i-chev-l"/></svg></button><button type="button" aria-current="page">1</button><button type="button">2</button><button type="button">3</button><button type="button" aria-label="Next page"><svg aria-hidden="true" class="i"><use href="#i-chev-r"/></svg></button></nav><label>Rows <select class="tkc-select" style="width:auto;min-height:1.75rem" aria-label="Rows per page"><option>20</option><option>50</option></select></label></div>
+</div>
+<p class="note">Reference is the OSC number kept in <code>osc_ref_no_c</code> (new cases get the same format). Status and priority pills <span class="cx">[custom]</span> field display. Filters: queue and status are standard list filters on new enum fields. Bulk actions use standard mass update (assign, status, queue). On phones the table scrolls inside its own container.</p>
+</section>
+
+<!-- ============ RECORD VIEW ============ -->
+<section data-view="record" aria-labelledby="h-rec" hidden>
+<p class="crumbs"><a href="#" data-goto="list">Cases</a> / <span class="mono">261120-004217</span></p>
+<div class="tkc-record-header">
+<div class="tkc-record-header__mono" aria-hidden="true">CS</div>
+<div class="tkc-record-header__id">
+<div class="tkc-record-header__eyebrow">Case · <span class="mono">261120-004217</span></div>
+<h3 id="h-rec">Printer portal login fails after SSO change</h3>
+<div class="tkc-record-header__meta"><span class="tkc-pill tkc-pill--info" id="hdr-status" aria-live="polite">In progress</span><span class="tkc-pill tkc-pill--warning tkc-pill--plain"><span class="sr-only">Priority </span>P2</span><span class="tkc-pill tkc-pill--outline tkc-pill--plain">Queue: TKC - Support 2e lijn</span><span>Contact: <a href="#rec-top">Jan de Vries</a></span><span>Assigned to Sam Vermeer</span><span>Updated 20 Nov 2026, 14:12</span></div>
+</div>
+<div class="tkc-actions" id="rec-top">
+<div class="tkc-statusbar" role="group" aria-label="Set status (one click)" id="sbar">
+<button type="button" data-s="Waiting: requester" data-k="info needed"><svg aria-hidden="true" class="i sm"><use href="#i-pause"/></svg>Waiting</button><button type="button" data-s="Updated">Updated</button><button type="button" data-s="Unresolved">Unresolved</button><button type="button" data-s="Solved"><svg aria-hidden="true" class="i sm"><use href="#i-ok"/></svg>Solved</button></div>
+<span class="cx" style="margin:0">[custom] status bar</span>
+<button class="tkc-btn tkc-btn--secondary" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-mail"/></svg>Forward</button>
+<button class="tkc-btn tkc-btn--secondary" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-user"/></svg>Assign to me</button>
+<button class="tkc-btn tkc-btn--secondary" type="button" data-editcat><svg aria-hidden="true" class="i sm"><use href="#i-edit"/></svg>Edit</button>
+<div class="pop end"><button class="tkc-btn tkc-btn--secondary" type="button" aria-haspopup="menu" aria-expanded="false" data-pop="more">More <svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg></button>
+<ul class="tkc-menu" id="more" role="menu" aria-label="More actions" hidden>
+<li class="grp" role="presentation">Solve and route <span class="cx">[custom]</span></li>
+<li role="none"><button role="menuitem" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-ok"/></svg>Solve as CX</button></li>
+<li role="none"><button role="menuitem" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-ok"/></svg>Solve as eGain</button></li>
+<li role="none"><button role="menuitem" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-building"/></svg>Route to Finance</button></li>
+<li role="none"><hr></li>
+<li role="none"><button role="menuitem" type="button" class="danger"><svg aria-hidden="true" class="i sm"><use href="#i-err"/></svg>Mark as spam <span class="cx">[custom] also updates Contact</span></button></li>
+<li role="none"><hr></li>
+<li role="none"><button role="menuitem" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-file"/></svg>Duplicate</button></li>
+<li role="none"><button role="menuitem" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-eye"/></svg>Print view</button></li>
+<li role="none"><button role="menuitem" type="button" class="danger"><svg aria-hidden="true" class="i sm"><use href="#i-trash"/></svg>Delete</button></li>
+</ul></div>
+</div></div>
+
+<div class="tabwrap">
+<div class="tkc-tabs" role="tablist" aria-label="Case sections">
+<button class="tkc-tab" role="tab" id="t1" aria-controls="p1" aria-selected="true" type="button">Overview</button>
+<button class="tkc-tab" role="tab" id="t2" aria-controls="p2" aria-selected="false" tabindex="-1" type="button">Messages <span class="tkc-count">4</span></button>
+<button class="tkc-tab" role="tab" id="t3" aria-controls="p3" aria-selected="false" tabindex="-1" type="button">Details</button>
+<button class="tkc-tab" role="tab" id="t4" aria-controls="p4" aria-selected="false" tabindex="-1" type="button">History</button>
+</div>
+
+<!-- Overview -->
+<div class="tabbody" role="tabpanel" id="p1" aria-labelledby="t1" tabindex="0">
+<div class="tkc-layout"><div>
+<section class="tkc-panel"><button class="tkc-panel__head" aria-expanded="true" type="button"><svg aria-hidden="true" class="i sm chev"><use href="#i-chev"/></svg><h4>General</h4></button><div class="tkc-panel__body"><div class="tkc-fieldgrid">
+<div class="tkc-field span-all"><label>Subject <span class="req">*</span></label><div class="tkc-value">Printer portal login fails after SSO change</div></div>
+<div class="tkc-field"><label>Reference</label><div class="tkc-value mono ro">261120-004217</div></div>
+<div class="tkc-field"><label>Contact <span class="req">*</span> <span class="cx">[custom] primary contact</span></label><div class="tkc-value"><a href="#rec-top">Jan de Vries</a></div></div>
+<div class="tkc-field"><label>Account</label><div class="tkc-value"><a href="#rec-top">Acme Facilities BV</a></div></div>
+<div class="tkc-field"><label>Source</label><div class="tkc-value ro">Email (service mailbox)</div></div>
+</div></div></section>
+
+<section class="tkc-panel" id="cat"><button class="tkc-panel__head" aria-expanded="true" type="button"><svg aria-hidden="true" class="i sm chev"><use href="#i-chev"/></svg><h4>Categorisation <span class="tkc-help" id="cat-mode">Detail mode</span></h4></button><div class="tkc-panel__body">
+<div class="panelbar" id="cat-bar"><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" data-editcat><svg aria-hidden="true" class="i sm"><use href="#i-edit"/></svg>Edit</button></div>
+<div class="tkc-fieldgrid" id="cat-view">
+<div class="tkc-field"><label>Product <span class="req">*</span></label><div class="tkc-value">Oracle Service Cloud</div></div>
+<div class="tkc-field"><label>Category <span class="req">*</span></label><div class="tkc-value">Service Request</div></div>
+<div class="tkc-field"><label>Priority</label><div class="tkc-value"><span class="tkc-pill tkc-pill--warning tkc-pill--plain">P2</span></div></div>
+<div class="tkc-field"><label>TKC priority</label><div class="tkc-value">Disrupted production process</div></div>
+<div class="tkc-field"><label>Type</label><div class="tkc-value">Support request</div></div>
+<div class="tkc-field"><label>Customer priority</label><div class="tkc-value">Acme - Some impact</div></div>
+<div class="tkc-field"><label>Tact ID</label><div class="tkc-value mono">TX-20417</div></div>
+<div class="tkc-field"><label>Expected resolution</label><div class="tkc-value">27 Nov 2026</div></div>
+</div>
+<form id="cat-edit" onsubmit="return false" hidden>
+<div class="tkc-fieldgrid">
+<div class="tkc-field"><label for="e1">Product <span class="req">*</span></label><select id="e1" class="tkc-select" required><option>Oracle Service Cloud</option><option>eGain</option></select></div>
+<div class="tkc-field"><label for="e2">Category <span class="req">*</span></label><select id="e2" class="tkc-select" required><option>Service Request</option><option>Complaint</option><option>Question</option><option>Change Request</option></select></div>
+<div class="tkc-field"><label for="e3">Priority</label><select id="e3" class="tkc-select"><option>P1 - Priority 1</option><option selected>P2 - Priority 2</option><option>P3 - Priority 3</option><option>P4 - Priority 4</option></select></div>
+<div class="tkc-field"><label for="e4">TKC priority</label><select id="e4" class="tkc-select"><option>No impact</option><option>Some impact</option><option selected>Disrupted production process</option><option>Immediate action required</option></select><span class="tkc-help">Impact scale, not a priority number.</span></div>
+<div class="tkc-field"><label for="e5">Type</label><select id="e5" class="tkc-select"><option selected>Support request</option><option>General communication</option><option>Info message</option><option>Project communication</option></select></div>
+<div class="tkc-field"><label for="e6">Customer priority <span class="cx">[open Q7]</span></label><input id="e6" class="tkc-input" value="Acme - Some impact" maxlength="255"></div>
+<div class="tkc-field"><label for="e7">Tact ID</label><input id="e7" class="tkc-input mono" value="TX-20417" maxlength="10" aria-describedby="e7h"><span class="tkc-help" id="e7h">Maximum 10 characters.</span></div>
+<div class="tkc-field"><label for="e8">Expected resolution</label><div class="tkc-input-group"><input id="e8" class="tkc-input" value="2026-11-27"><button class="tkc-btn" type="button" aria-label="Open calendar"><svg aria-hidden="true" class="i"><use href="#i-cal"/></svg></button></div></div>
+</div>
+<div class="formfoot"><button class="tkc-btn tkc-btn--secondary" type="button" data-canceledit>Cancel</button><button class="tkc-btn tkc-btn--primary" type="submit" data-canceledit>Save</button></div>
+</form>
+</div></section>
+
+<section class="tkc-panel"><button class="tkc-panel__head" aria-expanded="true" type="button"><svg aria-hidden="true" class="i sm chev"><use href="#i-chev"/></svg><h4>Routing</h4></button><div class="tkc-panel__body"><div class="tkc-fieldgrid">
+<div class="tkc-field"><label>Assigned to</label><div class="tkc-value">Sam Vermeer</div></div>
+<div class="tkc-field"><label>Assigned group <span class="cx">[custom] open Q6</span></label><div class="tkc-value">TKC - Technical consultant</div></div>
+<div class="tkc-field"><label>Queue <span class="cx">[custom]</span></label><div class="tkc-value">TKC - Support 2e lijn</div></div>
+</div></div></section>
+</div>
+
+<aside aria-label="Record summary" class="tkc-panel"><div class="tkc-panel__head" style="cursor:default"><h4>Summary</h4></div><div class="tkc-panel__body"><dl class="tkc-dl">
+<div><dt>Status</dt><dd><span class="tkc-pill tkc-pill--info">In progress</span></dd></div>
+<div><dt>Priority</dt><dd>P2</dd></div>
+<div><dt>Created</dt><dd>19 Nov 2026, 16:58</dd></div>
+<div><dt>Updated</dt><dd>20 Nov 2026, 14:12</dd></div>
+<div><dt>Closed</dt><dd>-</dd></div>
+<div><dt>Created by</dt><dd>Mailbox import</dd></div></dl>
+<p class="cap" style="margin:var(--tkc-space-4) 0 var(--tkc-space-2)">Latest message</p>
+<p class="tkc-help" style="margin:0 0 var(--tkc-space-2)">Agent reply, 20 Nov 14:12</p>
+<p style="margin:0 0 var(--tkc-space-2);font-size:var(--tkc-font-size-sm)">Hello Jan, please clear the browser cache and sign in again. Tell me whether error E-402 stays.</p>
+<button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" data-tab="t2">Open messages</button></div></aside>
+</div></div>
+
+<!-- Messages -->
+<div class="tabbody" role="tabpanel" id="p2" aria-labelledby="t2" tabindex="0" hidden>
+<p class="note" style="margin-top:0">Standard record-thread widget (AOP case updates), restyled. Entry type, channel, quick texts and CC/BCC are <span class="cx">[custom]</span>.</p>
+<form class="tkc-composer" id="comp" onsubmit="return false">
+<div class="tkc-composer__bar"><div class="tkc-seg" role="radiogroup" aria-label="Entry type"><label><input type="radio" name="et" value="reply" checked>Reply</label><label><input type="radio" name="et" value="cust">Customer entry</label><label><input type="radio" name="et" value="note">Internal note</label></div>
+<label class="tkc-help" for="chan" style="margin-left:auto">Channel</label><select id="chan" class="tkc-select" style="width:auto;min-height:1.75rem"><option>Email</option><option>Phone</option><option>Web</option><option>Chat</option><option>Fax</option><option>Social</option><option>Other</option></select></div>
+<div class="ccrow" id="ccrow" hidden><div class="tkc-field"><label for="cc">CC</label><input id="cc" class="tkc-input" type="email" spellcheck="false" autocomplete="off" placeholder="name@example.test"></div><div class="tkc-field"><label for="bcc">BCC</label><input id="bcc" class="tkc-input" type="email" spellcheck="false" autocomplete="off" placeholder="name@example.test"></div></div>
+<div class="tkc-composer__bar" style="background:var(--tkc-surface-default)"><span class="cap">Standard texts</span><button class="tkc-qt" type="button">Greeting</button><button class="tkc-qt" type="button">Closing</button><button class="tkc-qt" type="button">Outage</button><button class="tkc-qt" type="button">More info needed</button></div>
+<label class="sr-only" for="cm">Message</label><textarea id="cm" placeholder="Write a reply to Jan de Vries…"></textarea>
+<div class="tkc-composer__foot"><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-clip"/></svg>Attach</button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" id="ccbtn" aria-expanded="false" aria-controls="ccrow">CC / BCC</button><span style="margin-left:auto" class="row"><button class="tkc-btn tkc-btn--secondary" type="button" id="b-save">Save without sending</button><button class="tkc-btn tkc-btn--primary" type="button" id="b-send"><svg aria-hidden="true" class="i sm"><use href="#i-send"/></svg><span>Send reply</span></button></span></div></form>
+
+<div class="thread-h"><h2>Messages</h2><span class="tkc-help">Newest first</span></div>
+<div class="tkc-thread" role="list" aria-label="Case messages, newest first">
+<article class="tkc-entry tkc-entry--agent" role="listitem"><span class="tkc-avatar tkc-avatar--agent" aria-hidden="true">SV</span><div class="tkc-entry__card"><div class="tkc-entry__head"><span class="tkc-entry__kind"><svg aria-hidden="true" class="i sm"><use href="#i-reply"/></svg>Agent reply</span><strong>Sam Vermeer</strong><span class="tkc-pill tkc-pill--neutral tkc-pill--plain"><svg aria-hidden="true" class="i sm"><use href="#i-mail"/></svg>Email</span><time datetime="2026-11-20T14:12">20 Nov 2026, 14:12</time></div><div class="tkc-entry__body"><p>Hello Jan, please clear the browser cache and sign in again. Tell me whether error E-402 stays.</p></div><div class="tkc-attach"><a href="#p2"><svg aria-hidden="true" class="i sm"><use href="#i-file"/></svg>sso-steps.pdf <small>284 KB</small></a></div></div></article>
+<article class="tkc-entry tkc-entry--note" role="listitem"><span class="tkc-avatar" aria-hidden="true"><svg aria-hidden="true" class="i sm"><use href="#i-lock"/></svg></span><div class="tkc-entry__card"><div class="tkc-entry__head"><span class="tkc-entry__kind"><svg aria-hidden="true" class="i sm"><use href="#i-lock"/></svg>Internal note</span><strong>Sam Vermeer</strong><span class="tkc-help">Not visible to the customer</span><time datetime="2026-11-20T13:55">20 Nov 2026, 13:55</time></div><div class="tkc-entry__body"><p>Same SSO change as case 261118-004090. Check with the 2nd line before we reset the tenant.</p></div></div></article>
+<article class="tkc-entry tkc-entry--customer" role="listitem"><span class="tkc-avatar tkc-avatar--customer" aria-hidden="true">JV</span><div class="tkc-entry__card"><div class="tkc-entry__head"><span class="tkc-entry__kind"><svg aria-hidden="true" class="i sm"><use href="#i-user"/></svg>Customer, logged by agent</span><strong>Jan de Vries</strong><span class="tkc-pill tkc-pill--neutral tkc-pill--plain"><svg aria-hidden="true" class="i sm"><use href="#i-phone"/></svg>Phone</span><time datetime="2026-11-20T09:20">20 Nov 2026, 09:20</time></div><div class="tkc-entry__body"><p>Called to say the issue also happens on the second floor. Two colleagues cannot sign in either.</p></div></div></article>
+<article class="tkc-entry tkc-entry--customer" role="listitem"><span class="tkc-avatar tkc-avatar--customer" aria-hidden="true">JV</span><div class="tkc-entry__card"><div class="tkc-entry__head"><span class="tkc-entry__kind"><svg aria-hidden="true" class="i sm"><use href="#i-user"/></svg>Customer</span><strong>Jan de Vries</strong><span class="tkc-pill tkc-pill--neutral tkc-pill--plain"><svg aria-hidden="true" class="i sm"><use href="#i-mail"/></svg>Email</span><time datetime="2026-11-19T16:58">19 Nov 2026, 16:58</time></div><div class="tkc-entry__body"><p>Since the SSO change this morning the printer portal shows error E-402 at sign-in. No job prints.</p></div><div class="tkc-attach"><a href="#p2"><svg aria-hidden="true" class="i sm"><use href="#i-file"/></svg>error-screen.png <small>1.2 MB</small></a></div></div></article>
+</div></div>
+
+<!-- Details -->
+<div class="tabbody" role="tabpanel" id="p3" aria-labelledby="t3" tabindex="0" hidden>
+<section class="tkc-panel"><div class="tkc-panel__head" style="cursor:default"><h4>Source and system</h4></div><div class="tkc-panel__body"><div class="tkc-fieldgrid">
+<div class="tkc-field"><label>Source</label><div class="tkc-value ro">Email</div></div>
+<div class="tkc-field"><label>Created by</label><div class="tkc-value ro">Mailbox import</div></div>
+<div class="tkc-field"><label>TFS project ID <span class="cx">[custom] link field</span></label><div class="tkc-value"><a href="#p3" class="mono">TFS-4821</a></div></div>
+<div class="tkc-field"><label>Event remark</label><div class="tkc-value">-</div></div>
+<div class="tkc-field span-all"><label>Event remarks</label><div class="tkc-value">-</div></div>
+</div><p class="note">Collect-before-share and its option list are customer-specific (open Q10): hidden here, shown only by display logic on one account.</p></div></section></div>
+
+<!-- History -->
+<div class="tabbody" role="tabpanel" id="p4" aria-labelledby="t4" tabindex="0" hidden>
+<section class="tkc-panel"><div class="tkc-panel__head" style="cursor:default"><h4>Audit log</h4></div><div class="scroll-x"><table class="tkc-table" style="min-width:34rem"><thead><tr><th>Field</th><th>Old value</th><th>New value</th><th>Changed by</th><th class="num">When</th></tr></thead><tbody>
+<tr><td>Status</td><td>Unresolved</td><td>In progress</td><td>Sam Vermeer</td><td class="num">20 Nov 13:50</td></tr>
+<tr><td>Assigned to</td><td>-</td><td>Sam Vermeer</td><td>Sam Vermeer</td><td class="num">20 Nov 13:50</td></tr>
+<tr><td>Queue</td><td>TKC - Support 1e lijn</td><td>TKC - Support 2e lijn</td><td>Lena Smit</td><td class="num">20 Nov 09:31</td></tr></tbody></table></div></section></div>
+</div>
+
+<!-- Subpanels (always below the tabs, standard SuiteCRM) -->
+<section class="tkc-subpanel" aria-label="Tasks"><div class="tkc-subpanel__head"><button class="tkc-subpanel__title" type="button" aria-expanded="true"><svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg>Tasks <span class="tkc-count">2</span></button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-plus"/></svg>Create</button></div>
+<div class="scroll-x"><table class="tkc-table" style="min-width:34rem"><thead><tr><th>Subject</th><th>Status</th><th>Due</th><th>Assigned to</th></tr></thead><tbody>
+<tr><td><a href="#rec-top">Check SSO tenant settings</a></td><td><span class="tkc-pill tkc-pill--info">Not started</span></td><td>21 Nov 2026</td><td>Sam Vermeer</td></tr>
+<tr><td><a href="#rec-top">Call back Jan de Vries</a></td><td><span class="tkc-pill tkc-pill--success">Completed</span></td><td>20 Nov 2026</td><td>Sam Vermeer</td></tr></tbody></table></div></section>
+<section class="tkc-subpanel" aria-label="Attachments"><div class="tkc-subpanel__head"><button class="tkc-subpanel__title" type="button" aria-expanded="true"><svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg>Attachments <span class="tkc-count">2</span></button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-clip"/></svg>Add file</button></div>
+<div class="scroll-x"><table class="tkc-table" style="min-width:30rem"><thead><tr><th>File</th><th>Size</th><th>Added by</th><th class="num">Added</th></tr></thead><tbody>
+<tr><td><a href="#rec-top">error-screen.png</a></td><td>1.2 MB</td><td>Jan de Vries</td><td class="num">19 Nov 16:58</td></tr>
+<tr><td><a href="#rec-top">sso-steps.pdf</a></td><td>284 KB</td><td>Sam Vermeer</td><td class="num">20 Nov 14:12</td></tr></tbody></table></div></section>
+<section class="tkc-subpanel" aria-label="Linked opportunities"><div class="tkc-subpanel__head"><button class="tkc-subpanel__title" type="button" aria-expanded="true"><svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg>Linked opportunities <span class="tkc-count">1</span> <span class="cx">[custom] new relationship</span></button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-plus"/></svg>Create</button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button">Select</button></div>
+<div class="scroll-x"><table class="tkc-table" style="min-width:34rem"><thead><tr><th>Name</th><th>Stage</th><th>Amount</th><th>Close date</th></tr></thead><tbody>
+<tr><td><a href="#rec-top">Portal licence extension</a></td><td><span class="tkc-pill tkc-pill--accent">Proposal</span></td><td>EUR 4,800</td><td>15 Dec 2026</td></tr></tbody></table></div></section>
+<section class="tkc-subpanel" aria-label="Contract"><div class="tkc-subpanel__head"><button class="tkc-subpanel__title" type="button" aria-expanded="true"><svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg>Contract <span class="tkc-count">1</span> <span class="cx">[custom] via account</span></button></div>
+<div class="scroll-x"><table class="tkc-table" style="min-width:34rem"><thead><tr><th>Contract</th><th>Status</th><th>Start</th><th>End</th></tr></thead><tbody>
+<tr><td><a href="#rec-top">Acme support agreement 2026</a></td><td><span class="tkc-pill tkc-pill--success">Signed</span></td><td>1 Jan 2026</td><td>31 Dec 2026</td></tr></tbody></table></div></section>
+<section class="tkc-subpanel" aria-label="Other contacts"><div class="tkc-subpanel__head" data-collapsed><button class="tkc-subpanel__title" type="button" aria-expanded="false"><svg aria-hidden="true" class="i sm" style="transform:rotate(-90deg)"><use href="#i-chev"/></svg>Other contacts <span class="tkc-count">1</span></button></div><div class="scroll-x" hidden><table class="tkc-table"><tbody><tr><td><a href="#rec-top">Mila Koster</a></td><td>mila.koster@example.test</td></tr></tbody></table></div></section>
+</section>
+
+<!-- ============ DESIGN NOTES ============ -->
+<section class="notes" id="notes" aria-labelledby="h-notes">
+<h2 id="h-notes">Design notes</h2>
+<p class="note">Cases (OSC Incident), SUITE-20. Built on style guide v0.1. Source: <code>docs/osc-mapping/incident.md</code>. SLA is dropped (owner decision), so no response or solve clocks appear anywhere. Light mode only for sprint 1. Synthetic data only.</p>
+
+<h3>Mapping decisions</h3>
+<ul>
+<li><b>One layout for detail and edit.</b> Same panels and grid. The Categorisation panel shows its edit state (button Edit). The header Edit button opens the same state. Full-record edit puts every panel in edit.</li>
+<li><b>OSC left panel becomes tabs plus panels.</b> Algemeen = General, Categorisatie = Categorisation, Doorzetten = Routing, Berichten = Messages, Details = Details, Geschiedenis = History. Bijlagen, Taken, Koppelingen, Supportcontract become subpanels below the tabs.</li>
+<li><b>Status.</b> Header pill shows the full status (12 values). The status bar keeps the four OSC one-click buttons: Wachtend = Waiting, Bijgewerkt = Updated, Onopgelost = Unresolved, Opgelost = Solved. OSC shows them by current status; here they always show.</li>
+<li><b>Priority P1-P4</b> on <code>priority</code> (P4 added). TKC priority is an impact scale and has its own field. Customer priority is a text field until Q7 is decided.</li>
+<li><b>Queue and assigned group</b> sit together in Routing, as in OSC. Queue is also a list filter.</li>
+<li><b>Thread.</b> Four entry kinds: staff reply, internal note, customer, customer logged by agent. Colour is never the only cue: label, icon, border style and the words “Not visible to the customer”. The composer turns amber and dashed for a note and hides Send. Customer entry defaults the channel to Phone (OSC default).</li>
+<li>Product list: Oracle Service Cloud, eGain. Category list: Service Request, Complaint, Question, Change Request. Disposition is not on the screen (open Q5).</li>
+<li>OSC function buttons: see the table below. Self-service banner, smart assistant, decision trees, co-browse, OSN, Hulp and CX Support link are not designed (drop or out of scope).</li>
+</ul>
+
+<h3>Status model (12 OSC statuses)</h3>
+<div class="scroll-x"><table><thead><tr><th>Pill</th><th>OSC label (NL)</th><th>State</th><th>Status key (proposal)</th></tr></thead><tbody>
+<tr><td><span class="tkc-pill tkc-pill--info">Unresolved</span></td><td>Onopgelost</td><td>Open</td><td>Open_New</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--info">In progress</span></td><td>In behandeling</td><td>Open</td><td>Open_Assigned</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--accent">Updated</span></td><td>Bijgewerkt</td><td>Open</td><td>Open_Updated (new)</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--neutral">On hold</span></td><td>On-hold</td><td>Open</td><td>Open_OnHold (new)</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--warning">Waiting: requester</span></td><td>Wacht op aanmelder - info benodigd</td><td>Open</td><td>Open_Pending Input</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--warning">Waiting: Oracle</span></td><td>Wacht op Oracle</td><td>Open</td><td>Open_WaitOracle (new)</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--warning">Waiting: Freshworks</span></td><td>Wacht op Freshworks</td><td>Open</td><td>Open_WaitFreshworks (new)</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--warning">Awaiting approval</span></td><td>Gereed - wacht op akkoord aanmelder</td><td>Open</td><td>Open_AwaitApproval (new)</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--neutral">Feature request</span></td><td>Feature Request</td><td>Open</td><td>Open_FeatureRequest (new)</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--neutral">CA Jira</span></td><td>CA Jira</td><td>Open</td><td>Open_CAJira (new)</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--success">Solved</span></td><td>Opgelost</td><td>Closed</td><td>Closed_Closed</td></tr>
+<tr><td><span class="tkc-pill tkc-pill--neutral tkc-pill--plain">Archived</span></td><td>Gearchiveerd</td><td>Closed (assumed)</td><td>Closed_Archived (new)</td></tr></tbody></table></div>
+
+<h3>OSC buttons to record actions</h3>
+<div class="scroll-x"><table><thead><tr><th>OSC button (NL)</th><th>Design</th><th>Level</th></tr></thead><tbody>
+<tr><td>Doorsturen</td><td>Header button Forward (email compose from the case)</td><td>core, check Q14</td></tr>
+<tr><td>Oracle case, eGain case (unlabelled, assign to me)</td><td>Header button Assign to me. Preset product and category by the case type are not shown (decision for the architect)</td><td>custom</td></tr>
+<tr><td>CX Oplossen, eGain Oplossen</td><td>More: Solve as CX, Solve as eGain (set product, category, assign, solve, close)</td><td>custom</td></tr>
+<tr><td>Doorsturen Finance</td><td>More: Route to Finance (product, group, queue, solve, forward)</td><td>custom</td></tr>
+<tr><td>SPAM, GEEN SPAM</td><td>More: Mark as spam (sets queue SPAM, status Solved and the Contact type). The menu item swaps to “Not spam” when the Contact type is SPAM</td><td>custom, writes to Contacts</td></tr>
+<tr><td>Wachtend, Bijgewerkt, Onopgelost, Opgelost</td><td>Status bar</td><td>custom</td></tr>
+<tr><td>Klant, Reactie, Prive</td><td>Composer entry type: Customer entry, Reply, Internal note</td><td>custom</td></tr>
+<tr><td>Aanhef, Afsluiting, Storing, Meer info nodig</td><td>Standard texts: Greeting, Closing, Outage, More info needed</td><td>custom, text bodies unknown (Q16)</td></tr>
+<tr><td>Opslaan, Opslaan-sluiten, Kopie, Verwijderen, Afdrukken</td><td>Save, Duplicate, Delete, Print view (menu)</td><td>core</td></tr></tbody></table></div>
+
+<h3>[custom] items for the architect</h3>
+<ol>
+<li>Status bar: action group with display logic and one-click handlers (4 buttons). Medium.</li>
+<li>Solve as CX, Solve as eGain, Route to Finance: process handlers that set 3 to 8 fields. Medium.</li>
+<li>Mark as spam / Not spam: handler that also writes to Contacts, visibility by contact type. Medium.</li>
+<li>Thread: entry type, channel, composer entry switch, standard-text buttons, CC/BCC, "logged by agent" kind. Large. Needs a wider description column (see incident.md 2.1).</li>
+<li>Status and priority pills: field display component for enums. Small.</li>
+<li>Primary contact (required, 1:N relate) and queue / assigned group fields. Small to medium (backend).</li>
+<li>Linked opportunities subpanel (new M:N relationship) and Contract subpanel via account. Medium.</li>
+<li>TFS project link field. Small.</li>
+<li>Standard (restyle only): header actions, tabs, panels, subpanels, bulk mass update, saved filters, filter panel, audit log, sidebar latest-message widget.</li>
+</ol>
+
+<h3>Open questions</h3>
+<ol>
+<li>Q3: primary contact as a new 1:N field? Shown as required.</li>
+<li>Q4: does the owner accept 12 status keys and 4 priority keys? Status bar shows 4 of 12.</li>
+<li>Q5: keep Disposition? Not shown. Complaint has no OSC source.</li>
+<li>Q6: how do group and queue relate? Both are shown. Q7: is customer priority picked or derived? Shown as text.</li>
+<li>Q10: collect-before-share, not designed (customer-specific).</li>
+<li>Q14: does AOP email the contact on a staff reply? The button label “Send reply” assumes yes, with “Save without sending” as the default (OSC “send on save: never”).</li>
+<li>Q16: bodies of the four standard texts. Q20: short channel list (Email, Phone, Web, Chat, Fax, Social, Other) is assumed.</li>
+<li>Should the "Assign to me" presets (product and category by case type) stay? The two unlabelled OSC buttons did this.</li>
+</ol>
+</section>
+</main>
+
+<script>
+(function(){
+document.documentElement.setAttribute('data-theme','light');
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function show(v){$$('[data-view]').forEach(function(e){e.hidden=e.dataset.view!==v});$$('input[name=mockview]').forEach(function(r){r.checked=r.value===v});window.scrollTo(0,0)}
+$$('input[name=mockview]').forEach(function(r){r.addEventListener('change',function(){show(r.value)})});
+$$('[data-goto]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();show(a.dataset.goto)})});
+/* tabs */
+function selTab(t){var l=t.parentNode;$$('[role=tab]',l).forEach(function(x){var on=x===t;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;$('#'+x.getAttribute('aria-controls')).hidden=!on})}
+$$('[role=tablist]').forEach(function(l){var tabs=$$('[role=tab]',l);tabs.forEach(function(t,i){t.addEventListener('click',function(){selTab(t)});t.addEventListener('keydown',function(e){var n=e.key==='ArrowRight'?i+1:e.key==='ArrowLeft'?i-1:e.key==='Home'?0:e.key==='End'?tabs.length-1:null;if(n===null)return;e.preventDefault();n=(n+tabs.length)%tabs.length;selTab(tabs[n]);tabs[n].focus()})})});
+$$('[data-tab]').forEach(function(b){b.addEventListener('click',function(){var t=$('#'+b.dataset.tab);selTab(t);t.focus()})});
+/* popovers */
+function closePops(except){$$('[data-pop]').forEach(function(b){if(b.dataset.pop!==except){b.setAttribute('aria-expanded','false');$('#'+b.dataset.pop).hidden=true}})}
+$$('[data-pop]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();var m=$('#'+b.dataset.pop),o=m.hidden;closePops(b.dataset.pop);m.hidden=!o;b.setAttribute('aria-expanded',o)})});
+document.addEventListener('click',function(){closePops()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closePops()});
+/* filter panel */
+$$('[data-toggle]').forEach(function(b){b.addEventListener('click',function(){var p=$('#'+b.dataset.toggle),o=p.hidden;p.hidden=!o;b.setAttribute('aria-expanded',o)})});
+/* collapsible panels and subpanels */
+$$('.tkc-panel__head[aria-expanded]').forEach(function(h){h.addEventListener('click',function(){var o=h.getAttribute('aria-expanded')==='true';h.setAttribute('aria-expanded',!o);var b=h.nextElementSibling;if(b)b.hidden=o})});
+$$('.tkc-subpanel__title').forEach(function(t){t.addEventListener('click',function(){var o=t.getAttribute('aria-expanded')==='true';t.setAttribute('aria-expanded',!o);t.querySelector('svg').style.transform=o?'rotate(-90deg)':'';var h=t.closest('.tkc-subpanel__head');while((h=h.nextElementSibling))h.hidden=o})});
+/* categorisation edit */
+function cat(on){$('#cat-view').hidden=on;$('#cat-edit').hidden=!on;$('#cat-bar').hidden=on;$('#cat-mode').textContent=on?'Edit mode':'Detail mode';if(on){$('#e1').focus();$('#cat').scrollIntoView({block:'nearest'})}}
+$$('[data-editcat]').forEach(function(b){b.addEventListener('click',function(){cat(true)})});
+$$('[data-canceledit]').forEach(function(b){b.addEventListener('click',function(){cat(false)})});
+/* status bar */
+$$('#sbar button').forEach(function(b){b.addEventListener('click',function(){$$('#sbar button').forEach(function(x){x.removeAttribute('aria-pressed')});b.setAttribute('aria-pressed','true');$('#hdr-status').textContent=b.dataset.s})});
+/* bulk */
+function bulk(){var n=$$('tbody input[type=checkbox]:checked').length;$('#bulk-n').textContent=n;$('#bulk').hidden=n===0}
+$$('tbody input[type=checkbox]').forEach(function(c){c.addEventListener('change',function(){c.closest('tr').classList.toggle('is-selected',c.checked);bulk()})});
+$('#all').addEventListener('change',function(e){$$('tbody input[type=checkbox]').forEach(function(c){c.checked=e.target.checked;c.closest('tr').classList.toggle('is-selected',c.checked)});bulk()});
+/* deep links for review: #record, #edit, #messages */
+var h=location.hash.slice(1);if(h==='record'||h==='edit'||h==='messages'){show('record');if(h==='edit')cat(true);if(h==='messages')selTab($('#t2'))}
+/* composer */
+var comp=$('#comp');
+function ent(){var v=$('input[name=et]:checked').value,note=v==='note';comp.classList.toggle('is-note',note);$('#b-send').hidden=note;$('#ccbtn').hidden=note;if(note)$('#ccrow').hidden=true;
+$('#b-save span')||0;$('#b-save').textContent=note?'Save note':'Save without sending';
+$('#b-send span').textContent=v==='cust'?'Save customer entry':'Send reply';
+$('#chan').value=v==='cust'?'Phone':'Email';$('#chan').disabled=note;
+$('#cm').placeholder=note?'Write an internal note. The customer never sees it.':v==='cust'?'Log what Jan de Vries said…':'Write a reply to Jan de Vries…'}
+$$('input[name=et]').forEach(function(r){r.addEventListener('change',ent)});
+$('#ccbtn').addEventListener('click',function(){var h=$('#ccrow').hidden;$('#ccrow').hidden=!h;this.setAttribute('aria-expanded',h)});
+$$('.tkc-qt').forEach(function(b){b.addEventListener('click',function(){var t=$('#cm');t.value+=(t.value?'\n':'')+'['+b.textContent+' text]';t.focus()})});
+})();
+</script>

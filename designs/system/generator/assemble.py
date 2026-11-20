@@ -36,3 +36,10 @@ c.append('</tbody></table></div>')
 tpl=tpl.replace('/*TOKENS*/',css).replace('<!--RAMPS-->',ramps).replace('<!--SEMANTIC-->',semantic).replace('<!--CONTRAST-->',"\n".join(c))
 open(b.OUT+'design-system.html','w').write(tpl)
 print(len(tpl))
+
+# Also write the shared stylesheet for screen mockups (tokens + component classes, no doc chrome).
+_s=tpl
+_css=_s[_s.index('<style>')+7:_s.index('</style>')]
+_a=_css.find('/* ===== DOC CHROME ===== */'); _b=_css.find('/* ===== COMPONENT LIBRARY (.tkc-*) ===== */')
+if _a!=-1 and _b!=-1: _css=_css[:_a]+_css[_b:]
+open(b.OUT+'tkc-ds.css','w').write('/* TKC design system — tokens + component classes (.tkc-*). Generated; do not edit by hand. */\n'+_css)
