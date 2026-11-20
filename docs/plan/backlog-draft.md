@@ -2,6 +2,7 @@
 
 > Status: **DRAFT. The owner must approve it. No issue exists in the planning tool for these items yet.**
 > Author: product-owner. Date: 2026-11-20. Planning epic: SUITE-25.
+> Updated 2026-11-20: the owner accepted A1 to A20, and the architect added plan §11 (addendum). This draft applies both.
 > Source: `docs/plan/implementation-plan.md` (called "the plan" below). Narrative: `docs/backlog.md`.
 > Open issues that this draft does not duplicate: SUITE-7 (OSC REST verification) and SUITE-9 (extension check). Stories that need them list them as dependencies.
 
@@ -24,14 +25,14 @@
 | E1 | Platform foundation | Build and deploy from a clean checkout with one chain. Run the tests. Answer the five spikes. | M | 0 | SUITE-9 |
 | E2 | Design tokens and base theme | Make one token file drive the Angular UI and the legacy UI. | M | 0–1 | E1 |
 | E3 | Data model | Create all TKC fields, lists, relationships and tables with Repair. Change no UI. | M | 1 | E1 |
-| E4 | OSC import framework and anonymized sample | Import OSC data with guards. Run the anonymized full-volume import. | L | 1–2 | E3 |
+| E4 | OSC import framework and anonymized sample | Import OSC data with guards. Run the anonymized full-volume import. | L | 1–2 (contract import in 4) | E3 |
 | E5 | Shared UI components | Build the parts that more than one screen uses. | M | 2 (one optional story in 5) | E2, E3, spikes S9 and S10 |
 | E6 | Accounts screen | Show the Accounts screen as in the mockup. | M | 2 | E3, E5, E13-S1 |
-| E7 | Contacts screen | Show the Contacts screen as in the mockup. | S–M | 2 | E3, E5 |
+| E7 | Contacts screen | Show the Contacts screen as in the mockup. | S–M | 2–3 | E3, E5 |
 | E8 | Cases screen and actions | Show the Cases screen as in the mockup. Add the status bar and the record actions. | L | 3 | E3, E4, E5, spikes S8 and S9 |
 | E9 | Case thread | Show the OSC thread in the AOP record thread. Import the thread. | M | 3–4 | E3, E8 |
 | E10 | Opportunities and quote number | Show the Opportunities screen. Generate the quote number. | M | 4 | E3, E5 |
-| E11 | Contracts | Show support and licence contracts on the account. | S–M | 4 | E3, E6, spike S7 |
+| E11 | Contracts | Show support and licence contracts on the account. | S–M | 4 | E6, E4, spike S7 (builds its own contract vardefs) |
 | E12 | Legacy restyle | Make Quotes, Emails, Home, Admin and search match the tokens. | M | 5 | E2 |
 | E13 | Security, roles and real-data import | Protect the data. Pass gate B. Run the real import. | M | 2, 5, 6, 7+ | E3, E4, E6, E8 |
 | E14 | Azure environment (later) | Run the same image in a shared Azure environment. | M–L | 7+ | E1 |
@@ -89,7 +90,7 @@ Plan: §3 W1, §9, Appendix. Size M. Sprint 0.
 1. `.claude/rules/suitecrm-customization.md` states the A8 naming rule and the two exceptions (`osc_id_c`, `tkc_case_ref_c`).
 2. `docs/osc-mapping/incident.md` uses the prefixed field names (for example `tkc_queue_c`).
 3. `docs/osc-mapping/incident.md` no longer names `osc_ref_no_c`.
-**Size:** S · **Sprint:** 0 · **Depends on:** owner decision A8, A12 · **Assumptions:** A8, A12
+**Size:** S · **Sprint:** 0 · **Depends on:** none (A8 and A12 accepted) · **Assumptions:** A8, A12
 
 #### E1-S6 — Docs: Add the register of overridden viewdefs and lists
 **Description:** `docs/architecture.md` has a register of every full-copy viewdef and core list override. Each upstream merge re-checks the register.
@@ -181,7 +182,7 @@ Plan: §3 W2. Source: `designs/system/`. Size M. Sprints 0–1.
 2. A list row has a visible hover state and a visible focus state.
 3. A modal closes with the Escape key.
 4. The result matches `designs/system/design-system.html` in a browser check.
-**Size:** M · **Sprint:** 1 · **Depends on:** E2-S2 · **Assumptions:** none
+**Size:** M · **Sprint:** 0 · **Depends on:** E2-S2 · **Assumptions:** none
 
 #### E2-S4 — Login: Show the TKC login page with the company logo
 **Persona/goal/benefit:** As any user, I want a branded login page, so that I know I am in the TKC system.
@@ -189,7 +190,7 @@ Plan: §3 W2. Source: `designs/system/`. Size M. Sprints 0–1.
 1. The login page shows the `company_logo` setting.
 2. The login page uses the token colours and fonts.
 3. The user signs in with the keyboard only.
-**Size:** S · **Sprint:** 1 · **Depends on:** E2-S2 · **Assumptions:** none
+**Size:** S · **Sprint:** 0 · **Depends on:** E2-S2 · **Assumptions:** none
 
 #### E2-S5 — Theme: Apply the tokens in the legacy Dawn theme
 **Persona/goal/benefit:** As an admin, I want the legacy pages to look like the Angular pages, so that I do not see a seam.
@@ -215,12 +216,14 @@ Plan: §3 W2. Source: `designs/system/`. Size M. Sprints 0–1.
 
 Goal: All TKC fields, lists, relationships and tables exist after `tkc:repair`. No UI changes.
 Plan: §3 W3, §4. Size M. Sprint 1. Each story updates `docs/data-model.md` and the status in `docs/osc-mapping/<entity>.md`.
-Note: All owner decisions A2 to A16 must be known before Sprint 1. This epic builds all vardefs.
+Note: The owner accepted A1 to A20 on 2026-11-20 (plan §11.1). Fields that fix a type, a key set, a relationship or a name are built in this sprint. "Keep or drop" fields are not built; they come later with `--only-fields` (E4-S1-T5). The contract fields are built in E11-S2 (Sprint 4), not here.
+
+**Rule for all TKC relationships (plan §11.6):** Each TKC relationship is a 1:N foreign-key relationship declared in a vardef. No join table. Reason: `custom/metadata/` is gitignored, so Studio and Module Builder relationship files would be lost.
 
 #### E3-S1 — Sequences: Add the `tkc_sequences` table and the `TKC\Sequence` service
-**Description:** A transactional table holds counters per name and year. `public/legacy/custom/include/TKC/Sequence.php` gives the next value with a row lock. Plan: §4, §6.
+**Description:** A transactional table holds counters per name and year. The vardef is in `custom/Extension/application/Ext/TableDictionary/tkc_sequences.php`. `public/legacy/custom/include/TKC/Sequence.php` gives the next value with a row lock. Plan: §4, §6.
 **Acceptance criteria:**
-1. `tkc:repair` creates the table `tkc_sequences` from a vardef.
+1. `tkc:repair --dry-run` proposes the table `tkc_sequences` from the vardef in `TableDictionary`, and `--execute` creates it.
 2. `TKC\Sequence::next('quote', 2026)` gives a value that is one higher than the last value.
 3. Two parallel calls give two different values (PHPUnit test).
 4. A new year starts a new counter.
@@ -228,9 +231,9 @@ Note: All owner decisions A2 to A16 must be known before Sprint 1. This epic bui
 **Size:** M · **Sprint:** 1 · **Depends on:** E1-S3 · **Assumptions:** A7, A12
 
 #### E3-S2 — Accounts: Add the TKC fields and lists
-**Description:** Add the Accounts fields from plan §4.1. Override `account_type_dom`. Mapping: `docs/osc-mapping/organization.md`.
+**Description:** Add the Accounts fields from plan §4.1. Override `account_type_dom`. Do not build `tkc_crm_modules_c` (plan §11.7). Mapping: `docs/osc-mapping/organization.md`.
 **Acceptance criteria:**
-1. After Repair, Accounts have the fields in plan §4.1 with the given types and lengths (except the Finance fields).
+1. After Repair, Accounts have the fields in plan §4.1 with the given types and lengths. The Finance fields and `tkc_crm_modules_c` are not on Accounts.
 2. `account_type_dom` has the keys `Lead`, `Prospect`, `Customer`, `Supplier`, `Relation` and `FormerCustomer`. The default is `Relation`.
 3. The label of `Customer` is "Customer".
 4. `tkc_yes_no_list` has the keys `yes` and `no`. The empty value means not set.
@@ -238,55 +241,62 @@ Note: All owner decisions A2 to A16 must be known before Sprint 1. This epic bui
 6. `tkc_debiteurnummer_c` has an index and is audited.
 **Size:** M · **Sprint:** 1 · **Depends on:** E1-S4 · **Assumptions:** A3, A8, A16
 
-#### E3-S3 — Accounts: Add the `tkc_AccountFinance` module
-**Description:** Create the module with Module Builder. It holds the six Finance fields. One row exists per account. The module ACL protects the data. Plan: A6, §4.1.
+#### E3-S3 — Accounts: Add the `tkc_AccountFinance` module with hand-written files
+**Description:** Write the module files by hand. Do not use Module Builder, because its files are not in git (plan §11.6). The module holds the six Finance fields. One row exists per account. The module ACL protects the data. Plan: A6, §4.1, §11.6.
 **Acceptance criteria:**
-1. After Repair, the module `tkc_AccountFinance` exists with the six fields and `account_id`.
-2. The relationship `tkc_accounts_tkc_accountfinance` links one account to many rows.
-3. All six fields are audited.
-4. The module files are in git under `public/legacy/custom/`.
-5. A user without a role for the module cannot open it (checked in E13-S1).
+1. The files listed in plan §11.6 exist in git under `public/legacy/modules/tkc_AccountFinance/`, `public/legacy/custom/Extension/` and `extensions/tkc/Migrations/`.
+2. After Repair, the table `tkc_accountfinance` has the six audited fields and an indexed `account_id`.
+3. The 1:N relationship `tkc_accounts_tkc_accountfinance` is declared in the module vardef. No file exists in `custom/metadata/`.
+4. `Menu.php` is empty and the module label is "Finance".
+5. The idempotent migration `SeedFinanceAcl` registers the module ACL actions. A second run changes nothing.
+6. A record that opens from the Accounts subpanel gets an Angular route while the navbar does not show the module.
+7. `docs/admin-guide.md` records the Display Modules setting.
+8. The metadata contract test passes for the module.
 **Size:** M · **Sprint:** 1 · **Depends on:** E1-S4 · **Assumptions:** A6
 
 #### E3-S4 — Contacts: Add the TKC fields and lists
-**Description:** Add the Contacts fields from plan §4.2. Mapping: `docs/osc-mapping/contact.md`.
+**Description:** Add the Contacts fields from plan §4.2. Do not build `tkc_crm_modules_c` (plan §11.7). Mapping: `docs/osc-mapping/contact.md`.
 **Acceptance criteria:**
-1. After Repair, Contacts have the fields in plan §4.2.
+1. After Repair, Contacts have the fields in plan §4.2, except `tkc_crm_modules_c`.
 2. `tkc_contact_type_c` has an index. Its list has the key `spam`.
 3. The dropdown labels contain no customer names.
 4. The six program fields use `tkc_yes_no_list`.
 5. `tkc_function_level_c` has the keys C, M and O.
-**Size:** M · **Sprint:** 1 · **Depends on:** E1-S4, E3-S2 · **Assumptions:** A3, A8, A15
+**Size:** M · **Sprint:** 1 · **Depends on:** E1-S4, E3-S2 · **Assumptions:** A3, A8, A15, A16
 
 #### E3-S5 — Cases: Add the TKC fields and lists
-**Description:** Add the Cases fields from plan §4.3 and override the status, priority and type lists. Mapping: `docs/osc-mapping/incident.md`.
+**Description:** Add the Cases fields from plan §4.3 and override the status, priority and type lists. Priority and Impact are two different fields (plan §11.5). Mapping: `docs/osc-mapping/incident.md`.
 **Acceptance criteria:**
 1. After Repair, Cases have the fields in plan §4.3.
 2. `case_status_dom` has 12 keys. The 8 new keys use the prefix `Open_` or `Closed_`.
-3. `case_priority_dom` has P1, P2, P3 and P4 with the OSC labels.
-4. `tkc_case_ref_c` is a varchar 20 field with an index.
-5. `tkc_queue_c` has 12 values and an index.
-6. `tkc_product_c` and `tkc_category_c` are not required.
-7. No field exists for Disposition, an assigned group or `mailHeader`.
+3. `case_priority_dom` has the keys P1, P2, P3 and P4 with the labels "Priority 1" to "Priority 4". The label of the field is "Priority".
+4. The default of `priority` is empty. The story checks the core code that reads `case_priority_default_key` and records the result.
+5. `tkc_priority_c` has the label "Impact". Its list `tkc_impact_list` has the keys `no_impact`, `some_impact`, `production_disrupted` and `immediate_action`. The default is empty.
+6. `tkc_case_ref_c` is a varchar 20 field with an index.
+7. `tkc_queue_c` has 12 values and an index.
+8. `tkc_product_c` and `tkc_category_c` are not required.
+9. No field exists for Disposition, an assigned group or `mailHeader`.
 **Size:** M · **Sprint:** 1 · **Depends on:** E1-S4 · **Assumptions:** A2, A5, A8, A10, A11, A12
 
 #### E3-S6 — Cases: Add the primary contact relationship
 **Description:** Add the required relate field `tkc_primary_contact_c` and the relationship `tkc_contacts_cases_primary`. The core M:N relationship stays.
 **Acceptance criteria:**
-1. After Repair, the relationship `tkc_contacts_cases_primary` links one contact to many cases.
+1. After Repair, the 1:N relationship `tkc_contacts_cases_primary` links one contact to many cases. It is declared in `custom/Extension/modules/Cases/Ext/Vardefs/`.
 2. The field `tkc_primary_contact_id_c` has an index.
 3. The field is required in the edit view metadata.
 4. The relationship `contacts_cases` still exists.
 **Size:** S · **Sprint:** 1 · **Depends on:** E3-S5 · **Assumptions:** A4
 
 #### E3-S7 — Case thread: Add the thread fields to AOP_Case_Updates
-**Description:** Add the entry type, the channel and the import key to AOP_Case_Updates. Change `description` to `longtext`. The plan names these fields in §3 W6 and §5.2 but has no field list. See section 6.2.
+**Description:** Add the entry type, the channel and the import key to AOP_Case_Updates. Change `description` to `longtext`. Plan §11.4 gives the fields and the lists. The files are `Vardefs/tkc_thread.php` and `Language/en_us.tkc_thread.php` in `public/legacy/custom/Extension/modules/AOP_Case_Updates/Ext/`.
 **Acceptance criteria:**
-1. After Repair, AOP_Case_Updates has `tkc_entry_type_c`, `tkc_channel_c` and `osc_id_c`.
-2. `osc_id_c` has an index.
-3. The column `description` is `longtext`.
-4. A test entry of 1 MB saves and loads without loss.
-5. The Repair SQL for the `description` change is on the issue.
+1. After Repair, AOP_Case_Updates has `tkc_entry_type_c` (enum, 20, default `staff`), `tkc_channel_c` (enum, 20, default empty) and `osc_id_c` (varchar 20).
+2. `tkc_entry_type_list` has the keys `note`, `staff`, `customer` and `customer_proxy`.
+3. `tkc_channel_list` has the keys `email`, `phone`, `web`, `chat`, `fax`, `social` and `other`.
+4. `osc_id_c` has the non-unique index `idx_aop_case_updates_osc_id_c`.
+5. The column `description` is `longtext`.
+6. A test entry of 1 MB saves and loads without loss.
+7. The Repair SQL for the `description` change is on the issue.
 **Size:** S · **Sprint:** 1 · **Depends on:** E1-S4 · **Assumptions:** A17, A8
 
 #### E3-S8 — Opportunities: Add the TKC fields and the stage list
@@ -303,37 +313,29 @@ Note: All owner decisions A2 to A16 must be known before Sprint 1. This epic bui
 #### E3-S9 — Opportunities: Add the source case relationship
 **Description:** Add the relationship `tkc_cases_opportunities` and the fields `tkc_source_case_c` and `tkc_source_case_id_c`.
 **Acceptance criteria:**
-1. After Repair, the relationship links one case to many opportunities.
+1. After Repair, the 1:N relationship `tkc_cases_opportunities` links one case to many opportunities. It is declared in `custom/Extension/modules/Opportunities/Ext/Vardefs/`. No join table exists.
 2. The field `tkc_source_case_id_c` has an index.
 3. The Cases record shows the opportunity in a subpanel definition.
 **Size:** S · **Sprint:** 1 · **Depends on:** E3-S5, E3-S8 · **Assumptions:** A14
 
-#### E3-S10 — Contracts: Add the contract types and fields
-**Description:** Add the keys `tkc_support` and `tkc_license` to `contract_type_list`. Add the fields from plan §4.5. Mapping: `docs/osc-mapping/organization.md` §5a.
+#### E3-S10 — Import key: Add `osc_id_c` with an index to each imported module
+**Description:** Add `osc_id_c` (varchar 20) and the index `idx_<table>_osc_id_c` to Accounts, Contacts, Cases and Opportunities. AOP_Case_Updates is in E3-S7. AOS_Contracts is in E11-S2.
 **Acceptance criteria:**
-1. After Repair, AOS_Contracts has the six fields from plan §4.5.
-2. `contract_type_list` has the keys `tkc_support` and `tkc_license`.
-3. `tkc_support_level_list` has the keys bronze, silver and gold.
-4. The Accounts record keeps its Contracts relationship.
-**Size:** S · **Sprint:** 1 · **Depends on:** E1-S4 · **Assumptions:** A13
-
-#### E3-S11 — Import key: Add `osc_id_c` with an index to each imported module
-**Description:** Add `osc_id_c` (varchar 20) and the index `idx_<table>_osc_id_c` to Accounts, Contacts, Cases, Opportunities and AOS_Contracts. AOP_Case_Updates is in E3-S7.
-**Acceptance criteria:**
-1. Each of the five modules has `osc_id_c` after Repair.
+1. Each of the four modules has `osc_id_c` after Repair.
 2. Each module has a non-unique index on the field.
 3. The vardef file is `Vardefs/tkc_osc_id.php` in each module.
 **Size:** S · **Sprint:** 1 · **Depends on:** E1-S4 · **Assumptions:** none
 
-#### E3-S12 — Repair: Review and run the Repair for all vardefs
+#### E3-S11 — Repair: Review and run the Repair for all vardefs
 **Description:** The backend engineer reviews the SQL from `tkc:repair --dry-run`. The engineer runs Repair on a clean database. The security-officer reads the SQL for `ALTER` on core columns.
 **Acceptance criteria:**
 1. The Repair SQL is on the issue.
 2. The SQL changes only the expected columns, including `opportunities.name` and `aop_case_updates.description`.
 3. A second Repair run proposes no change.
 4. The metadata contract test (E1-S4) passes for each module.
-5. `docs/data-model.md` lists every field, list and relationship.
-**Size:** S · **Sprint:** 1 · **Depends on:** E3-S1 to E3-S11 · **Assumptions:** none
+5. No TKC relationship file exists in `custom/metadata/`.
+6. `docs/data-model.md` lists every field, list and relationship.
+**Size:** S · **Sprint:** 1 · **Depends on:** E3-S1 to E3-S10 · **Assumptions:** none
 
 ---
 
@@ -345,10 +347,10 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 #### E4-S1 — Import: Build the import command, the upserter and the checkpoint
 **Description:** `tkc:osc:import <entity|all> --source=<dir> [--dry-run|--execute] [--limit=n] [--since=<osc-id>]` reads JSONL and upserts by `osc_id_c`. Plan: §5.1. This story is too large to verify as one unit.
 **Acceptance criteria:**
-1. All four tasks have passed.
+1. All five tasks have passed.
 2. A run without `--execute` writes no record.
 3. A run with a bad option stops with a clear message.
-**Size:** L · **Sprint:** 1 · **Depends on:** E3-S11 · **Assumptions:** none
+**Size:** L · **Sprint:** 1 · **Depends on:** E3-S10 · **Assumptions:** none
 
 ##### E4-S1-T1 — Add the command and the JSONL reader
 **Acceptance criteria:**
@@ -356,7 +358,7 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 2. The reader reads one JSONL file per entity.
 3. The command rejects a source directory that is outside `data/` or `scripts/seed/fixtures/`.
 4. A dry run prints the counts of records that it would create and update.
-**Size:** M · **Sprint:** 1 · **Depends on:** E3-S11 · **Assumptions:** A18
+**Size:** M · **Sprint:** 1 · **Depends on:** E3-S10 · **Assumptions:** A18
 
 ##### E4-S1-T2 — Add the upserter
 **Acceptance criteria:**
@@ -379,6 +381,16 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 1. The command reads `data/osc/staff-map.csv` (OSC account id to `user_name`).
 2. An unmapped OSC account id becomes the inactive user `tkc_migration`.
 3. The run report gives the count of unmapped ids, not their names.
+**Size:** S · **Sprint:** 1 · **Depends on:** E4-S1-T2 · **Assumptions:** none
+
+##### E4-S1-T5 — Add the `--only-fields` option
+**Description:** `tkc:osc:import <entity> --only-fields=<f1,f2>` updates only the named columns on existing rows. A field that is added late then never overwrites user edits after go-live (plan §11.1).
+**Acceptance criteria:**
+1. The option updates only the named columns of rows that already exist.
+2. The option does not change any other column or the modified date of an unchanged row.
+3. The option does not create a new record. The report counts the OSC ids that have no row.
+4. The command rejects a field name that is not in the mapper.
+5. A PHPUnit test changes a user-edited column and shows that a run with `--only-fields` keeps the edit.
 **Size:** S · **Sprint:** 1 · **Depends on:** E4-S1-T2 · **Assumptions:** none
 
 #### E4-S2 — Import guards: Stop all outbound email, workflows and geocoding
@@ -460,11 +472,11 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 **Acceptance criteria:**
 1. The import creates one account per OSC organization with `osc_id_c`.
 2. Pass 2 sets `parent_id` for each organization that has a parent.
-3. The mapper does not read the two credential fields or the REST-only rate-class fields.
+3. The mapper does not read the two credential fields, the REST-only rate-class fields or the CRM modules ("State") value. The field comes later with `--only-fields`.
 4. The mapper creates the Finance row with the six fields.
 5. The mapper maps `org_telefoonnummer` to `phone_office`.
 6. The mapper maps each menu id to a key with `extensions/tkc/config/tkc_import_maps.php`. The run report counts unmapped menu ids.
-**Size:** M · **Sprint:** 1 · **Depends on:** E4-S1, E3-S2, E3-S3, E3-S11 · **Assumptions:** A6, A16
+**Size:** M · **Sprint:** 1 · **Depends on:** E4-S1, E3-S2, E3-S3, E3-S10 · **Assumptions:** A6, A16
 
 #### E4-S11 — Import: Map OSC Contacts to Contacts
 **Description:** The mapper creates Contacts with email and phone rows. It imports the SPAM contacts with the type `spam`. Mapping: `docs/osc-mapping/contact.md`.
@@ -474,7 +486,7 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 3. The mapper writes alternative emails as extra `email_addresses` rows.
 4. The mapper sets `tkc_contact_type_c = spam` for the SPAM contacts.
 5. The mapper sets a Yes/No field to empty when OSC has no value.
-6. The mapper does not read the channel ids, ERT, Test or the REST-only fields.
+6. The mapper does not read the channel ids, ERT, Test, the CRM modules value or the REST-only fields.
 **Size:** M · **Sprint:** 1 · **Depends on:** E4-S10, E3-S4 · **Assumptions:** A3, A15
 
 #### E4-S12 — Import: Map OSC Opportunities to Opportunities
@@ -489,14 +501,15 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 **Size:** M · **Sprint:** 2 · **Depends on:** E4-S11, E3-S8 · **Assumptions:** A7, A14
 
 #### E4-S13 — Import: Map OSC contracts to Contracts
-**Description:** The mapper handles `Support.SupportContract` and `Support.LicentieContract`. Mapping: `docs/osc-mapping/organization.md` §5a.
+**Description:** The mapper handles `Support.SupportContract` and `Support.LicentieContract`. The contract fields come from E11-S1, so this story runs in Sprint 4. Mapping: `docs/osc-mapping/organization.md` §5a.
 **Acceptance criteria:**
 1. The import creates one contract per OSC contract with the right `contract_type` key.
 2. The mapper sets the status to `Signed` as the default.
 3. The mapper does not set `renewal_reminder_date`.
 4. No reminder email goes out during the import (Mailpit is empty).
 5. The synthetic fixtures include both contract types.
-**Size:** S · **Sprint:** 2 · **Depends on:** E4-S12, E3-S10 · **Assumptions:** A13
+6. The anonymized import of contracts gives the extract count.
+**Size:** S · **Sprint:** 4 · **Depends on:** E4-S12, E11-S1, E4-S17 · **Assumptions:** A13
 
 #### E4-S14 — Import: Map OSC Incidents to Cases
 **Description:** The mapper creates Cases with the primary contact, the other contacts and the account. This story is too large to verify as one unit. Mapping: `docs/osc-mapping/incident.md`.
@@ -561,12 +574,12 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 3. The run report counts the unmapped ids.
 **Size:** S · **Sprint:** 2 · **Depends on:** E4-S10, E4-S11 · **Assumptions:** A18
 
-##### E4-S17-T2 — Import Opportunities, Contracts and Cases at full volume
+##### E4-S17-T2 — Import Opportunities and Cases at full volume
 **Acceptance criteria:**
 1. The local database has about 1964 opportunities and 4053 cases.
-2. The contract count matches the extract count.
+2. Contracts are not in this run. E4-S13 imports them in Sprint 4.
 3. A second run gives the same counts.
-**Size:** M · **Sprint:** 2 · **Depends on:** E4-S12 to E4-S15, E4-S17-T1 · **Assumptions:** A18
+**Size:** M · **Sprint:** 2 · **Depends on:** E4-S12, E4-S14, E4-S15, E4-S17-T1 · **Assumptions:** A18
 
 ##### E4-S17-T3 — Write the import report
 **Acceptance criteria:**
@@ -617,10 +630,10 @@ Plan: §3 W4. Design system: `designs/system/components.md`. Size M. Sprint 2.
 #### E5-S4 — Components: Add the record-action base and the status-bar look
 **Description:** Add a shared abstract handler for record actions in `extensions/tkc/backend/Process/Service/RecordActions/`. Add the status-bar look. The Cases actions in E8-S5 use both. Plan: §3 W4d.
 **Acceptance criteria:**
-1. An abstract handler sets a status and the matching state from a subclass value.
+1. A shared base class gives each Cases and Opportunities handler its ACL check and its save step.
 2. The handler checks `getRequiredACLs()` before it saves.
 3. The status bar shows the current status as pressed.
-4. A PHPUnit test covers one subclass.
+4. A PHPUnit test covers the shared base with one test subclass.
 **Size:** M · **Sprint:** 2 · **Depends on:** E1-S3, E2-S3, E1-S7-T3 · **Assumptions:** none
 
 #### E5-S5 — List: Apply a default filter when a list opens
@@ -632,16 +645,7 @@ Plan: §3 W4. Design system: `designs/system/components.md`. Size M. Sprint 2.
 3. The filter shows as a visible chip.
 **Size:** M · **Sprint:** 2 · **Depends on:** E1-S7-T4, E3-S4 · **Assumptions:** A15
 
-#### E5-S6 — Components: Show multi-select values as chips
-**Persona/goal/benefit:** As a sales rep, I want the CRM modules field to show chips, so that I read the values quickly.
-**Description:** Use the core `multienum` with TKC CSS. Plan: §4.2.
-**Acceptance criteria:**
-1. The detail view shows each selected value as a chip.
-2. The edit view lets the user add and remove values.
-3. Chips use tokens only.
-**Size:** S · **Sprint:** 2 · **Depends on:** E2-S3 · **Assumptions:** A16
-
-#### E5-S7 — Edit view: Add "Save and close" (optional)
+#### E5-S6 — Edit view: Add "Save and close" (optional)
 **Persona/goal/benefit:** As a service agent, I want to save and close an edit view in one action, so that I work faster.
 **Description:** Low priority. The owner decides. Plan: §3 W4e.
 **Acceptance criteria:**
@@ -662,13 +666,13 @@ Plan: §4.1. Mockup: `designs/screens/accounts/mockup.html`. Mapping: `docs/osc-
 **Description:** One `detailviewdefs.php` in `public/legacy/custom/modules/Accounts/metadata/`. It keeps `topWidget`, `sidebarWidgets` and `recordActions`. The file goes into the overrides register.
 **Acceptance criteria:**
 1. The record has the tab Overview with the panels General, RightNow, Contract and Links.
-2. Each panel shows the fields in plan §4.1.
+2. Each panel shows the fields in plan §4.1. The CRM modules field is not shown (pending the owner, plan §11.7).
 3. The type shows as a pill.
 4. The Yes/No fields show as segmented controls in edit mode.
 5. The Replicon and SharePoint values show as links.
 6. The contract begin and end dates show in the Contract panel.
 7. The file is in the register in `docs/architecture.md`.
-**Size:** M · **Sprint:** 2 · **Depends on:** E3-S2, E5-S1, E5-S2, E5-S3, E5-S6 · **Assumptions:** A3, A9
+**Size:** M · **Sprint:** 2 · **Depends on:** E3-S2, E5-S1, E5-S2, E5-S3 · **Assumptions:** A3, A9
 
 #### E6-S2 — Accounts: Show the list with TKC columns and filters
 **Persona/goal/benefit:** As a sales rep, I want the account list to show the key columns, so that I find an account without opening it.
@@ -692,7 +696,7 @@ Plan: §4.1. Mockup: `designs/screens/accounts/mockup.html`. Mapping: `docs/osc-
 **Persona/goal/benefit:** As a service agent, I want the related records on the account, so that I see contacts, cases and contracts in one place.
 **Acceptance criteria:**
 1. The record shows the subpanels Contacts, Member organizations, Opportunities, Contracts, Cases, Activities, History and Documents.
-2. The Contracts subpanel columns are added in E11-S2.
+2. The Contracts subpanel columns are added in E11-S3.
 3. No Projects subpanel exists.
 4. Each subpanel shows imported synthetic data.
 **Size:** M · **Sprint:** 2 · **Depends on:** E6-S1 · **Assumptions:** A13
@@ -720,10 +724,10 @@ Plan: §4.2. Mockup: `designs/screens/contacts/mockup.html`. Mapping: `docs/osc-
 1. The record has the panels Identity, Contact details, TKC programs and groups, and Consent.
 2. The contact type shows as a pill.
 3. The six program fields show as segmented controls in edit mode.
-4. The CRM modules show as chips.
+4. The CRM modules field is not shown (pending the owner, plan §11.7).
 5. The Consent panel shows `email_opt_out`.
 6. The file is in the register in `docs/architecture.md`.
-**Size:** M · **Sprint:** 2 · **Depends on:** E3-S4, E5-S1, E5-S2, E5-S6 · **Assumptions:** A3, A15
+**Size:** M · **Sprint:** 2 · **Depends on:** E3-S4, E5-S1, E5-S2 · **Assumptions:** A3, A15
 
 #### E7-S2 — Contacts: Show the list and hide SPAM contacts by default
 **Persona/goal/benefit:** As a service agent, I want a Contacts list without SPAM, so that I do not see junk contacts.
@@ -738,7 +742,7 @@ Plan: §4.2. Mockup: `designs/screens/contacts/mockup.html`. Mapping: `docs/osc-
 **Acceptance criteria:**
 1. The record shows the subpanels Cases, Opportunities, Activities and history, and Documents.
 2. Each subpanel shows imported synthetic data.
-**Size:** S · **Sprint:** 2 · **Depends on:** E7-S1 · **Assumptions:** none
+**Size:** S · **Sprint:** 3 · **Depends on:** E7-S1 · **Assumptions:** none
 
 #### E7-S4 — Contacts: Show email and phone rows as in the mockup
 **Description:** Use CSS on the core email widget and the five phone fields.
@@ -746,7 +750,7 @@ Plan: §4.2. Mockup: `designs/screens/contacts/mockup.html`. Mapping: `docs/osc-
 1. The record shows the primary email and the alternative emails in separate rows.
 2. The record shows the five phone types with labels.
 3. Rows use tokens only.
-**Size:** S · **Sprint:** 2 · **Depends on:** E7-S1 · **Assumptions:** A15
+**Size:** S · **Sprint:** 3 · **Depends on:** E7-S1 · **Assumptions:** A15
 
 ---
 
@@ -759,8 +763,8 @@ Plan: §4.3. Mockup: `designs/screens/cases/mockup.html`. Mapping: `docs/osc-map
 **Persona/goal/benefit:** As a service agent, I want the case record with a clear header, so that I see reference, status, priority and queue at once.
 **Acceptance criteria:**
 1. The header eyebrow shows `tkc_case_ref_c`.
-2. The header shows status, priority and queue as pills.
-3. The record has the panels General, Categorisation, Routing, Status and Details.
+2. The header shows status, priority and queue as pills. The priority pill uses the label "Priority" and the variants P1 danger, P2 warning, P3 neutral and P4 neutral plain.
+3. The record has the panels General, Categorisation, Routing, Status and Details. The Categorisation panel shows the field "Impact" (`tkc_priority_c`) as a pill: `immediate_action` solid danger, `production_disrupted` danger, `some_impact` warning, `no_impact` neutral.
 4. The primary contact shows in the General panel and is required in edit mode.
 5. `tkc_case_ref_c` is read-only.
 6. The file is in the register in `docs/architecture.md`.
@@ -770,7 +774,7 @@ Plan: §4.3. Mockup: `designs/screens/cases/mockup.html`. Mapping: `docs/osc-map
 **Persona/goal/benefit:** As a service agent, I want the case list with the key columns and filters, so that I work my queue.
 **Acceptance criteria:**
 1. The list shows reference (mono font), subject, account, primary contact, status, priority and queue pills, assigned user and date modified.
-2. The filters are queue, status, state, assigned user, product and category.
+2. The filters are queue, status, state, priority, impact, assigned user, product and category. The list shows priority as a column and does not show impact as a default column.
 3. The core mass update changes queue, status and assigned user.
 4. The list loads the 4053 imported cases with no error.
 **Size:** M · **Sprint:** 3 · **Depends on:** E3-S5, E5-S1, E4-S17-T2 · **Assumptions:** A2, A5
@@ -796,7 +800,7 @@ Plan: §4.3. Mockup: `designs/screens/cases/mockup.html`. Mapping: `docs/osc-map
 
 #### E8-S5 — Cases: Add the status bar and the record actions
 **Persona/goal/benefit:** As a service agent, I want one-click actions on the case, so that I close, route or assign a case fast.
-**Description:** Ten record actions from plan §4.3. This story is too large to verify as one unit. Each task has its own handler class, a PHPUnit test and `getRequiredACLs()`.
+**Description:** Ten record actions from plan §11.3 (process types 1 to 10). The three abstract bases are `AbstractCaseSetStatusAction`, `AbstractCaseSolveAsAction` and `AbstractCaseSpamAction`. This story is too large to verify as one unit. Each task has its own handler classes, a PHPUnit test and `getRequiredACLs()`. All classes are in `extensions/tkc/backend/Process/Service/RecordActions/Cases/`.
 **Acceptance criteria:**
 1. All five tasks have passed.
 2. The status bar shows Waiting, Updated, Unresolved and Solved.
@@ -804,7 +808,7 @@ Plan: §4.3. Mockup: `designs/screens/cases/mockup.html`. Mapping: `docs/osc-map
 
 ##### E8-S5-T1 — Add the four status actions
 **Acceptance criteria:**
-1. `CaseSetStatusAction` and four subclasses exist for Waiting, Updated, Unresolved and Solved.
+1. `AbstractCaseSetStatusAction` and the four classes `CaseSetWaitingAction`, `CaseSetUpdatedAction`, `CaseSetUnresolvedAction` and `CaseSetSolvedAction` exist. The process types are `record-tkc-case-waiting`, `-updated`, `-unresolved` and `-solved`.
 2. Each action sets `status` and the matching `state`.
 3. Solved sets `Closed_Closed`.
 4. The current status shows as pressed.
@@ -813,33 +817,38 @@ Plan: §4.3. Mockup: `designs/screens/cases/mockup.html`. Mapping: `docs/osc-map
 
 ##### E8-S5-T2 — Add "Assign to me"
 **Acceptance criteria:**
-1. The action sets `assigned_user_id` to the current user.
-2. The action is always visible.
-3. The action sets no queue or other preset.
+1. The class `CaseAssignToMeAction` has the process type `record-tkc-case-assign-to-me`.
+2. The action sets `assigned_user_id` to the current user.
+3. The action is always visible.
+4. The action sets no queue or other preset.
 **Size:** S · **Sprint:** 3 · **Depends on:** E5-S4 · **Assumptions:** none
 
 ##### E8-S5-T3 — Add "Solve as CX" and "Solve as eGain"
 **Acceptance criteria:**
-1. Each action sets the product (Oracle Service Cloud or eGain) and the category Service Request.
-2. Each action assigns the case to the current user and sets `Closed_Closed`.
-3. The actions are in the More menu.
+1. `AbstractCaseSolveAsAction`, `CaseSolveCxAction` and `CaseSolveEgainAction` exist. The process types are `record-tkc-case-solve-cx` and `record-tkc-case-solve-egain`.
+2. Each action sets the product (Oracle Service Cloud or eGain) and the category Service Request.
+3. Each action assigns the case to the current user and sets `Closed_Closed`.
+4. The actions are in the More menu.
 **Size:** M · **Sprint:** 3 · **Depends on:** E5-S4 · **Assumptions:** A2
 
 ##### E8-S5-T4 — Add "Route to Finance"
 **Acceptance criteria:**
-1. The action sets the queue Finance and `Closed_Closed`.
-2. The action assigns the case to the user in the parameter `tkc.cases.finance_user_name`.
-3. The parameter is in the D5 config and in `docs/admin-guide.md`.
-4. The action does not forward the case by email.
+1. The class `CaseRouteFinanceAction` has the process type `record-tkc-case-route-finance`.
+2. The action sets the queue Finance and `Closed_Closed`.
+3. The action assigns the case to the user in the parameter `tkc.cases.finance_user_name`.
+4. The parameter is in the D5 config and in `docs/admin-guide.md`.
+5. The action does not forward the case by email.
 **Size:** M · **Sprint:** 3 · **Depends on:** E5-S4 · **Assumptions:** A5
 
 ##### E8-S5-T5 — Add "Mark as spam" and "Not spam"
 **Acceptance criteria:**
-1. "Mark as spam" sets the contact type `spam`, the queue SPAM and `Closed_Closed`.
-2. "Not spam" clears the contact type, sets the queue "Support 1e lijn" and sets `Open_New`.
-3. Only one of the two actions shows, based on the type of the primary contact.
-4. The action needs edit access to Cases and to Contacts.
-5. A user without Contacts edit access cannot run either action.
+1. `AbstractCaseSpamAction`, `CaseMarkSpamAction` and `CaseNotSpamAction` exist. The process types are `record-tkc-case-mark-spam` and `record-tkc-case-not-spam`.
+2. "Mark as spam" sets the contact type `spam`, the queue SPAM and `Closed_Closed`.
+3. "Not spam" clears the contact type, sets the queue "Support 1e lijn" and sets `Open_New`.
+4. Only one of the two actions shows, based on the type of the primary contact.
+5. The action needs edit access to Cases and to Contacts.
+6. A user without Contacts edit access cannot run either action.
+7. When spike S9 is a no-go, the class `Process/Availability/CaseSpamActionAvailability` hides the wrong action.
 **Size:** M · **Sprint:** 3 · **Depends on:** E5-S4, E1-S7-T3 · **Assumptions:** A5
 
 #### E8-S6 — Cases: Show the subpanels
@@ -893,12 +902,15 @@ Plan: §3 W6. Size M. Sprints 3–4.
 **Acceptance criteria:**
 1. The import creates one AOP_Case_Updates row per OSC thread entry with `osc_id_c`.
 2. The row links to its case.
-3. The mapper sets `tkc_entry_type_c` and `tkc_channel_c` from the OSC values.
-4. The import creates no file attachment and no audit history.
-5. No update email goes out (Mailpit is empty).
-6. A second run gives the same row count.
-7. The report gives the entry count only.
-**Size:** M · **Sprint:** 3 · **Depends on:** E4-S14, E3-S7, E4-S2 · **Assumptions:** A17, A18
+3. The mapper sets `tkc_entry_type_c` and `tkc_channel_c` with the maps in plan §11.4. An unknown channel id becomes `other` and the report counts it.
+4. The mapper sets `assigned_user_id` from the staff map, `contact_id` from the contact `osc_id_c` and `date_entered` from the OSC created time.
+5. The mapper escapes plain text and changes newlines to `<br>`. The mapper cleans HTML text with `SugarCleaner::cleanHtml` (see E9-S7).
+6. The mapper does not read `mailHeader`.
+7. The import creates no file attachment and no audit history.
+8. No update email goes out (Mailpit is empty).
+9. A second run gives the same row count.
+10. The report gives the entry count only.
+**Size:** M · **Sprint:** 3 · **Depends on:** E4-S14, E3-S7, E4-S2, E9-S7 · **Assumptions:** A17, A18
 
 #### E9-S6 — Case thread: Insert a standard text into a reply (conditional)
 **Persona/goal/benefit:** As a service agent, I want to insert a standard text, so that I reply faster.
@@ -909,6 +921,16 @@ Plan: §3 W6. Size M. Sprints 3–4.
 3. The texts come from a config file, not from code.
 4. The texts contain no customer data.
 **Size:** M · **Sprint:** 4 · **Depends on:** E9-S1, owner answer to Q16 · **Assumptions:** none
+
+#### E9-S7 — Case thread: Clean the HTML of each thread entry (security)
+**Description:** The thread shows `description` as HTML. OSC entries of content type 2 are HTML from outside senders. The importer must clean them before it saves them. This is a security item for the security-officer (XSS). Plan: §11.4.
+**Acceptance criteria:**
+1. The importer passes each HTML entry through `SugarCleaner::cleanHtml` before it saves.
+2. A test entry with a `<script>` tag, an `onerror` attribute and a `javascript:` link has none of the three after import.
+3. The thread does not run a script from an imported entry in the browser (QA check with a synthetic entry).
+4. The same cleaning applies to an entry that an agent saves in the composer, or a test shows that core code already cleans it.
+5. The security-officer signs the XSS test result.
+**Size:** S · **Sprint:** 3 · **Depends on:** E3-S7 · **Assumptions:** A17
 
 ---
 
@@ -945,7 +967,7 @@ Plan: §4.4. Mockup: `designs/screens/opportunities/mockup.html`. Mapping: `docs
 
 #### E10-S4 — Opportunities: Generate the quote number with one action
 **Persona/goal/benefit:** As a sales rep, I want a "Generate quote number" action, so that I get the next number without a spreadsheet.
-**Description:** The handler `OpportunityQuoteNumberAction` calls `TKC\Sequence::next('quote', year)` in one transaction with a row lock. It writes `tkc_reference_c` only when empty. The number has the form `OFTYY-NNNN`.
+**Description:** The handler `Opportunities/OpportunityQuoteNumberAction` (process type `record-tkc-opportunity-quote-number`) is the only handler in this epic. It calls `TKC\Sequence::next('quote', year)` in one transaction with a row lock. It writes `tkc_reference_c` only when empty. The number has the form `OFTYY-NNNN`.
 **Acceptance criteria:**
 1. The action fills an empty `tkc_reference_c` with `OFTYY-NNNN`.
 2. The action does not change a filled `tkc_reference_c`.
@@ -991,7 +1013,17 @@ Goal: Support and licence contracts show on the account.
 Plan: §4.5. Mapping: `docs/osc-mapping/organization.md` §5a. Size S–M. Sprint 4.
 Note: No mockup exists for contracts (see section 6.2).
 
-#### E11-S1 — Contracts: Show the contract record with support and licence panels
+#### E11-S1 — Contracts: Add the contract types and fields
+**Description:** Add the keys `tkc_support` and `tkc_license` to `contract_type_list`. Add the fields from plan §4.5. Add the import key. This story moved from E3 to Sprint 4, because the owner decides A13 before Sprint 4 (plan §11.1). Mapping: `docs/osc-mapping/organization.md` §5a.
+**Acceptance criteria:**
+1. After Repair, AOS_Contracts has the six fields from plan §4.5 and `osc_id_c` with the index `idx_aos_contracts_osc_id_c`.
+2. `contract_type_list` has the keys `tkc_support` and `tkc_license`.
+3. `tkc_support_level_list` has the keys bronze, silver and gold.
+4. The Accounts record keeps its Contracts relationship.
+5. The metadata contract test passes for AOS_Contracts.
+**Size:** S · **Sprint:** 4 · **Depends on:** E1-S4, owner decision A13 · **Assumptions:** A13
+
+#### E11-S2 — Contracts: Show the contract record with support and licence panels
 **Persona/goal/benefit:** As a sales rep, I want a contract record with the right panels for each type, so that I see support and licence data.
 **Description:** If spike S7 is a go, the record renders in Angular with a D5 delta of `module_routing` and cell `displayLogic` on `contract_type`. If not, the record is legacy with two panels that always show.
 **Acceptance criteria:**
@@ -1000,13 +1032,13 @@ Note: No mockup exists for contracts (see section 6.2).
 3. With spike S7 a no-go, both panels always show.
 4. The record shows the support level, hours in contract, change threshold, Replicon project and duration.
 5. The file is in the register in `docs/architecture.md`.
-**Size:** M · **Sprint:** 4 · **Depends on:** E3-S10, E1-S7-T1, E4-S17-T2 · **Assumptions:** A13
+**Size:** M · **Sprint:** 4 · **Depends on:** E11-S1, E1-S7-T1, E4-S13 · **Assumptions:** A13
 
-#### E11-S2 — Contracts: Show the contract columns in the Accounts subpanel
+#### E11-S3 — Contracts: Show the contract columns in the Accounts subpanel
 **Acceptance criteria:**
 1. The Accounts Contracts subpanel shows name, type, start, end and support level.
 2. A click on the name opens the contract.
-**Size:** S · **Sprint:** 4 · **Depends on:** E11-S1, E6-S4 · **Assumptions:** A13
+**Size:** S · **Sprint:** 4 · **Depends on:** E11-S2, E6-S4 · **Assumptions:** A13
 
 ---
 
@@ -1058,21 +1090,25 @@ Plan: §3 W9, §4.6. Mockups: `designs/screens/quotes/mockup.html`, `designs/scr
 Goal: Roles, Finance protection and import guards pass the security-officer. The real data goes in after gate B and the owner's approval.
 Plan: §3 W10, §5.4. Rule: `.claude/rules/data-privacy.md`. Size M. Sprints 2, 5, 6 and 7+.
 
-#### E13-S1 — Roles: Create the TKC roles with a migration
+#### E13-S1 — Roles: Create the two TKC roles and the admin rule with a migration
 **Persona/goal/benefit:** As an admin, I want the roles to exist after every deploy, so that access is the same in each environment.
-**Description:** An idempotent extension migration creates the roles "TKC Sales", "TKC Service", "TKC Finance" and "TKC Admin". See section 6.2 for the open point on "TKC Finance". The plan puts this work in Sprint 5. This draft moves the first part to Sprint 2 because E6-S5 needs it.
+**Description:** An idempotent extension migration (`extensions/tkc/Migrations/Version…SeedRoles.php`, data only) creates the roles "TKC Sales" and "TKC Service". A person with the SuiteCRM `is_admin` flag is the admin; this flag bypasses ACL. Finance staff use "TKC Service". A role "TKC Finance" is not built (the plan assumes Finance staff do not need `tkc_AccountFinance`). No security groups exist in phase 1. The plan puts this work in Sprint 5. This draft puts it in Sprint 2 because E6-S5 needs it. Plan: §11.2.
 **Acceptance criteria:**
-1. After `tkc:config:apply`, the four roles exist.
-2. A second run creates no duplicate role.
-3. "TKC Sales" has view and edit access to `tkc_AccountFinance`.
-4. All other roles have no access to `tkc_AccountFinance`.
-5. The role table is in `docs/admin-guide.md`.
+1. After `tkc:config:apply`, the roles "TKC Sales" and "TKC Service" exist. No other TKC role exists.
+2. A second run creates no duplicate role and changes no grant.
+3. For "TKC Sales" the grants are as follows (access, view, list, edit, delete, export, mass update). Accounts and Contacts: yes, All, All, All, Owner, None, All. Opportunities: yes, All, All, All, Owner, None, All. Cases: yes, All, All, All, None, None, None. Case Updates: yes, All, All, Owner, None, None, None. AOS_Contracts: yes, All, All, All, Owner, None, None. `tkc_AccountFinance`: yes, All, All, All, None, None, None. Quotes and Products: yes, All, All, All, Owner, None, None. Calls, Meetings, Tasks, Notes, Documents, Emails: yes, All, All, Owner, Owner, None, None.
+4. For "TKC Service" the grants are as follows. Accounts and Contacts: yes, All, All, All, None, None, None. Opportunities: yes, All, All, None, None, None, None. Cases: yes, All, All, All, None, None, All. Case Updates: yes, All, All, Owner, None, None, None. AOS_Contracts: yes, All, All, None, None, None, None. Quotes and Products: yes, All, All, None, None, None, None. Calls, Meetings, Tasks, Notes, Documents, Emails: same as "TKC Sales". `tkc_AccountFinance`: disabled.
+5. Delete on Cases is None for both roles. Export is None for both roles on every module.
+6. Import is None for both roles on every module. Data enters only with `tkc:osc:import`.
+7. A user with "TKC Service" and no admin flag cannot open `tkc_AccountFinance`.
+8. The security-officer accepts in writing that an admin sees the Finance data.
+9. The permission table and the admin rule are in `docs/admin-guide.md`.
 **Size:** M · **Sprint:** 2 · **Depends on:** E3-S3 · **Assumptions:** A6, A9
 
 #### E13-S2 — Security: Test that Finance data does not leak
-**Description:** The security-officer runs a leak test with a user without the Sales role. The test covers the Angular record, the list, the export, the V8 API, AOR reports and global search.
+**Description:** The security-officer runs a leak test with a user that has the role "TKC Service". The test covers the Angular record, the list, the export, the V8 API, AOR reports and global search.
 **Acceptance criteria:**
-1. The user without the role gets no Finance value in each of the six read paths.
+1. The user with the role "TKC Service" and no admin flag gets no Finance value in each of the six read paths.
 2. The test result lists each path with its outcome.
 3. A failed path has a fix story before sign-off.
 **Size:** M · **Sprint:** 5 · **Depends on:** E6-S5, E13-S1 · **Assumptions:** A6
@@ -1189,7 +1225,7 @@ Plan: §3 W13. Resource group: `TKC-SUITE-CRM-RG`. Size M–L. Sprint 7+.
 
 ### EN. Enhancements (not scheduled)
 
-These items are deferred by A1 and the plan. Each has no OSC counterpart. The owner schedules them. Each becomes a story with its own AC when scheduled. They are listed as placeholders and do not count in the totals.
+These items are deferred by A1 and the plan. Each has no OSC counterpart. The owner schedules them. EN-9 waits for the owner's answer. Each becomes a story with its own AC when scheduled. They are listed as placeholders and do not count in the totals.
 
 | ID | Title | Plan reference | Size |
 |---|---|---|---|
@@ -1201,60 +1237,61 @@ These items are deferred by A1 and the plan. Each has no OSC counterpart. The ow
 | EN-6 | Case thread: Import file attachments to Notes | A17 | L |
 | EN-7 | Cases: Add the Disposition field | A10 | S |
 | EN-8 | Cases: Add the assigned-group field and the "queue by group" hook | A5 | M |
+| EN-9 | Accounts and Contacts: Add the CRM modules field with chips, after the owner answers org Q5 and contact Q2 (add with `--only-fields`) | A16, plan §11.7 | M |
 
 ---
 
 ## 4. Sprint plan
 
-Sprints last two weeks. One agent team works in parallel: backend work (E3, E4) and frontend work (E2, E5) run side by side in Sprints 0 to 2.
+Sprints last two weeks. One agent team works in parallel: backend work (E3, E4) and frontend work (E2, E5) run side by side in Sprints 0 to 2. The owner accepted the assumptions A1 to A20 on 2026-11-20. The sprint plan uses them.
 
 ### Sprint 0: Foundation and tokens
 
 **Goal:** The team builds from a clean checkout, the tokens drive both UIs, and the five spikes have answers.
-**Stories:** E1-S1 to E1-S6, E1-S7 (T1 to T5), E2-S1, E2-S2, E2-S5.
-**Demo:** A clean Docker install runs `scripts/build.sh`. The Repair SQL is on screen. An Angular page and the legacy Admin page show the same tokens. Each spike result is on the issue. The test command is green. Mailpit shows a test email.
-**Owner decisions before the sprint:** A8, A12 (naming rule text), A19, A20. SUITE-9 must be done.
-**Dependency check:** E1-S3 and E1-S4 depend on E1-S1, in the same sprint (order inside the sprint). E2-S2 and E2-S5 depend on E2-S1, in the same sprint. No story needs a later sprint.
+**Stories:** E1-S1 to E1-S6, E1-S7 (T1 to T5), E2-S1 to E2-S5.
+**Demo:** A clean Docker install runs `scripts/build.sh`. The Repair SQL is on screen. An Angular page, the login page and the legacy Admin page show the same tokens. Each spike result is on the issue. The test command is green. Mailpit shows a test email.
+**Owner action before the sprint:** Finish SUITE-9. No other decision is open.
+**Dependency check:** E1-S3 and E1-S4 depend on E1-S1, in the same sprint (order inside the sprint). E2-S2 to E2-S5 depend on E2-S1 or E2-S2, in the same sprint. No story needs a later sprint.
 
 ### Sprint 1: Data model, import framework and gate A
 
 **Goal:** All TKC fields exist after Repair, the guarded import runs twice on synthetic data with the same counts, and gate A is open.
-**Stories:** E2-S3, E2-S4, E2-S6, E3-S1 to E3-S12, E4-S1 (T1 to T4), E4-S2 to E4-S7, E4-S9, E4-S10, E4-S11, E4-S8.
-**Demo:** Quick Repair shows no change on the second run. The synthetic import of Accounts, Contacts and Finance rows runs twice with the same counts. Mailpit stays empty. The anonymizer passes the leak test. The security-officer opens gate A. The owner starts the extract.
-**Owner decisions before the sprint:** All of A1 to A18, because E3 builds all vardefs. Plus the staff-map format (E4-S9), the production volumes and the extract method (A18).
-**Dependency check:** E3 depends on E1 (Sprint 0). E4-S4 needs E4-S10 and E4-S11 (same sprint, order inside). E4-S8 needs E4-S7 (same sprint, last). E2-S3 needs E2-S2 (Sprint 0).
-**Risk:** This sprint is the largest. This draft moves the mappers for Opportunities, Contracts and Cases to Sprint 2. See section 6.2.
+**Stories:** E2-S6, E3-S1 to E3-S11, E4-S1 (T1 to T5), E4-S2 to E4-S7, E4-S9, E4-S10, E4-S11, E4-S8.
+**Demo:** Repair shows no change on the second run. The synthetic import of Accounts, Contacts and Finance rows runs twice with the same counts. A run with `--only-fields` keeps a user edit. Mailpit stays empty. The anonymizer passes the leak test. The security-officer opens gate A. The owner starts the extract.
+**Owner action before the sprint:** The staff-map format (E4-S9), the production volumes and the extract method (A18).
+**Dependency check:** E3 depends on E1 (Sprint 0). E4-S4 needs E4-S10 and E4-S11 (same sprint, order inside). E4-S8 needs E4-S7 (same sprint, last). E2-S6 needs E2-S3 and E2-S5 (Sprint 0).
+**Risk:** The load is high (about 42 days). The mappers for Opportunities and Cases are in Sprint 2. The contract vardefs and the contract mapper are in Sprint 4.
 
 ### Sprint 2: Accounts, Contacts and the anonymized data
 
 **Goal:** Accounts and Contacts show as in the mockups on anonymized full-volume data, and the Finance data is visible to the Sales role only.
-**Stories:** E4-S12 to E4-S16, E4-S17 (T1 to T3), E5-S1 to E5-S6, E6-S1 to E6-S5, E7-S1 to E7-S4, E13-S1, E13-S4.
-**Demo:** About 8 700 anonymized accounts and contacts in the redesigned lists and records. The pills and the Yes/No controls work. The SPAM filter works. A Sales user sees the Finance tab and another user does not. All entities, including cases, are in the database.
-**Owner decisions before the sprint:** Finance field meaning and Replicon/SharePoint URL templates (org Q6, Q12, Q4), CRM modules (org Q5, contact Q2), the consent model and function-level labels (contact Q8, Q13, Q14), the staff-map owner for inactive staff.
-**Dependency check:** E5 needs E2-S3 (Sprint 1) and spikes S9 and S10 (Sprint 0). E6-S5 needs E13-S1 (same sprint, order inside). E6 and E7 list stories need E4-S17-T1 (same sprint, first). E4-S8 (Sprint 1) must be done before E4-S17.
+**Stories:** E4-S12, E4-S14, E4-S15, E4-S16, E4-S17 (T1 to T3), E5-S1 to E5-S5, E6-S1 to E6-S5, E7-S1, E7-S2, E13-S1, E13-S4.
+**Demo:** About 8 700 anonymized accounts and contacts in the redesigned lists and records. The pills and the Yes/No controls work. The SPAM filter works. A Sales user sees the Finance tab and a Service user does not. Opportunities and cases are in the database. Contracts come in Sprint 4.
+**Owner action before the sprint:** The Finance field meaning and the Replicon and SharePoint URL templates (org Q6, Q12, Q4). The consent model and function-level labels (contact Q8, Q13, Q14). The staff-map owner for inactive staff.
+**Dependency check:** E5 needs E2-S3 (Sprint 0) and spikes S9 and S10 (Sprint 0). E6-S5 needs E13-S1 (same sprint, order inside). E6 and E7 list stories need E4-S17-T1 (same sprint, first). E4-S17 needs E4-S8 and E4-S9 (Sprint 1).
 
 ### Sprint 3: Cases and the thread import
 
-**Goal:** Cases show as in the mockup with the status bar and the record actions, the thread is imported, and the import sends no email.
-**Stories:** E8-S1 to E8-S6 (E8-S5 with T1 to T5), E9-S1, E9-S2, E9-S5, E13-S5.
-**Demo:** 4 053 anonymized cases with their threads. The status bar, "Solve as CX", "Solve as eGain", "Route to Finance" and "Mark as spam" work. A new case gets a reference. Mailpit is empty after the thread import.
-**Owner decisions before the sprint:** The case decisions A2, A4, A5, A10, A11 and the "Assign to me" presets (incident Q3 to Q7). The production menu ids (E13-S5, owner task). The AOP email rule on a staff reply and the inbound mailbox rule (incident Q14, Q20).
-**Dependency check:** E8 needs E3 (Sprint 1), E4-S14 (Sprint 2), E5-S4 (Sprint 2) and spikes S8 and S9 (Sprint 0). E9-S5 needs E4-S14 (Sprint 2). The extract must hold the threads (E4-S8).
+**Goal:** Cases show as in the mockup with the status bar and the record actions, the thread is imported with cleaned HTML, and the import sends no email.
+**Stories:** E7-S3, E7-S4, E8-S1 to E8-S6 (E8-S5 with T1 to T5), E9-S1, E9-S2, E9-S5, E9-S7, E13-S5.
+**Demo:** 4 053 anonymized cases with their threads. The status bar, "Solve as CX", "Solve as eGain", "Route to Finance" and "Mark as spam" work. A new case gets a reference. The Priority pill and the Impact pill show. A thread entry with a script tag shows no script. Mailpit is empty after the thread import.
+**Owner action before the sprint:** The "Assign to me" presets (incident Q3 to Q7 remainder). The production menu ids (E13-S5). The AOP email rule on a staff reply and the inbound mailbox rule (incident Q14, Q20).
+**Dependency check:** E8 needs E3 (Sprint 1), E4-S14 (Sprint 2), E5-S4 (Sprint 2) and spikes S8 and S9 (Sprint 0). E9-S5 needs E4-S14 (Sprint 2) and E9-S7 (same sprint, first). E7-S3 and E7-S4 need E7-S1 (Sprint 2). The extract must hold the threads (E4-S8).
 
 ### Sprint 4: Opportunities, contracts and the styled thread
 
-**Goal:** Opportunities show with the quote number action and the source case, contracts show on the account, and thread entries show by type.
-**Stories:** E9-S3, E9-S4, E9-S6 (conditional), E10-S1 to E10-S8, E11-S1, E11-S2.
-**Demo:** An opportunity gets a quote number with one action. The stage pill shows the percent. A contract shows on the account with the right panels. A thread shows styled entries. Standard texts show if the owner gave the bodies.
-**Owner decisions before the sprint:** The standard text bodies (incident Q16), the yearly restart of the quote number, the need for AOS quotes, the two amounts and dates, the approach field, the won-date rule (opp Q4, Q5, Q6, Q15), the contract questions (org Q17).
-**Dependency check:** E10 needs E3-S8, E3-S9 (Sprint 1), E5-S4 (Sprint 2), E4-S16 (Sprint 2) and spike S11 (Sprint 0). E11-S1 needs spike S7 (Sprint 0). E11-S2 needs E6-S4 (Sprint 2). E9-S4 needs E9-S5 (Sprint 3).
+**Goal:** Opportunities show with the quote-number action and the source case, contracts have fields and show on the account, and thread entries show by type.
+**Stories:** E4-S13, E9-S3, E9-S4, E9-S6 (conditional), E10-S1 to E10-S8, E11-S1 to E11-S3.
+**Demo:** An opportunity gets a quote number with one action. The stage pill shows the percent. Contracts are imported and show on the account with the right panels. A thread shows styled entries. Standard texts show if the owner gave the bodies.
+**Owner action before the sprint:** The standard text bodies (incident Q16). The quote-number yearly restart, the need for AOS quotes, the two amounts and dates, the approach field and the won-date rule (opp Q4, Q5, Q6, Q15). The contract questions (org Q17).
+**Dependency check:** E10 needs E3-S8, E3-S9 (Sprint 1), E5-S4 (Sprint 2), E4-S16 (Sprint 2) and spike S11 (Sprint 0). E11-S1 needs E1-S4 (Sprint 0). E11-S2 needs spike S7 (Sprint 0), E11-S1 and E4-S13 (same sprint, order inside). E11-S3 needs E6-S4 (Sprint 2). E9-S4 needs E9-S5 (Sprint 3).
 
 ### Sprint 5: Legacy restyle, security checks and performance
 
 **Goal:** All screens use the tokens, the security-officer passes the Finance leak test and the handler review, and the lists load fast at full volume.
-**Stories:** E12-S1 to E12-S5, E13-S2, E13-S3, E13-S9, E5-S7 (optional).
+**Stories:** E12-S1 to E12-S5, E13-S2, E13-S3, E13-S9, E5-S6 (optional).
 **Demo:** Quotes, Emails, Home and Admin in the new look. The seam check passes. The leak test result for six read paths. The load-time table.
-**Owner decisions before the sprint:** The email view in use, the dashboard tabs per role, the use of the Activity Stream (emails and home mockup notes), the security acceptance of A6, the credential drops and the import guards.
+**Owner action before the sprint:** The email view in use, the dashboard tabs per role and the use of the Activity Stream (emails and home mockup notes). The security acceptance of A6, the credential drops, the import guards, the admin access to Finance data and the export rule.
 **Dependency check:** E12 needs E2-S5 (Sprint 0) and E5-S1 (Sprint 2). E13-S2 needs E6-S5 and E13-S1 (Sprint 2). E13-S3 needs E8-S5 (Sprint 3) and E10-S4 (Sprint 4). E13-S9 needs E8-S2, E9-S5 and E10-S2 (Sprints 3 and 4).
 
 ### Sprint 6: Gate B, dry run and UAT
@@ -1262,66 +1299,79 @@ Sprints last two weeks. One agent team works in parallel: backend work (E3, E4) 
 **Goal:** The build is UAT-ready, gate B is passed, and the real-data dry run has a report.
 **Stories:** E13-S6, E13-S7, E13-S8.
 **Demo:** The UAT build. The dry-run report with counts and unmapped values only. The release notes.
-**Owner decisions before the sprint:** Approval of the real-data dry run. UAT dates.
+**Owner action before the sprint:** Approval of the real-data dry run. UAT dates.
 **Dependency check:** E13-S6 needs E13-S2, E13-S3 (Sprint 5), E13-S5 (Sprint 3) and E4-S17 (Sprint 2). E13-S8 needs E12-S5 (Sprint 5).
 
 ### Sprint 7+: Real import, Azure and enhancements
 
 **Goal:** The real data is in the system, and a shared Azure environment runs the same chain.
-**Stories:** E13-S10, E14-S1 to E14-S5. Enhancements EN-1 to EN-8 as the owner schedules them. A cut-over rehearsal.
+**Stories:** E13-S10, E14-S1 to E14-S5. Enhancements EN-1 to EN-9 as the owner schedules them. A cut-over rehearsal.
 **Demo:** The cut-over checklist is signed. The Azure environment shows the login page and the migrated data.
-**Owner decisions before the sprint:** The scope of the enhancements. The cut-over date.
-**Dependency check:** E13-S10 needs E13-S6, E13-S7 (Sprint 6) and E13-S8 (Sprint 6). E14 needs E1-S1 (Sprint 0).
+**Owner action before the sprint:** The scope of the enhancements. The cut-over date.
+**Dependency check:** E13-S10 needs E13-S6, E13-S7 and E13-S8 (Sprint 6). E14 needs E1-S1 (Sprint 0).
 
 ---
 
 ## 5. Decisions needed from the owner
 
-### 5.1 Assumptions (the draft uses the default)
+### 5.1 Assumptions A1 to A20: decided
 
-| # | Default in this draft |
+The owner accepted all defaults on 2026-11-20. No decision is open. The architect's addendum (`docs/plan/implementation-plan.md` §11) changes four details.
+
+| # | Decision (default accepted) |
 |---|---|
 | A1 | Defer the pipeline board, the totals row and the "My day" dashlet. They are in EN. |
 | A2 | Keep all 12 OSC case statuses. Priority P1 to P4. |
 | A3 | Nullable Yes/No fields use a three-state enum with `enum-radio`. |
 | A4 | A required primary contact on cases (new 1:N relate). The M:N link stays. |
-| A5 | Queue only. No assigned-group field. |
-| A6 | Finance fields go to the module `tkc_AccountFinance` with module ACL. |
+| A5 | Queue only. No assigned-group field (EN-8 if needed later). |
+| A6 | Finance fields go to the module `tkc_AccountFinance` with module ACL. The files are hand-written (plan §11.6). |
 | A7 | The quote number stays on the opportunity. A record action generates it. No quotes are imported. |
 | A8 | TKC fields on core modules use `tkc_<english_name>_c`. |
-| A9 | Only the Finance fields depend on the role. |
-| A10 | Do not build the Disposition field. |
+| A9 | Only the Finance fields depend on the role. Roles are "TKC Sales" and "TKC Service" plus the admin flag (plan §11.2). |
+| A10 | Do not build the Disposition field (EN-7 if needed later). |
 | A11 | Customer priority is text. Drop the low-use case fields. |
 | A12 | One case reference field `tkc_case_ref_c`. |
-| A13 | Contracts use AOS_Contracts. Angular if spike S7 is a go. |
+| A13 | Contracts use AOS_Contracts. The contract vardefs are built in E11 (Sprint 4). Angular if spike S7 is a go. |
 | A14 | Keep both amounts and both close dates. Drop three OSC fields. |
 | A15 | Import all five phone types and all SPAM contacts. |
-| A16 | Keep the CRM modules field. Drop the credential fields. |
+| A16 | Drop the credential fields. The CRM modules field is **not built in Sprint 1**. It waits for the owner's answer (EN-9, plan §11.7). |
 | A17 | Import all thread entries. Do not import attachments or audit history. |
-| A18 | The owner runs the OSC bulk extract. |
+| A18 | The owner runs the OSC bulk extract (E4-S8). |
 | A19 | Mailpit in Docker. The import refuses to run without a sink host. |
 | A20 | Base currency EUR. Number format nl-NL. UI language en_us. |
 
-### 5.2 Blocking questions per sprint
+### 5.2 Assumptions inside the addendum that the owner still confirms
+
+| Item | Default in the plan |
+|---|---|
+| Role "TKC Finance" | Not built. Finance staff use "TKC Service" and do not see `tkc_AccountFinance`. |
+| Export | None for all roles on all modules. The owner can relax it with the security-officer. |
+| Cases delete | None for all roles. |
+| Admin access | An admin sees the Finance data. The security-officer must accept this (E13-S1). |
+| Default of Priority | Empty. The story E3-S5 checks the core code that reads the default. |
+| Thread entry types | OSC types 6 and 7 map to `note`, type 5 (chat) to `customer`, type 8 (voice) to `customer_proxy`. |
+| Priority or Impact in the header | Priority in the header and list. The team swaps them with a small metadata change if agents use Impact more. |
+
+### 5.3 Open business questions per sprint
 
 | Before sprint | Question | Epic |
 |---|---|---|
-| 0 | Confirm A8, A12, A19, A20. Finish SUITE-9. | E1 |
-| 1 | Confirm A1 to A18 (all vardefs are built in this sprint). | E3 |
+| 0 | Finish SUITE-9. | E1 |
 | 1 | Production volumes, extract method, thread counts (A18). | E4 |
 | 1 | Staff map: login or email. Owner of the inactive staff records. | E4 |
 | 2 | Finance field meaning. Replicon and SharePoint URLs. Site Werkzaamheden report. | E6 |
-| 2 | CRM modules: keep or drop. | E6, E7 |
 | 2 | Consent model, function-level labels, SPAM import. | E7 |
-| 3 | Case decisions A2, A4, A5, A10, A11. "Assign to me" presets. | E8 |
-| 3 | Production ids of product 551, category 552 and status 103. | E8 |
-| 3 | AOP email on a staff reply. Inbound mailbox case rule. Short source and channel lists. | E8, E9 |
+| 3 | "Assign to me" presets. | E8 |
+| 3 | Production ids of product 551, category 552 and status 103 (needs read-only production credentials). | E8 |
+| 3 | AOP email on a staff reply. Inbound mailbox case rule. | E8, E9 |
 | 4 | Bodies of the standard texts 10, 20, 33, 40, 41, 341 and 371. | E9 |
 | 4 | Quote number yearly restart. AOS quotes. Two amounts and dates. Approach. Won-date rule. | E10 |
 | 4 | `Kanalen` against support level. Units of `Duur` and `ChangeDrempel`. `DatumRenewal`. Contract status. Incident link. | E11 |
 | 5 | Email view in use. Dashboard tabs per role. Activity Stream in use. | E12 |
-| 5 | Security acceptance of A6, the credential drops and the guards. | E13 |
+| 5 | Security acceptance of the credential drops, the guards, admin access to Finance data and the export rule. | E13 |
 | 6 | Approval of the real-data dry run. | E13 |
+| open | CRM modules ("State") field: keep or drop (org Q5, contact Q2). The field is not built until the owner answers (EN-9). | EN |
 
 ---
 
@@ -1331,41 +1381,51 @@ Sprints last two weeks. One agent team works in parallel: backend work (E3, E4) 
 
 | Item | Count |
 |---|---|
-| Epics (E1 to E14) | 14, plus the unscheduled "Enhancements" bucket (8 placeholders, not counted below) |
-| Stories | 100 (E1: 7, E2: 6, E3: 12, E4: 17, E5: 7, E6: 5, E7: 4, E8: 6, E9: 6, E10: 8, E11: 2, E12: 5, E13: 10, E14: 5) |
+| Epics (E1 to E14) | 14, plus the unscheduled "Enhancements" bucket (9 placeholders, not counted below) |
+| Stories | 100 (E1: 7, E2: 6, E3: 11, E4: 17, E5: 6, E6: 5, E7: 4, E8: 6, E9: 7, E10: 8, E11: 3, E12: 5, E13: 10, E14: 5) |
 | Stories that have tasks | 5 (E1-S7, E4-S1, E4-S14, E4-S17, E8-S5) |
-| Tasks | 20 (5 spikes, 4 import-command tasks, 3 case-mapper tasks, 3 import-run tasks, 5 case-action tasks) |
+| Tasks | 21 (5 spikes, 5 import-command tasks, 3 case-mapper tasks, 3 import-run tasks, 5 case-action tasks) |
 | Owner-assigned stories | 3 (E4-S8 extract, E4-S9 staff map, E13-S5 production ids) |
 | Security-officer gates | 2 (E4-S7 gate A, E13-S6 gate B) |
+| Process handlers | 10 in E8, 1 in E10 |
 
 Effort per sprint. The count uses leaf items only (a story with tasks counts through its tasks). Weights: S = 1 day, M = 2 days, L = 5 days. These weights are a rough guide, not an estimate.
 
-| Sprint | Leaf items (S / M) | Rough days | Note |
+| Sprint | Leaf items | Rough days | Note |
 |---|---|---|---|
-| 0 | 4 S, 10 M | 24 | Five spikes |
-| 1 | 13 S, 16 M | 45 | Highest load. Backend (E3, E4) and frontend (E2) run in parallel. |
-| 2 | 12 S, 15 M | 42 | High load. Import, shared components, two screens. |
-| 3 | 4 S, 10 M | 24 | One screen, ten actions, thread import |
-| 4 | 9 S, 4 M | 17 | |
-| 5 | 4 S, 5 M | 14 | One optional story (E5-S7) |
+| 0 | 5 S, 11 M | 27 | Five spikes; tokens and base theme |
+| 1 | 12 S, 15 M | 42 | Highest load. Backend (E3, E4) and frontend (E2) run in parallel. |
+| 2 | 8 S, 15 M | 38 | High load. Import, shared components, two screens. |
+| 3 | 7 S, 10 M | 27 | One screen, ten actions, thread import, HTML cleaning |
+| 4 | 11 S, 4 M | 19 | Contract fields, contract import, quote number |
+| 5 | 4 S, 5 M | 14 | One optional story (E5-S6) |
 | 6 | 1 S, 2 M | 5 | Gate B, dry run, UAT |
 | 7+ | 1 S, 5 M | 11 | Real import and Azure |
 
-Sprints 1 and 2 carry about twice the load of Sprint 3. Options: move E2-S3 and E2-S4 into Sprint 0 (about 3 days), and move E5-S6 and E7-S4 into Sprint 3. The owner and the team decide.
+Before this update, Sprint 1 had about 45 days and Sprint 2 about 42 days. Sprints 1 and 2 are still the heaviest. Sprints 5 to 7+ are light. The team can pull stories forward when the dependencies allow.
 
-### 6.2 Gaps and inconsistencies found in the plan
+### 6.2 Gaps and inconsistencies
 
-1. **Sprint 1 demo and mapper scope.** Plan §8 puts the mappers outside "E4 part 1" but the Sprint 1 demo says "synthetic import of all entities". This draft imports Accounts, Contacts and Finance rows in Sprint 1. It moves the Opportunity, Contract and Case mappers to Sprint 2.
-2. **Decision dates.** Plan §10 needs the case, opportunity and contract answers in Sprints 3 and 4. E3 builds all vardefs in Sprint 1. The answers (A2 to A16) must be known before Sprint 1.
-3. **Roles in Sprint 2.** The Sprint 2 demo says "Finance visible to Sales only". The plan schedules roles in Sprint 5. This draft moves the roles story (E13-S1) to Sprint 2. The leak test stays in Sprint 5.
-4. **Role "TKC Finance".** Plan §3 W10 lists four roles but A6 and A9 give no permission set for "TKC Finance" and "TKC Service". E13-S1 must have the permission set from the owner.
-5. **Handler count.** Plan §3 says "about 12" handlers and plan §7 says 11 for E8. Plan §4.3 lists 10 case handlers (4 + 1 + 2 + 1 + 2, plus 3 abstract bases) and 1 opportunity handler.
-6. **Thread fields.** Plan §3 W6 and §5.2 name `tkc_entry_type_c`, `tkc_channel_c` and `osc_id_c` on AOP_Case_Updates. Plan §4 has no field list and no value lists for entry type and channel. E3-S7 needs them from the architect and the osc-analyst.
-7. **Two priority fields on cases.** Plan §4.3 has core `priority` (P1 to P4) and `tkc_priority_c` (impact list, 4 values). The difference is not stated in the plan. Ask the owner.
-8. **Case menu ids.** Plan §10 needs the production ids (incident Q21) in Sprint 3. The Sprint 2 anonymized case import also uses these maps. This draft uses the tst1 ids for the sample and the production ids before gate B (E13-S5).
-9. **Extract content.** The thread import (Sprint 3) needs the threads in the Sprint 1 extract. Plan §10 asks for the thread count only. E4-S8 lists the threads as required content.
-10. **Gate A order.** Plan §5.4 puts the extract after gate A. E4-S8 follows that order, so the extract is the last item of Sprint 1. A delay moves the Sprint 2 import.
-11. **Contracts mockup.** No mockup exists for contracts. E11-S1 has no mockup link. The ux-designer may need a small mockup before Sprint 4.
-12. **Start state.** Plan §3 W1 says D1, D9, D10 and D12 are done. `docs/backlog.md` still shows the `extensions/tkc/` scaffold as open, and SUITE-9 is open. E1 depends on SUITE-9.
-13. **Stale backlog phases.** `docs/backlog.md` still shows phases 3 to 5 as "to do". The document-agent updates the narrative when the owner approves this draft.
-14. **Module Builder files.** `tkc_AccountFinance` comes from Module Builder (D11). The plan does not say where the generated files live in git. E3-S3 requires the files in `public/legacy/custom/`. The architect must confirm that this is upgrade-safe.
+**Resolved** (by the owner's acceptance of A1 to A20, the architect addendum §11, or this update):
+
+1. Sprint 1 demo and mapper scope. This draft imports Accounts, Contacts and Finance rows in Sprint 1 and the other mappers later (the contract mapper in Sprint 4).
+2. Decision dates. The plan §11.1 sets what must be known before Sprint 1. The owner accepted all defaults, so nothing blocks Sprint 1.
+3. Roles in Sprint 2. E13-S1 is in Sprint 2. The leak test stays in Sprint 5.
+4. Roles. Two roles plus the admin flag, with a permission table (plan §11.2, E13-S1).
+5. Handler count. 10 in E8 and 1 in E10 (plan §11.3).
+6. Thread fields. Fields, lists and import rules are in plan §11.4 and E3-S7.
+7. Two priority fields. Labels "Priority" and "Impact" (plan §11.5, E3-S5, E8-S1).
+8. Module Builder files. The module files are hand-written in git (plan §11.6, E3-S3).
+9. Stale phases in `docs/backlog.md`: the document-agent updates them when the owner approves this draft (not a plan gap).
+10. Load balance. E2-S3 and E2-S4 moved to Sprint 0. E7-S3 and E7-S4 moved to Sprint 3. The CRM modules chips story (old E5-S6) left the plan with the field (EN-9).
+
+**Still open:**
+
+1. Case menu ids. The Sprint 2 anonymized case import uses the tst1 ids. The production ids (incident Q21) come from the owner in Sprint 3 (E13-S5) and are needed before gate B.
+2. Extract content. The thread import (Sprint 3) needs the threads in the Sprint 1 extract. E4-S8 lists the threads as required content.
+3. Gate A order. The extract is the last item of Sprint 1 (plan §5.4). A delay moves the Sprint 2 import.
+4. Contracts mockup. No mockup exists for contracts. E11-S2 has no mockup link. The ux-designer may need a small mockup before Sprint 4.
+5. Start state. SUITE-9 and the `extensions/tkc/` scaffold are open. E1 depends on SUITE-9.
+6. Contract decision A13. The owner accepted the default, but the contract vardefs wait until Sprint 4. A change to a `tkc_` module after Sprint 4 starts costs M to L.
+7. Plan §3 and §4.1 still list `tkc_crm_modules_c` and four roles. Plan §11.7 corrects them. The document-agent must apply the corrections to the plan text.
+8. Load. Sprints 1 and 2 stay above the later sprints (see 6.1). More moves need the owner's view on scope.

@@ -71,7 +71,7 @@ Size: **S** ≤ 1 sprint-week, **M** 1–2 sprint-weeks, **L** > 2 sprint-weeks.
 | **W7 Contracts** | Support and licence contracts on the account. | `contract_type_list` keys, 6 fields, layout (Angular if S7, else legacy), Accounts subpanel columns, import. | W3, S7 | 2 (+3) | S–M |
 | **W8 Import (D8)** | Idempotent, guarded OSC import; anonymized sample first. | `tkc:osc:anonymize`, `tkc:osc:import`, staff map, guards, `scripts/seed/import.sh`, synthetic fixtures `scripts/seed/fixtures/`, `scripts/seed/README.md` (§5). | W3, A18 | 3 | L |
 | **W9 Legacy restyle** | Quotes detail, Emails, Home dashlets, Admin, global search match the tokens. | Dawn override partials; dashlets stack on phones; standard dashlets restyled; no markup change. | W2 | 4 | M |
-| **W10 Security & access** | Roles, Finance protection, handler ACL, PII. | Roles "TKC Sales", "TKC Service", "TKC Finance", "TKC Admin" (idempotent extension migration). Leak test for `tkc_AccountFinance`. Review every `getRequiredACLs()`. Import gate. jjwg geocode scheduler off. | W3, W5, W8 | 1 + 3 | M |
+| **W10 Security & access** | Roles, Finance protection, handler ACL, PII. | Roles "TKC Sales" and "TKC Service" + admin flag (§11.2; idempotent extension migration). Leak test for `tkc_AccountFinance`. Review every `getRequiredACLs()`. Import gate. jjwg geocode scheduler off. | W3, W5, W8 | 1 + 3 | M |
 | **W11 QA** | Evidence per story; regression set. | Unit tests (handlers, sequence, mappers, anonymizer); metadata contract tests; browser checks vs. mockups; idempotency test (import twice, same counts); PII-leak test on anonymizer output. | all | — | cross-cutting |
 | **W12 Docs** | Living documents stay current. | `docs/data-model.md`, mapping status, `docs/admin-guide.md`, `docs/user-guide/<screen>.md`, `docs/architecture.md` registers, `scripts/seed/README.md`. | all | — | cross-cutting |
 | **W13 Azure (later)** | Shared environment with Docker parity. | Image (PHP 8.3), Azure Database for MySQL 8.0, CI running the W1 chain, deploy with reviewed `tkc:repair`. | W1 | — | M–L |
@@ -96,7 +96,7 @@ Shared conventions:
 | Contract dates | `tkc_contract_begin_c`, `tkc_contract_end_c` (date) |
 | Links | `tkc_replicon_name_c` (varchar 100), `tkc_sharepoint_name_c` (varchar 40), shown via `TkcUrlTemplateField` |
 | Finance ref | `tkc_debiteurnummer_c` (varchar 40, indexed, audited) |
-| CRM modules | `tkc_crm_modules_c` (multienum `tkc_crm_modules_list`: marketing, sales, service) |
+| CRM modules | *not built in Sprint 1* — `tkc_crm_modules_c` waits for org Q5 / contact Q2 (§11.7) |
 | Import key | `osc_id_c` |
 | **`tkc_AccountFinance` module** (A6) | `rate_angels`, `rate_snor`, `rate_body`, `expected_revenue_current_fy`, `expected_revenue_next_fy`, `other_financial_terms` (text, as in OSC, Q6) + `account_id` (relationship `tkc_accounts_tkc_accountfinance`); all audited |
 
@@ -113,7 +113,7 @@ Shared conventions:
 | Core reuse | `first_name`, `last_name`, `title`, `account_id`, `assigned_user_id`, email widget (primary + alternatives), `phone_mobile`, `phone_work`, `phone_fax`, `phone_other`, `phone_home`, `primary_address_*`, `email_opt_out` (= NOT `marketingOptIn`; `lawful_basis` waits for Q8) |
 | Identity | `tkc_contact_type_c` (enum `tkc_contact_type_list`, indexed; key `spam` = OSC 14; values 9–11 are customer names → neutral labels in git, owner sets final labels), `tkc_function_level_c` (enum: C, M, O; labels wait for Q13), `tkc_language_c` (enum: nl, en) |
 | TKC programs and groups (enum `tkc_yes_no_list`) | `tkc_osc_usergroup_c`, `tkc_kmm_c`, `tkc_cafe_c`, `tkc_service_tomorrow_c`, `tkc_newsletter_c`, `tkc_freshworks_usergroup_c` |
-| CRM modules | `tkc_crm_modules_c` (multienum) |
+| CRM modules | *not built in Sprint 1* (§11.7) |
 | Import key | `osc_id_c` |
 
 - **Layout:** panels Identity · Contact details · TKC programs and groups · Consent. Subpanels: Cases, Opportunities, Activities and history, Documents.
