@@ -8,3 +8,6 @@ A company, public institution, or business unit with which business is conducted
 
 ## Screenshots
 The OSC screenshots for this screen show real customer data. They are kept locally in `data/osc/inputs/accounts/` (gitignored) and are not in the repository. Do not copy them into mockups, artifacts or planning comments.
+
+## Mockup
+Draft v0.1 (synthetic data): https://claude.ai/artifact/FCpWmiUycADdprHCtuqCkW — source `mockup.html` in this folder (uses `../../system/tkc-ds.css`). Planning: SUITE-18.

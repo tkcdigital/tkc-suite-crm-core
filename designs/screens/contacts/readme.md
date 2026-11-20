@@ -9,3 +9,6 @@ Tracks communication history, communication channel preferences, and opt-ins for
 
 ## Screenshots
 The OSC screenshots for this screen show real customer data. They are kept locally in `data/osc/inputs/contacts/` (gitignored) and are not in the repository. Do not copy them into mockups, artifacts or planning comments.
+
+## Mockup
+Draft v0.1 (synthetic data): https://claude.ai/artifact/9ixr9S2Gn8vFyVZbEZZSZB — source `mockup.html` in this folder (uses `../../system/tkc-ds.css`). Planning: SUITE-19.
