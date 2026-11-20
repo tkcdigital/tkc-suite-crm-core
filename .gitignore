@@ -59,6 +59,7 @@ node_modules
 !/extensions/.gitkeep
 !/extensions/defaultExt/
 !/extensions/tkc/
+/extensions/tkc/public/
 !extensions/defaultExt/app
 !extensions/defaultExt/backend
 !extensions/defaultExt/config

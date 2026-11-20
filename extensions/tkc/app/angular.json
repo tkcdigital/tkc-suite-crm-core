@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "projects": {
+    "tkc": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss",
+          "name": "",
+          "project": ""
+        }
+      },
+      "root": "extensions/tkc",
+      "sourceRoot": "extensions/tkc/app/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "ngx-build-plus:browser",
+          "options": {
+            "namedChunks": true,
+            "commonChunk": false,
+            "sourceMap": true,
+            "aot": true,
+            "outputPath": "extensions/tkc/public",
+            "index": "extensions/tkc/app/src/index.html",
+            "main": "extensions/tkc/app/src/main.ts",
+            "polyfills": "extensions/tkc/app/src/polyfills.ts",
+            "tsConfig": "extensions/tkc/app/tsconfig.app.json",
+            "assets": [
+              "extensions/tkc/app/src/favicon.ico",
+              "extensions/tkc/app/src/assets"
+            ],
+            "styles": [
+              "extensions/tkc/app/src/styles.scss"
+            ],
+            "scripts": [],
+            "extraWebpackConfig": "extensions/tkc/app/webpack.config.js"
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "extensions/tkc/app/src/environments/environment.ts",
+                  "with": "extensions/tkc/app/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ],
+              "extraWebpackConfig": "extensions/tkc/app/webpack.prod.config.js"
+            },
+            "dev": {
+              "outputPath": "public/extensions/tkc"
+            }
+          }
+        },
+        "serve": {
+          "builder": "ngx-build-plus:dev-server",
+          "options": {
+            "browserTarget": "services:build",
+            "extraWebpackConfig": "extensions/tkc/app/webpack.config.js",
+            "port": 3000
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "services:build:production",
+              "extraWebpackConfig": "extensions/tkc/app/webpack.prod.config.js"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "buildTarget": "services:build"
+          }
+        },
+        "test": {
+          "builder": "ngx-build-plus:karma",
+          "options": {
+            "main": "extensions/tkc/app/src/test.ts",
+            "polyfills": "extensions/tkc/app/src/polyfills.ts",
+            "tsConfig": "extensions/tkc/app/tsconfig.spec.json",
+            "karmaConfig": "extensions/tkc/app/karma.conf.js",
+            "assets": [
+              "extensions/tkc/app/src/favicon.ico",
+              "extensions/tkc/app/src/assets"
+            ],
+            "styles": [
+              "extensions/tkc/app/src/styles.scss"
+            ],
+            "scripts": [],
+            "extraWebpackConfig": "extensions/tkc/app/webpack.config.js"
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "extensions/tkc/app/e2e/protractor.conf.js",
+            "devServerTarget": "services:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "services:serve:production",
+              "protractorConfig": ""
+            }
+          }
+        }
+      }
+    },
+    "shell": {
+      "architect": {
+        "build": {
+          "options": {
+            "styles": [
+              "node_modules/bootstrap-css-only/css/bootstrap.min.css",
+              "extensions/tkc/app/src/theme/tkc-theme.scss",
+              "node_modules/primeng/resources/themes/bootstrap4-light-blue/theme.css",
+              "node_modules/primeng/resources/primeng.min.css"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

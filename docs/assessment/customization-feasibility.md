@@ -69,7 +69,7 @@ Effort: **S** < 1 day, **M** 1–3 days, **L** > 3 days (per item, after the sca
 | 14 | New custom module | 1 (Module Builder) | Module Builder deploys into `public/legacy/modules/<key>_<Name>/` + `custom/Extension/application/Ext/Include/`. A visible module that is not in `module_routing` renders in **Angular** by default (`core/backend/Navbar/LegacyHandler/NavbarHandler.php:615-639`). | M–L | M | The location is outside `custom/`, but the directory is new and does not overlap upstream. It needs a rule exception (D11). The legacy layer loads modules only from `public/legacy/modules/`. |
 | 15 | List view columns | 2 (or 3) | `custom/modules/<M>/metadata/listviewdefs.php` (full override). Alternative: a `ViewConfigMapperInterface` for view `list` (`ListViewDefinitionHandler.php:233`). | S | M | A full-copy override freezes upstream changes to that file. |
 | 16 | Filters / search fields | 2 | `custom/modules/<M>/metadata/searchdefs.php`, `SearchFields.php`. Angular reads them through `FilterDefinitionProvider` (`ListViewDefinitionHandler.php:260`). | S | L | |
-| 17 | Detail / edit layout (panels, tabs, columns) | 2 (or 3) | `custom/modules/<M>/metadata/detailviewdefs.php`: `panels`, `templateMeta.tabDefs[*].newTab`, `maxColumns`, `colClasses` (`RecordViewDefinitionHandler.php:426-432`). Delta alternative: `ViewConfigMapperInterface`, view `record` (`:288`, `ViewConfigMappers.php:84-93`). | M | M | One layout serves detail, edit and create (§1). The copy **must keep** the SuiteCRM 8 keys of the upstream file: `topWidget`, `sidebarWidgets`, `recordActions` (example: Accounts `detailviewdefs.php:103-171`). Not verified: whether a Studio save keeps cell-level keys such as `displayLogic` (spike S3). |
+| 17 | Detail / edit layout (panels, tabs, columns) | 2 (or 3) | `custom/modules/<M>/metadata/detailviewdefs.php`: `panels`, `templateMeta.tabDefs[*].newTab`, `maxColumns`, `colClasses` (`RecordViewDefinitionHandler.php:426-432`). Delta alternative: `ViewConfigMapperInterface`, view `record` (`:288`, `ViewConfigMappers.php:84-93`). | M | M | One layout serves detail, edit and create (§1). The copy **must keep** the SuiteCRM 8 keys of the upstream file: `topWidget`, `sidebarWidgets`, `recordActions` (example: Accounts `detailviewdefs.php:103-171`). Spike S3 (2026-11-20): a Studio save keeps `topWidget`, `sidebarWidgets`, `recordActions`, other widgets and cell `displayLogic`/`logic`, but **drops panel-level `tabDefs[*].displayLogic**` (`GridLayoutMetaDataParser.php:515-535`). Studio is allowed with a diff check (see `docs/architecture.md`). |
 | 18 | Record header, actions, buttons (OSC ribbon / quick-access toolbar) | 2 + 3 | Viewdefs `recordActions.actions` / `.exclude`, merged with the global defaults `module.recordview.actions` (`config/services/module/recordview/actions.yaml`; `core/backend/Data/Service/RecordActionDefinitionProvider.php:54-67`). An `asyncProcess: true` action calls a backend `ProcessHandlerInterface` with type `record-<key>`. Pattern: `core/backend/Process/Service/RecordActions/AbortEmailMarketing.php:45,79-119`. Put the class in `extensions/tkc/backend/…`; autoconfigure tags it (`core_services.yaml:104-105`). Front-end-only handler: `RecordActionManager.addHandler()` (`services/actions/base-action-manager.service.ts:67-75`). Header component swap: `RecordHeaderRegistry`. Widgets: `topWidget`, `sidebarWidgets`, `headerWidgets`, `bottomWidgets` (`RecordViewDefinitionHandler.php:223-226`). | M | L–M | Each process handler **must** implement `getRequiredACLs()` correctly. This is a security-officer check item. |
 | 19 | Mass (bulk) actions | 2 + 3 | Listviewdefs `bulkActions` + `module.listview.bulk_action` (`config/services/module/listview/bulk_actions.yaml`) + a process handler (examples: `core/backend/Process/Service/BulkActions/*.php`) | M | L | |
 | 20 | Line / table actions in lists | 3 (config) | `config/services/module/listview/{line_actions,table_actions}.yaml`, overridden as a delta in `extensions/tkc/config/*.php` (D5) | S | M | |
@@ -101,7 +101,7 @@ Source: `config/services/module/module_routing.yaml`, consumed by `app-initializ
 | Home dashboard + global search results | **Legacy** | — | `home: all false` (`:3-6`) |
 | Calendar, Maps, Security Groups | **Legacy** | **Legacy** | `:183-186, 223-226, 259-262` |
 | Calls, Meetings, Project, Contracts, Invoices, Products, Reports, Workflow, Users, Employees, Roles, Schedulers, PDF/Email templates, Case Updates/Events | Angular | **Legacy** | `record: false` |
-| Administration | Angular index (`AdminPanelComponent`, `app-initializer.ts:148-167`) | Legacy sub-pages | Not verified page by page |
+| Administration | Angular index (`AdminPanelComponent`, `app-initializer.ts:148-167`) + 11 Angular lists | Legacy (except Email Queue, Migration Tasks) | Page by page in §4.1 (spike S5) |
 | Studio / Module Builder, Import wizard | Legacy | Legacy | Not in `module_routing` and not visible modules |
 | Login, 2FA, logged-out | Angular | — | `app-initializer.ts:111-187` |
 | New `tkc_*` custom modules | Angular | Angular | Default for visible modules |
@@ -110,6 +110,21 @@ Source: `config/services/module/module_routing.yaml`, consumed by `app-initializ
 1. Every token must be produced for **two** targets: the Angular shell theme (§3 #26) and the legacy Dawn override (§3 #27). One generator from `designs/system/tokens.json` must write both outputs in the same story (`design-system.md`).
 2. Quotes detail, Emails, Home and global search can only be **restyled** (CSS). A "modernized view" for these screens is a legacy-theme job, not an Angular job.
 3. The iframe boundary is visible: the legacy page has its own fonts, spacing and focus styles. Only consistent tokens hide the seam. Accessibility (WCAG 2.2 AA focus states) must be checked in both UIs.
+
+### 4.1 Administration pages (spike S5, 2026-11-20 — traced in code, not checked in a browser)
+How it works: the Admin panel (`adminpaneldefs.php`, via `AdminPanelDefinitionHandler.php:107`) converts each legacy URL to an Angular route (`RouteConverter.php:204-219`). A link is Angular only if `module_routing` has the matching flag; `administration/<Action>` falls through to the legacy iframe (`app-initializer.ts:364-404`). Admin-only modules that are not in `$moduleList` get no Angular routes (`NavbarHandler.php:619-633`).
+
+| Section | Angular list (record legacy unless noted) | Legacy iframe |
+|---|---|---|
+| Users & Authentication | User Management, Role Management | Password Management, OAuth2 Clients, OAuth Keys, Security Group Management, Security Suite Settings |
+| System | Scheduler | System Settings, Currencies, Languages, Locale, PDF Settings, Search Settings, Elasticsearch, Themes |
+| Module Settings | — | Activity Streams, Business Hours, AOP Settings, Calendar Sync, Module Menu Filters, Connectors, Display Modules and Subpanels, History Subpanel, Releases, AOS Settings |
+| Email | Inbound Email, Outbound Email, External OAuth Connections, External OAuth Providers, **Email Queue (list + record Angular)** | Email Settings, Campaign Email Settings |
+| Admin Tools | **Manual Migration Tasks (list + record Angular)** | Repair, Backups, Diagnostic, Import Wizard, Module Loader |
+| Developer Tools | Workflow Manager (editor legacy) | Studio, Rename Modules, Module Builder, Dropdown Editor |
+| Google Suite | Address Cache | Maps Settings, Geocoded Counts, Geocoding Test, Geocode Addresses |
+
+Result: 11 of 49 Admin links open an Angular list; 38 (about 78 %) open legacy pages, and almost all detail/edit/settings pages are legacy. **Theme scope for Admin = mainly the legacy Dawn override**; the Angular theme covers only the Admin cards and the standard list view. Recommendation: restyle Admin with tokens only — no Angular rebuild of Admin screens.
 
 ## 5. Per-screen assessment
 
@@ -227,9 +242,9 @@ Cost of C: the columns sit in tables that the core owns. A future upstream colum
 |---|---|---|
 | S1 | Can `extensions/tkc/app/angular.json` add or replace a shell `styles` entry through `merge-angular-json`, so that core SCSS compiles with TKC variables? If not: does an extension-loaded runtime stylesheet override the shell styles reliably? | The chosen Angular theme mechanism. If neither works: a Level-5 proposal. |
 | S2 | Does a dependent dropdown (`dynamic` + `parentenum`) work in Angular edit, detail and filter for Cases? | Go or no-go for the Product/Category design |
-| S3 | Does a Studio layout save keep `recordActions`, `sidebarWidgets` and cell `displayLogic`? | Studio allowed or forbidden for the four redesign modules |
+| S3 | Does a Studio layout save keep `recordActions`, `sidebarWidgets` and cell `displayLogic`? | **Done 2026-11-20:** all kept except panel `tabDefs` `displayLogic` → Studio allowed with check; put logic on cells, not panels. |
 | S4 | Can an extension add an API Platform mapping path? | Needed only if a TKC API resource becomes necessary |
-| S5 | Which Admin sub-pages render in Angular versus legacy? | Theme scope for Admin |
+| S5 | Which Admin sub-pages render in Angular versus legacy? | **Done 2026-11-20:** §4.1 — Admin is mostly legacy; restyle via the Dawn override with tokens only. |
 
 ### Prerequisites for phase 3 (design system) and phase 4 (mockups)
 1. S1 is done, so that tokens can be designed against a proven Angular delivery path.

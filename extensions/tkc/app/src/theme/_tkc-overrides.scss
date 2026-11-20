@@ -1,0 +1,4 @@
+// TKC override rules. Keep selectors the same as core; use tokens only.
+.navbar {
+  background-color: var(--tkc-navbar-bg);
+}

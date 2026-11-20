@@ -1,0 +1,8 @@
+// TKC design tokens for the Angular shell (S1 spike).
+// Core SCSS variables ($midnight-blue etc.) are not !default, so they cannot be
+// overridden before the core import. TKC therefore emits CSS custom properties
+// and override rules AFTER the core theme (see tkc-theme.scss).
+// Values below equal the core defaults. Replace with generated tokens (D6).
+:root {
+  --tkc-navbar-bg: #534d64; // core $midnight-blue
+}
