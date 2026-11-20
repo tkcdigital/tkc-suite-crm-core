@@ -2,15 +2,24 @@
 
 > **Owner decisions 2026-11-20:** SLA **dropped** (SLA container → `drop`). Contracts (`Support$SupportContract`, `Support$LicentieContract`) **in scope**. Projects (`Support$Project`) **out of scope**. See `docs/backlog.md` § Product decisions.
 
-Status: **DRAFT v1** (SUITE-3). Source: workflow export `designs/screens/accounts/tkc-organization-workflow-with-workspaces.xml`,
+Status: **VERIFIED with REST 2026-11-20 (tst1)**. All REST-answerable items are done (5 batch runs). The other open points are business decisions (section 6). Customer names are replaced by placeholders; the real values are in OSC and in data/osc/rest-output/ (gitignored).
+
+**REST verification result (2026-11-20, tst1):**
+- Verified: type, length and nullability of every standard field used and all 29 custom fields (`metadata-catalog/organizations` and `.../customFields/c`, header `Accept: application/schema+json`). Verified: all menu value lists (`C$OrgRelType`, `auto_upgrade`, `rightnow_version`, `rightnow_future_version`, `pod`, `oracle_datacenter`, `rightnow_uurtarief`). Verified: field lists of both contract objects (section 5a).
+- Date fields: REST marks them with `minimumDate` (date only) or `minimumDateTime`. All three org date fields are date only.
+- Usage counts are aggregate ROQL only (`GROUP BY`, counts). No organisation record was read in this run. tst1 holds 738 organisations.
+- Raw output: `data/osc/rest-output/s/` (schemas) and `data/osc/rest-output/v/` (values) (gitignored). Batch files: `data/osc/batches/`.
+- Environment note: tst1 is a test copy. Ids and counts can differ in production.
+
+Earlier status: DRAFT v1 (SUITE-3). Source: workflow export `designs/screens/accounts/tkc-organization-workflow-with-workspaces.xml`,
 the flow diagram, one screenshot and the SuiteCRM 8.10 vardefs. **No OSC REST access yet.**
-Everything marked `TBC` is not verified. It needs the REST metadata (`metadata-catalog/Organization`, menu values) or an answer from the user.
+The REST run of 2026-11-20 verified the types, lengths and menu values. A `TBC` that remains needs an answer from the user.
 
 Raw parse output: `data/osc/workspace/accounts.json` and `data/osc/workspace/accounts-flow.json` (gitignored).
 
 Legend for `Exists?`: `core` = standard SuiteCRM field. `new` = we add it. `drop` = not migrated.
 OSC field names in the XML use the form `Org.C$<Name>` (custom field) or `Org.<Name>` (standard field).
-The REST name of a custom field is `CustomFields.c.<snake_case>` (TBC for each field).
+The REST name of a custom field is `CustomFields.c.<snake_case>`. The verified REST names are in column 1 of section 2.
 
 ## 1. Workflow summary
 
@@ -95,47 +104,55 @@ A label in the SalesTeam workspace shows the text "Heeft RightNow: $orgs.c$has_r
 ## 2. Field mapping table
 
 SuiteCRM names follow `.claude/rules/suitecrm-customization.md`: custom fields end in `_c`. TKC-specific fields start with `tkc_`.
-`Type` of an OSC field is verified only when the XML or screenshot shows it. Everything else is `TBC`.
+`Type` of an OSC field is verified by REST schema (2026-11-20) unless the cell says otherwise.
 `Req/RO` is not set in the XML for any field (`RequiredOption` and `ReadOnlyOption` are empty). The screenshot shows a required marker on Organisatienaam and Staat. Those come from the object definition.
 
 | OSC field (API name) | OSC type | Workspace location | SuiteCRM module.field | Exists? | New field type/len | Dropdown values | Notes |
 |---|---|---|---|---|---|---|---|
-| `Org.Name` | text (standard, required per screenshot) | Left panel row 0, all 6 | Accounts.`name` | core | | | Label "Organisatienaam". |
-| `Org.SalesAcctId` | FK to staff account (standard "Sales Account") | Left panel row 1, all 6 | Accounts.`assigned_user_id` | core | | | Shown as "Verkoper". Staff-to-user mapping needed for import (open question 8). |
-| `Org.C$OrgRelType` | menu (custom), label "Type" | Left panel row 2, all 6; drives the workflow | Accounts.`account_type` | core | enum, replace the list with a TKC list in `account_type_dom` | Lead (id 273), Prospect (180), Klant (181), Leverancier (182), Relatie (183), Oud Klant (187). Default in workspaces: 183 (Relatie). The list may have more items (path "Other"). TBC via REST | Core field `account_type` exists but has an English list. Architect: replace the list by a custom override, or add `tkc_relatie_type_c`. Values from workflow path labels. Need REST to confirm full list and sort order. |
-| `Org.Oaddr` | address (standard compound field), label "Facturering" | Left panel row 3, all 6 | Accounts.`billing_address_street`, `_city`, `_state`, `_postalcode`, `_country` | core | | | Label means billing address. Components of the OSC address field: TBC via REST. `shipping_address_*` stay unused. |
-| `Org.C$Uurtariefangels` | text, multi-line (XML `Multiline=True`), label "Uurtarief angels" | Klant - SalesTeam, left panel | Accounts.`tkc_uurtarief_angels_c` | new | `text` (TBC: varchar or currency?) | | Hourly rate. A numeric rate may fit `currency`. Needs the real type. |
-| `Org.C$Uursnor` | TBC, label "Uurtarief snor" | Klant - SalesTeam | Accounts.`tkc_uurtarief_snor_c` | new | `text` (TBC) | | Same as above. |
-| `Org.C$Uurtariefbody` | TBC, label "Uurtarief body" | Klant - SalesTeam | Accounts.`tkc_uurtarief_body_c` | new | `text` (TBC) | | Same as above. |
-| `Org.C$Tekstgebieduurtarief` | text area (name suggests), label "Verw omzet lopend boekjaar" | Klant - SalesTeam | Accounts.`tkc_verw_omzet_lopend_c` | new | `text` (TBC) | | Field name says "hourly rate". Label says "expected revenue, current fiscal year". Name and label do not match. Open question 6. |
-| `Org.C$Tekstgebiedreiskosten` | text area (name suggests), label "Verw omzet komend boekjaar" | Klant - SalesTeam | Accounts.`tkc_verw_omzet_komend_c` | new | `text` (TBC) | | Field name says "travel costs". Label says "expected revenue, next fiscal year". Open question 6. |
-| `Org.C$Tekstgebiedoverig` | text area (name suggests), label "Overige financiële afspraken" | Klant - SalesTeam | Accounts.`tkc_overige_fin_afspraken_c` | new | `text` | | Free text. |
-| `Org.C$Tooling` | TBC, label "Overige tooling" | Klant - SalesTeam | Accounts.`tkc_tooling_c` | new | `text` (TBC) | | |
-| `Org.C$HasRightnow` | TBC; screenshot shows a Ja/Nee dropdown, label "Heeft RightNow ?" | Klant - Algemeen, Prospect, Leverancier, Relatie, Oud Klant | Accounts.`tkc_has_rightnow_c` | new | `bool` or `enum` yes/no (TBC) | Ja / Nee | Used in the inactive rule. |
-| `Org.C$RightnowVersion` | menu (screenshot), label "RightNow Version" (XML label "Versie" in SalesTeam) | all 6 | Accounts.`tkc_rightnow_version_c` | new | `enum` | TBC via REST | Menu values not in the XML. |
-| `Org.C$RightnowFutureVersion` | menu (screenshot), label "RightNow Future Version" | Klant - Algemeen, Prospect, Leverancier, Relatie, Oud Klant | Accounts.`tkc_rightnow_future_version_c` | new | `enum` | TBC via REST | Values look like release names with a month. Verify. |
-| `Org.C$Pod` | menu (screenshot), label "POD" | Klant - Algemeen | Accounts.`tkc_pod_c` | new | `enum` | TBC via REST | |
-| `Org.C$OracleDatacenter` | menu (screenshot), label "Oracle datacenter" | Klant - Algemeen | Accounts.`tkc_oracle_datacenter_c` | new | `enum` | TBC via REST | |
-| `Org.C$AutoUpgrade` | Ja/Nee dropdown (screenshot), label "Auto Upgrade Program" | Klant - Algemeen | Accounts.`tkc_auto_upgrade_c` | new | `bool` or `enum` (TBC) | Ja / Nee | |
-| `Org.C$ProjectsOnPortal` | Ja/Nee dropdown (screenshot), label "Projects On Portal" | Klant - Algemeen | Accounts.`tkc_projects_on_portal_c` | new | `bool` or `enum` (TBC) | Ja / Nee | |
-| `Org.C$ConsoleUrl` | URL/text (screenshot shows a web icon), label "Console URL" | all 6 | Accounts.`tkc_console_url_c` | new | `url`, varchar(255) (TBC) | | |
-| `Org.C$BegindatumContract` | TBC (name suggests date) | Klant - SalesTeam, Prospect, Leverancier, Relatie, Oud Klant | Accounts.`tkc_contract_begin_c` | new | `date` (TBC) | | Contract start. Not on Klant - Algemeen. |
-| `Org.C$EinddatumContract` | TBC (name suggests date) | same as above | Accounts.`tkc_contract_end_c` | new | `date` (TBC) | | Contract end. |
-| `Org.C$Debiteurnummer` | TBC (name suggests text), label "Debiteur Nummer" | all 6 | Accounts.`tkc_debiteurnummer_c` | new | `varchar(50)` (TBC) | | Debtor number. Key for the finance system. Consider an index. |
-| `Org.C$Repliconname` | TBC (text) | Klant - SalesTeam, Klant - Algemeen (tab Replicon Overzicht) | Accounts.`tkc_replicon_name_c` | new | `varchar(255)` (TBC) | | Feeds the Replicon URL. See section 5. |
-| `Org.C$Sharepointname` | TBC (text), label "Share Point Name" | all 6 (tab SharePoint Documenten) | Accounts.`tkc_sharepoint_name_c` | new | `varchar(255)` (TBC) | | Feeds the SharePoint URL. See section 5. |
-| `Org.State` | TBC. Multi-select chips in the screenshot (3 chips), label "Staat", required marker. XML default value `Service||Sales||Marketing` | tab Details (SalesTeam); left panel in the screenshot | Accounts.`tkc_state_c` | new | `multienum` (TBC) | Items shown in the screenshot are not the same as the XML default (the screenshot shows "Outreach" and "Verkoopkansen"). TBC via REST | Meaning is unclear. Open question 5. |
-| `Org.Login` | text (standard organization login), label "Inloggen" | tab Details | none | drop | | | Customer portal login. See open question 7. Proposed: drop. |
+| `Org.Name` | text(80), required (REST: string, maxLength 80, not nullable) | Left panel row 0, all 6 | Accounts.`name` | core |  |  | Label "Organisatienaam". SuiteCRM `name` is varchar(150): fits. |
+| `Org.SalesAcctId` (REST `salesSettings.salesAccount`) | FK to staff account (verified: object under `salesSettings`) | Left panel row 1, all 6 | Accounts.`assigned_user_id` | core | | | Shown as "Verkoper". Staff-to-user mapping needed for import (open question 8). |
+| `Org.C$OrgRelType` (REST `CustomFields.c.org_rel_type`) | menu (verified: object id + lookupName), nullable; 6 items | Left panel row 2, all 6; drives the workflow | Accounts.`account_type` | core | enum (replace the `account_type_dom` list) | 273 Lead, 180 Prospect, 181 Klant, 182 Leverancier, 183 Relatie, 187 Oud Klant (REST list, complete: 6 items, 2026-11-20). Usage in tst1 (738 orgs): Lead 154, Prospect 196, Klant 95, Leverancier 27, Relatie 250, Oud Klant 7, empty 9. | The REST list equals the six values from the workflow XML: no other item exists. Core `account_type` has an English list. Architect: replace the list by a custom override, or add `tkc_relatie_type_c`. 9 organisations have no type (workflow falls back to Relatie). |
+| `Org.Oaddr` (REST `addresses`) | address collection `addresses` (verified): each item has street (240), city (80), postalCode (10), stateOrProvince (menu), country (object, `countries` collection), addressType (menu, not null) | Left panel row 3, all 6 | Accounts.`billing_address_street`, `_city`, `_state`, `_postalcode`, `_country` | core |  |  | Label means billing address. SuiteCRM street varchar(150), city 100, postalcode 20, state 100, country 255: all fit. Address types (verified 2026-11-20): 1 Facturering (billing), 2 Verzenden, 3 Postbus, 4 Afleveradres. The import takes type 1 for `billing_address_*`. The `stateOrProvince` menu has 74 items (codes such as AK, AL, AR, AS: a US state list, not Dutch provinces). |
+| `Org.C$Uurtariefangels` (REST `CustomFields.c.uurtariefangels`) | text, multi-line (verified: string, maxLength 1333). Label "Uurtarief angels" | Klant - SalesTeam, left panel | Accounts.`tkc_uurtarief_angels_c` | new | `text` (not currency: OSC holds free text) |  | Hourly rate stored as free text (max 1333 in OSC). If the owner wants a number, the import must parse it. Open question 6. |
+| `Org.C$Uursnor` (REST `CustomFields.c.uursnor`) | text, multi-line (verified: string, maxLength 1333). Label "Uurtarief snor" | Klant - SalesTeam | Accounts.`tkc_uurtarief_snor_c` | new | `text` (not currency: OSC holds free text) |  | Hourly rate stored as free text (max 1333 in OSC). If the owner wants a number, the import must parse it. Open question 6. |
+| `Org.C$Uurtariefbody` (REST `CustomFields.c.uurtariefbody`) | text, multi-line (verified: string, maxLength 1333). Label "Uurtarief body" | Klant - SalesTeam | Accounts.`tkc_uurtarief_body_c` | new | `text` (not currency: OSC holds free text) |  | Hourly rate stored as free text (max 1333 in OSC). If the owner wants a number, the import must parse it. Open question 6. |
+| `Org.C$Tekstgebieduurtarief` (REST `CustomFields.c.tekstgebieduurtarief`) | text area (verified: string, maxLength 1333), label "Verw omzet lopend boekjaar" | Klant - SalesTeam | Accounts.`tkc_verw_omzet_lopend_c` | new | `text` |  | Field name says "hourly rate". Label says "expected revenue, current fiscal year". Name and label do not match. Open question 6. |
+| `Org.C$Tekstgebiedreiskosten` (REST `CustomFields.c.tekstgebiedreiskosten`) | text area (verified: string, maxLength 1333), label "Verw omzet komend boekjaar" | Klant - SalesTeam | Accounts.`tkc_verw_omzet_komend_c` | new | `text` |  | Field name says "travel costs". Label says "expected revenue, next fiscal year". Open question 6. |
+| `Org.C$Tekstgebiedoverig` (REST `CustomFields.c.tekstgebiedoverig`) | text area (verified: string, maxLength 1333), label "Overige financiële afspraken" | Klant - SalesTeam | Accounts.`tkc_overige_fin_afspraken_c` | new | `text` |  | Free text. |
+| `Org.C$Tooling` (REST `CustomFields.c.tooling`) | text area (verified: string, maxLength 1333), label "Overige tooling" | Klant - SalesTeam | Accounts.`tkc_tooling_c` | new | `text` |  |  |
+| `Org.C$HasRightnow` (REST `CustomFields.c.has_rightnow`) | **boolean** (verified), nullable; Ja/Nee dropdown, label "Heeft RightNow ?" | Klant - Algemeen, Prospect, Leverancier, Relatie, Oud Klant | Accounts.`tkc_has_rightnow_c` | new | `bool` | Ja / Nee (boolean) | Used in the inactive rule. |
+| `Org.C$RightnowVersion` (REST `CustomFields.c.rightnow_version`; empty in sample) | menu (verified), 21 items, label "RightNow Version" (XML label "Versie" in SalesTeam) | all 6 | Accounts.`tkc_rightnow_version_c` | new | `enum` | Release names, format `YYYY.MM Month`: 272 2012.02 February ... 267 2017.02 February (21 items, 2012.02 to 2017.02, quarterly; list is not in date order: ids 267-272 were added later). Full list in `data/osc/rest-output/v/cm-organizations-rightnow_version-A.json`. | Old release list (ends 2017). Candidate to migrate as free text or as the list. Owner decides if the list is still needed. |
+| `Org.C$RightnowFutureVersion` (REST `CustomFields.c.rightnow_future_version`; empty in sample) | menu (verified), 36 items, label "RightNow Future Version" | Klant - Algemeen, Prospect, Leverancier, Relatie, Oud Klant | Accounts.`tkc_rightnow_future_version_c` | new | `enum` | Same format: 163 2012.02 February ... 266 2020.11 November (36 items, quarterly, 2012.02 to 2020.11). | Obsolete list (last item 2020.11). Candidate to migrate as text. |
+| `Org.C$Pod` (REST `CustomFields.c.pod`; empty in sample) | menu (verified), 9 items, label "POD" | Klant - Algemeen | Accounts.`tkc_pod_c` | new | `enum` | 196 CA/AP (California / Asia Pacific), 197 WC (West Coast), 198 MW (Mid West), 199 PC (PCI Compliant), 200 PS (Public Sector), 201 GB (Great Britain), 202 AM (Amsterdam location), 203 SY (Sydney location), 204 JP (Japan location) |  |
+| `Org.C$OracleDatacenter` (REST `CustomFields.c.oracle_datacenter`; empty in sample) | menu (verified), 3 items, label "Oracle datacenter" | Klant - Algemeen | Accounts.`tkc_oracle_datacenter_c` | new | `enum` | 234 GB, 235 AM, 236 MW |  |
+| `Org.C$AutoUpgrade` (REST `CustomFields.c.auto_upgrade`) | **menu** (verified: id + lookupName), 2 items, label "Auto Upgrade Program" | Klant - Algemeen | Accounts.`tkc_auto_upgrade_c` | new | `bool` (the list has only Ja/Nee) | 237 Ja, 238 Nee. Usage in tst1: Nee 737, Ja 1, empty 0 (every org has a value) | Menu but only Ja/Nee, never empty: map to `bool`, default No. |
+| `Org.C$ProjectsOnPortal` (REST `CustomFields.c.projects_on_portal`) | **boolean** (verified), nullable; Ja/Nee. Label "Projects On Portal" | Klant - Algemeen | Accounts.`tkc_projects_on_portal_c` | new | `bool` | Ja / Nee (boolean) |  |
+| `Org.C$ConsoleUrl` (REST `CustomFields.c.console_url`; empty in sample) | text (verified: string, maxLength 255), label "Console URL" | all 6 | Accounts.`tkc_console_url_c` | new | `url`, varchar(255) |  |  |
+| `Org.C$BegindatumContract` (REST `CustomFields.c.begindatum_contract`; empty in sample) | date (verified: string with date limits `minimumDate`, no time) | Klant - SalesTeam, Prospect, Leverancier, Relatie, Oud Klant | Accounts.`tkc_contract_begin_c` | new | `date` |  | Contract start. Not on Klant - Algemeen. |
+| `Org.C$EinddatumContract` (REST `CustomFields.c.einddatum_contract`; value is a string in REST: date or datetime not verified) | date (verified: string with date limits, no time) | same as above | Accounts.`tkc_contract_end_c` | new | `date` |  | Contract end. |
+| `Org.C$Debiteurnummer` (REST `CustomFields.c.debiteurnummer`; empty in sample) | text (verified: string, maxLength 40), label "Debiteur Nummer" | all 6 | Accounts.`tkc_debiteurnummer_c` | new | `varchar(40)`, indexed |  | Debtor number. Key for the finance system. Consider an index. |
+| `Org.C$Repliconname` (REST `CustomFields.c.repliconname`) | text (verified: string, maxLength 100) | Klant - SalesTeam, Klant - Algemeen (tab Replicon Overzicht) | Accounts.`tkc_replicon_name_c` | new | `varchar(100)` |  | Feeds the Replicon URL. See section 5. |
+| `Org.C$Sharepointname` (REST `CustomFields.c.sharepointname`; empty in sample) | text (verified: string, maxLength 40), label "Share Point Name" | all 6 (tab SharePoint Documenten) | Accounts.`tkc_sharepoint_name_c` | new | `varchar(40)` |  | Feeds the SharePoint URL. See section 5. |
+| `Org.State` (REST `cRMModules.marketing`, `.sales`, `.service`) | **three booleans** (verified): the standard OSC CRM-module flags | tab Details (SalesTeam); left panel in the screenshot | Accounts.`tkc_crm_modules_c` | new | `multienum` with 3 items, or 3 `bool` fields. Open question 5 (keep or drop) | Service / Sales / Marketing (verified: `cRMModules` has 3 booleans, all not nullable) | The XML default `Service |  | Sales |  | Marketing` equals all three flags on. The chip text in the screenshot is a UI label for these flags. Business meaning not confirmed. |
+| `Org.Login` (REST `login`) | text (verified: string, maxLength 40), label "Inloggen" | tab Details | none | drop |  |  | Customer portal login. See open question 7. Proposed: drop. |
 | `Org.PasswordEncrypt` | password (standard), label "Wachtwoord" | tab Details | none | drop | | | A password. Must not go into a CRM. Proposed: drop. |
-| `Org.C$CompanyImage` | text (screenshot shows a file name in a text area), label "company_image" | Klant - SalesTeam, Klant - Algemeen | none | drop | | | Seems a logo file name for the customer portal. Proposed: drop. Open question 7. |
-| `Org.OrgId` (Info item) | integer ID | Info pane | Accounts.`osc_id_c` | new | `int` or `varchar(20)`, indexed | | Import key. Required by `suitecrm-customization.md`. |
+| `Org.C$CompanyImage` (REST `CustomFields.c.company_image`) | text (verified: string, maxLength 1333; file name) | Klant - SalesTeam, Klant - Algemeen | none | drop |  |  | Seems a logo file name for the customer portal. Proposed: drop. Open question 7. |
+| `Org.C$UnRnCrm` (REST `CustomFields.c.unrncrm`) | text (verified: string, maxLength 20; label in OSC "Usrname RN CRM") | not in any workspace | none | drop (proposed) |  |  | Name suggests a user name for a CRM site. Likely a credential. Open question 16. |
+| `Org.C$PwRnCrm` (REST `CustomFields.c.pwrncrm`) | text (verified: string, maxLength 30; label in OSC "Password RN CRM") | not in any workspace | none | drop (proposed) |  |  | Name and label say password. Do not import. Security-officer to confirm. Open question 16. |
+| `Org.C$OrgTelefoonnummer` (REST `CustomFields.c.org_telefoonnummer`) | text (verified: string, maxLength 20), label "Telefoonnummer" | not in any workspace | Accounts.`phone_office` | core (proposed) |  |  | Phone number of the organization. Not on a screen. |
+| `Org.C$RightnowUurtarief` (REST `CustomFields.c.rightnow_uurtarief`) | **menu** (verified, not text), 3 items, label "Uurtarief" | not in any workspace | Accounts.`tkc_rightnow_uurtarief_c` | new (proposed) | `enum` | 231 Snor, 232 Bodybuilder, 233 Angel | Rate class of the customer (same three classes as the booleans `tarief_*` below and as the opportunity menu `type_medewerker`: Angels, Bodybuilders, Snorren). Not on a screen. Open question 16. |
+| `Org.C$TariefSnor` (REST `CustomFields.c.tarief_snor`) | **boolean** (verified) | not in any workspace | Accounts.`tkc_tarief_snor_c` | new (proposed) | `bool` | | Not on a screen. Open question 16. |
+| `Org.C$TariefAngels` (REST `CustomFields.c.tarief_angels`) | **boolean** (verified) | not in any workspace | Accounts.`tkc_tarief_angels_c` | new (proposed) | `bool` | | Same as above. |
+| `Org.C$TariefBodybuilders` (REST `CustomFields.c.tarief_bodybuilders`) | **boolean** (verified) | not in any workspace | Accounts.`tkc_tarief_bodybuilders_c` | new (proposed) | `bool` | | Same as above. |
+| `Org.OrgId` (Info item) | integer ID | Info pane | Accounts.`osc_id_c` | new | `varchar(20)`, indexed (OSC ID is integer, max 9223372036854775807) |  | Import key. Required by `suitecrm-customization.md`. |
 | `Org.Created` (Info item) | datetime | Info pane | Accounts.`date_entered` | core | | | |
 | `Org.Updated` (Info item) | datetime | Info pane | Accounts.`date_modified` | core | | | |
 | `Org.RuleState` (Info item) | system | Info pane | none | drop | | | OSC rule engine state. No meaning in SuiteCRM. |
-| SLA list (`SlaContainer`, not a field) | relationship | Left panel | none | drop (open) | | | See open question 2. |
+| SLA list (`SlaContainer`; REST `serviceSettings.sLAInstances`) | relationship | Left panel | none | **drop** | | | Owner decision 2026-11-20: SLA dropped. |
 
-Counts: **core 6** (`Name`, `SalesAcctId`, `OrgRelType`, `Oaddr`, `Created`, `Updated`), **new 22** (21 OSC custom/standard fields + `osc_id_c`), **drop 4** (`Login`, `PasswordEncrypt`, `CompanyImage`, `RuleState`). The SLA list is a relationship, not a field (section 4).
-Of the 21 new OSC fields, only the menu fields have an `enum` type that the screenshot shows. All other types are `TBC`.
+Counts (40 rows, recounted after REST 2026-11-20; contracts in section 5a are counted separately: 6 new fields plus `osc_id_c`): **core 7** (`Name`, `SalesAcctId`, `OrgRelType`, `Oaddr`, `Created`, `Updated`, and proposed `org_telefoonnummer` to `phone_office`), **new 26** (`osc_id_c`, 19 workspace fields, `State` as one field, 5 REST-only proposals), **drop 7** (`Login`, `PasswordEncrypt`, `CompanyImage`, `RuleState`, `unrncrm`, `pwrncrm`, SLA list). Rows marked "(proposed)" wait for open question 16.
+REST has 29 custom fields on Organization: 22 appear in the workspaces, 7 appear only in REST (`unrncrm`, `pwrncrm`, `org_telefoonnummer`, `rightnow_uurtarief`, `tarief_snor`, `tarief_angels`, `tarief_bodybuilders`). `PasswordEncrypt` is a standard field that REST did not send.
+Menu value lists: **all read** (section 2 and `data/osc/rest-output/v/`). Seven custom fields are menus: `org_rel_type`, `auto_upgrade`, `rightnow_version`, `rightnow_future_version`, `pod`, `oracle_datacenter`, `rightnow_uurtarief`.
 
 Existing SuiteCRM custom Accounts fields in this fork: only the four `jjwg_maps_*_c` overrides (Google Maps module). There is no collision with the proposed `tkc_*` names.
 
@@ -194,10 +211,10 @@ Group A (Klant, SalesTeam variant), group B (Klant, general variant), group C (P
 | Organization notes (`OrgNotes`) | `notes` parent (Accounts) | core |
 | Organization file attachments | `documents_accounts` or note attachments | core |
 | Organization audit log | `accounts_audit` (fields with `audited=true`) | core. Custom fields must be marked audited if they must show in the log |
-| Organization 1—n `Support$Project` (FK `Org_id`) | `Project` module (`projects_accounts`) or a custom module | **TBC** open question 3 |
-| Organization 1—n `Support$SupportContract` (FK `Organization`) | `AOS_Contracts` (`account_id`) or a custom module | **TBC** open question 3 |
-| Organization 1—n `Support$LicentieContract` (FK `Organization`) | `AOS_Contracts` with a type, or a custom module | **TBC** open question 3 |
-| Organization n—m SLA (`SlaContainer`) | none in SuiteCRM | **Gap** open question 2 |
+| Organization 1—n `Support$Project` (FK `Org_id`) | `Project` module (`projects_accounts`) or a custom module | **drop**: out of scope (owner decision) |
+| Organization 1—n `Support$SupportContract` (FK `Organization`) | `AOS_Contracts` (`contract_account_id`) or a `tkc_` module | in scope, section 5a |
+| Organization 1—n `Support$LicentieContract` (FK `Organization`) | `AOS_Contracts` with a type, or a `tkc_` module | in scope, section 5a |
+| Organization n—m SLA (`SlaContainer`) | none in SuiteCRM | **drop** (owner decision) |
 | Organization → external page: Replicon client page (URL template with `$p_orgcf_109`) | a `[custom]` URL built from `tkc_replicon_name_c` (link on the detail view, or a frame) | custom |
 | Organization → external page: SharePoint/TFS dashboard (URL template with the org name or `$p_orgcf_112`) | a `[custom]` URL built from `tkc_sharepoint_name_c` | custom |
 | Organization → report "Site Werkzaamheden" (id 101032) | a subpanel or a report (AOR_Reports) | TBC open question 4 |
@@ -205,23 +222,75 @@ Group A (Klant, SalesTeam variant), group B (Klant, general variant), group C (P
 Note on the two URL templates: the XML also contains a different host in the Browser controls of other workspaces (an older TFS server). Which URL is the current one is open question 12. In the templates, `$p_orgcf_109` and `$p_orgcf_112` are custom field IDs. They probably point to `C$Repliconname` and `C$Sharepointname`. This is not verified.
 Embedded frames of external sites are often blocked by the other site (`X-Frame-Options`). A link that opens a new tab is the safer design.
 
+## 5a. Contracts (in scope)
+
+Owner decision: `Support.SupportContract` and `Support.LicentieContract` are in scope. `Support.Project` is out of scope (`drop`).
+Verified by REST schema (2026-11-20, `metadata-catalog/Support.SupportContract` and `.../Support.LicentieContract`). Both objects have a link to Organization (n:1), file attachments and notes. Labels are Dutch.
+
+### Support.SupportContract (REST API names)
+
+| OSC field (REST) | OSC type | Label | SuiteCRM target | Exists? | New field type/len | Notes |
+|---|---|---|---|---|---|---|
+| `SupportContractNaam` | string(60), nullable | SupportContractNaam | AOS_Contracts.`name` | core | - | OSC 60 fits the core length. |
+| `SupportContractCode` | string(30), nullable | SupportContractCode | AOS_Contracts.`reference_code` | core | - | |
+| `StartContract` | date, not null | StartContract | AOS_Contracts.`start_date` | core | - | |
+| `EindeContract` | date, not null | EindeContract | AOS_Contracts.`end_date` | core | - | |
+| `Beschrijving` | string(349525), nullable | Beschrijving | AOS_Contracts.`description` | core | - | Text. |
+| `Organization` | relation to organizations | Organization | AOS_Contracts.`contract_account_id` | core | - | n:1. |
+| `Opportunity` | relation to opportunities | Opportunity | AOS_Contracts.`opportunity_id` | core | - | Core has an opportunity relate field. |
+| `Contact` | **integer** (not a relation), nullable | Contact | AOS_Contracts.`contact_id` | core | - | A plain contact id, not a REST relation. The import must look up the contact by OSC id (`osc_id_c`). Open question 17. |
+| `Incident` | relation to incidents, nullable | Incident | none | drop (proposed) | - | No core Contracts-Cases link. Owner decides (open question 17). |
+| `TypeSupport` | menu, lookup object `Support.TypeSupport` | Type Support | AOS_Contracts.`tkc_support_level_c` | new | enum | 1 Brons, 2 Zilver, 3 Goud (3 items). |
+| `Kanalen` | menu, same lookup object `Support.TypeSupport` | Kanalen | AOS_Contracts.`tkc_support_channel_c` | new | enum (same list) | Label "Kanalen" (channels) but the list is Brons/Zilver/Goud. Name and list do not match. Open question 17. |
+| `UrenIncontract` | integer, not null | UrenIncontract | AOS_Contracts.`tkc_hours_in_contract_c` | new | int | Hours included. |
+| `ChangeDrempel` | integer, not null | Change Drempel | AOS_Contracts.`tkc_change_threshold_c` | new | int | Change threshold (unit not known). |
+| `RepliconProjectName` | string(60), nullable | RepliconProjectName | AOS_Contracts.`tkc_replicon_project_c` | new | varchar(60) | Feeds the Replicon link. |
+| `createdTime`, `updatedTime`, `CreatedByAccount`, `UpdatedByAccount` | datetime, staff account | - | `date_entered`, `date_modified`, `created_by`, `modified_user_id` | core | - | Staff-to-user map. |
+| `id` | integer | - | AOS_Contracts.`osc_id_c` | new | varchar(20), indexed | Import key. |
+
+### Support.LicentieContract (REST API names)
+
+| OSC field (REST) | OSC type | Label | SuiteCRM target | Exists? | New field type/len | Notes |
+|---|---|---|---|---|---|---|
+| `Referentie` | string(40), nullable | Referentie | AOS_Contracts.`name` and `reference_code` | core | - | The object has no name field: use the reference for both. |
+| `DatumIngang` | date, not null | Datum Ingang | AOS_Contracts.`start_date` | core | - | Start date. |
+| `DatumRenewal` | date, not null | Datum Renewal | AOS_Contracts.`end_date` and `renewal_reminder_date` | core | - | Renewal date: treat as the end of the current term. Open question 17. |
+| `Duur` | integer, not null | Duur | AOS_Contracts.`tkc_duration_c` | new | int | Duration. Unit (months or years) is not known. |
+| `Organization` | relation to organizations | Organization | AOS_Contracts.`contract_account_id` | core | - | n:1. |
+| `id` | integer | - | AOS_Contracts.`osc_id_c` | new | varchar(20), indexed | Import key. |
+| `createdTime` etc. | as above | - | as above | core | - | |
+
+Core `AOS_Contracts` fields (from `public/legacy/modules/AOS_Contracts/vardefs.php`): `name`, `reference_code` (varchar 255), `start_date`, `end_date` (date), `total_contract_value` (currency), `status` (enum `contract_status_list`), `customer_signed_date`, `company_signed_date` (date), `renewal_reminder_date` (datetimecombo), `contract_type` (enum `contract_type_list`), `contract_account` (relate Accounts), `opportunity`, `contact`, `description`, line items and totals.
+
+**Proposal (for the architect):** one `AOS_Contracts` module for both objects. `contract_type` = Support or Licentie (two new items in `contract_type_list`). Name, reference, dates, account, opportunity, contact and description are **core**. Five fields for Support and one for Licentie are **new** (`tkc_*_c`, table above). The two objects share only 5 fields and the new fields differ: a layout that shows Support fields only when `contract_type` = Support is needed. A separate `tkc_` module is the alternative if the owner wants own status flows. Neither object has a status field, so `status` stays at a default (open question 17). Total new fields for contracts: 6 plus `osc_id_c`.
+
+Lookup objects used by the contracts: `Support.TypeSupport` (3 items, verified). Lookup objects not used by these two contracts (verified from the schemas): `Support.TypeMedewerker` (custom object with one text field `Type`; 0 rows; not the source of the opportunity menu `c.type_medewerker`), `Support.SupportPriority` (see incident.md), `Support.SupportPrioMenu` (empty, 0 rows). Other candidate lookups named in earlier drafts (`SupportKanalen`, `werkplek`, `RightNowRelease`) are not linked from either contract schema and are not needed.
+Contract record counts were not read (not asked).
+
 ## 6. Open questions
 
-1. **Menu values and types of all custom fields (blocking for import and field creation).** The XML has no field definitions. Needs REST (`metadata-catalog/Organization`, menu lists of `C$OrgRelType`, `C$RightnowVersion`, `C$RightnowFutureVersion`, `C$Pod`, `C$OracleDatacenter`, `State`) or a screenshot of the Admin site. Also: field length, required flag, default, and whether `Org.State` is a multi-select.
-2. **SLAs.** The left panel has an SLA container ("SLA's" with an Add button). SuiteCRM has no SLA module and no SLA clock. Is SLA data on organizations in use? What must the SLA do on a case (due date, escalation)? Options: (a) drop, (b) a custom `tkc_sla` module with relationship Accounts n—m and a field on Cases, (c) a free-text/dropdown field "SLA".
-3. **Custom OSC objects `Support$Project`, `Support$SupportContract`, `Support$LicentieContract`.** They appear as grids on the Klant workspaces (Leverancier also shows Projects). Are they in the SUITE scope? Which SuiteCRM target: core `Project` and `AOS_Contracts`, or new custom modules? Needs their field lists (REST) and a view from the user.
-4. **Report 101032 "Site Werkzaamheden"** (Klant - Algemeen). What data does it show, and does it need to migrate?
-5. **`Org.State` ("Staat").** The screenshot shows three chips (Service, Outreach, Verkoopkansen) and a required marker. The XML default is `Service||Sales||Marketing`. What does it mean for the business? Is it the same as the standard OSC organization "state"? Keep or drop?
-6. **Field names and labels do not match.** `C$Tekstgebieduurtarief` shows "Verw omzet lopend boekjaar" and `C$Tekstgebiedreiskosten` shows "Verw omzet komend boekjaar". Which meaning is right? Is expected revenue a number (currency) or free text? The same question for the three hourly-rate fields.
-7. **Fields `Login`, `PasswordEncrypt`, `C$CompanyImage`.** Proposed: drop. Confirm. If the customer portal or another system reads them, name that system. A password must not be imported (GDPR/security). The security-officer should confirm.
-8. **Staff mapping.** `SalesAcctId` ("Verkoper") must map to SuiteCRM users. How are the OSC staff accounts mapped to SuiteCRM users (by login or e-mail)? Which user holds records of inactive staff?
-9. **How is the workflow started?** The screenshot shows a Klant - Algemeen layout for an organization of type "Prospect". Is the workflow not always used? Which workspace opens from a search result or from a contact? Is the workflow in production the same as this export?
-10. **Standard OSC fields.** The workspaces show no phone, e-mail, web site or industry. Is that true for the org data? Do any of them exist in OSC data, and do we migrate them? SuiteCRM has them in core.
-11. **Print.** What does `Afdrukken` print (the record or the grid)? Is a PDF template for the account needed (AOS PDF templates)?
-12. **External URLs.** Replicon and SharePoint/TFS: which URL is current? One export shows an older TFS host. Is a new-tab link enough, or is an embedded view needed? Are the sites still in use?
-13. **Layout per type and per role.** Does the business want to keep six different screens? A single layout with conditional panels is easier to maintain. Does the Sales-only finance block need field-level security?
-14. **Types without a tab list.** Prospect has the tab "Contracten" but the XML shows only Opportunities. Is that the intended content?
-15. **Type "Lead".** Lead (273) is routed to the Prospect workspace. In SuiteCRM there is a separate Leads module. Are organizations of type Lead real accounts, or must they become Leads?
+Closed: 1 (field list, types, lengths and menus verified), 2 (SLA dropped), 3 (contracts in scope, projects out). Partly closed: 5 (`State` is three CRM-module flags), 10 (`org_telefoonnummer` exists, `industry` and `numberOfEmployees` exist).
+
+4. **Report 101032 "Site Werkzaamheden"** (Klant - Algemeen). REST has `Support.SiteWerkzaamheden`, `Support.TypeWerkzaamheden`, `Support.StatusWerkzaamhedenM`. Must this data migrate? Is it linked to the contracts?
+5. **`Org.State` ("Staat").** Three CRM-module flags (service, sales, marketing). Does the business use them? Keep or drop?
+6. **Field names and labels do not match.** `C$Tekstgebieduurtarief` shows "Verw omzet lopend boekjaar". `C$Tekstgebiedreiskosten` shows "Verw omzet komend boekjaar". Which meaning is right? Is expected revenue a number or text? The same for the hourly-rate fields.
+7. **`Login`, `PasswordEncrypt`, `C$CompanyImage`.** Proposed: drop. Confirm. Security-officer to confirm.
+8. **Staff mapping.** `SalesAcctId` to SuiteCRM users: by login or e-mail? Which user holds records of inactive staff?
+9. **How is the workflow started?** The screenshot shows a Klant - Algemeen layout for a Prospect.
+10. **Standard OSC fields.** `industry` and `numberOfEmployees` exist in REST. Are they, e-mail and web site in use? Migrate?
+11. **Print.** What does `Afdrukken` print? Is an AOS PDF template needed?
+12. **External URLs.** Replicon and SharePoint/TFS: which URL is current? Link or embedded view?
+13. **Layout per type and per role.** Six screens, or one layout with conditional panels? Field-level security for the Sales-only finance block?
+14. **Prospect tab "Contracten".** XML shows only Opportunities. Intended?
+15. **Type "Lead".** Real accounts, or must they become Leads?
+16. **Seven fields found only in REST** (`unrncrm`, `pwrncrm`, `org_telefoonnummer`, `rightnow_uurtarief`, `tarief_snor`, `tarief_angels`, `tarief_bodybuilders`). In use? Migrate or drop? `unrncrm` and `pwrncrm` look like credentials.
+
+### Still open after REST (2026-11-20)
+Address-type and state menus: DONE (second batch, 2026-11-20).
+- Optional: contract record counts (`Support.SupportContract`, `Support.LicentieContract`) for the import plan. Not read.
+The contracts have no status field in the schema, so no status can be migrated.
+Everything else REST can answer is done. The remaining open points are business questions (section 6, questions 4 to 17).
+17. **Contracts.** (a) `Kanalen` uses the list Brons/Zilver/Goud, the same list as `TypeSupport`. Is `Kanalen` a duplicate of the support level, or a wrong list? (b) `DatumRenewal` = contract end or only a reminder date? Unit of `Duur` and of `ChangeDrempel`? (c) Is the `Incident` link on SupportContract used, and is the plain integer `Contact` a contact id? (d) Contracts have no status: what status shows in SuiteCRM?
 
 ## 7. Notes for design and assessment
 

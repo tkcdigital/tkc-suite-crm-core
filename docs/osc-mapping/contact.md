@@ -1,8 +1,7 @@
 # OSC Contact -> SuiteCRM Contacts
 
-Status: **DRAFT for user review.** Source: workspace export `designs/screens/contacts/tkc-contact.xml`,
-one screenshot, `readme.md`, SuiteCRM vardefs. OSC REST was **not** available. Field types, lengths
-and menu values of custom fields are **not verified** and are listed in section 5.
+Status: **PARTIALLY verified with REST 2026-11-20 (tst1).** Customer names are replaced by placeholders; the real values are in OSC and in data/osc/rest-output/ (gitignored). Types, lengths (custom fields), nullability and all menu values are verified (4 batch runs). Still open for REST: the lengths of the standard `name` and `address` sub-fields (see section 5, "Still open").
+Source: workspace export `designs/screens/contacts/tkc-contact.xml`, one screenshot, `readme.md`, SuiteCRM vardefs.
 Raw parse output: `data/osc/workspace/contacts.json` (gitignored).
 
 Export: Oracle Service Cloud 26C SP1, client 26.8.0.298, workspace type `Contact`. Workspace labels
@@ -54,39 +53,39 @@ means the XML has `BooleanRenderView="Dropdown"`: the field is a Yes/No field sh
 It is shown with the value "[Geen waarde]" (no value) in the screenshot. So it may allow an empty
 value (OSC booleans are normally Yes/No; confirm via REST).
 API names for custom fields follow the pattern `Contact.CustomFields.c.<name>`; the exact
-spelling and case come from the REST metadata (open question 1).
+spelling and case come from the REST metadata (verified by REST 2026-11-20, see 2a-1).
 
 | OSC field (API name) | OSC type | Workspace location | SuiteCRM module.field | Exists? | New field type/len | Dropdown values | Notes |
 |---|---|---|---|---|---|---|---|
-| `Contact.Name.First` | Text (standard) | Overzicht r0 c0, required on new and edit | Contacts.`first_name` | core | | | varchar(100). |
-| `Contact.Name.Last` | Text (standard) | Overzicht r1 c0, required on new and edit | Contacts.`last_name` | core | | | varchar(100). Required in SuiteCRM too. |
-| `Contact.Emails` (control `Email`) | Email address list (standard) | Overzicht r2 c0 | Contacts.`email1` (primary) via `email_addresses` relation | core | | | See section 4. The control shows the primary address with an address-type dropdown. Per-address flags (opt-out, invalid) map to the SuiteCRM per-address flags. |
-| `Contact.Phones` (control `PhOffice`, label "Mobiele telefoon", default phone type 1) | Phone list (standard) | Overzicht r3 c0 | Contacts.`phone_mobile` | core | | | The label is Dutch for "Mobile phone", the field id is Office phone. TKC uses it as mobile. Other phone types (office, home, fax) are in OSC but not on this workspace: `phone_work`, `phone_home`, `phone_fax`. See open question 3. |
-| `Contact.Address` (control `Addr`) | Address (composite, standard) | Overzicht r4-5 c0, 2 rows high | Contacts.`primary_address_street`, `_city`, `_state`, `_postalcode`, `_country` | core | | | Composite OSC control edited in a popup. Sub-fields (street, city, province, postal code, country) are standard OSC fields. |
-| `Contact.State` (label "Staat", required in screenshot) | Unverified | Overzicht r0 c1 | `tkc_contact_state_c` (tentative) | new | enum, varchar(100) | Not known | Screenshot shows the value as a chip with an "x", so it may be multi-select. Meaning unclear: "Staat" can mean state/province or record state. Not guessed. Open question 2. |
+| `Contact.Name.First` | Text, standard; length not verified (sub-schema `contacts/name` not read) | Overzicht r0 c0, required on new and edit | Contacts.`first_name` | core |  |  | varchar(100). |
+| `Contact.Name.Last` | Text, standard; length not verified (sub-schema `contacts/name` not read) | Overzicht r1 c0, required on new and edit | Contacts.`last_name` | core |  |  | varchar(100). Required in SuiteCRM too. |
+| `Contact.Emails` (control `Email`) | Email list (verified): item = address (string 255, not null), addressType (menu, not null), invalid (bool), certificate | Overzicht r2 c0 | Contacts.`email1` (primary) via `email_addresses` relation | core |  |  | Address types (verified): 0 E-mailadres - Primair, 1 Alternatief e-mailadres 1, 2 Alternatief e-mailadres 2. Only `invalid` is per address. There is **no per-address opt-out** in OSC: opt-in is on `marketingSettings` (see MaOptIn). Primary goes to `email1`, the two alternatives to extra `email_addresses` rows. SuiteCRM address length 255: fits. |
+| `Contact.Phones` (control `PhOffice`, label "Mobiele telefoon", default phone type 1) | Phone list (verified): item = number (string 40, not null), phoneType (menu, not null). Default type 1 = Mobiele telefoon | Overzicht r3 c0 | Contacts.`phone_mobile` | core |  |  | Phone types (verified): 0 Telefoon werk, 1 Mobiele telefoon, 2 Fax/telefoon, 3 Telefoon assistent, 4 Telefoon privé. The workspace slot is type 1 (mobile): `phone_mobile`. Other types map to `phone_work` (0), `phone_fax` (2), `phone_other` (3), `phone_home` (4) if the owner wants them (question 3). SuiteCRM phone length 100: fits. |
+| `Contact.Address` (control `Addr`) | Address (composite, standard); sub-field lengths not verified (sub-schema `contacts/address` not read) | Overzicht r4-5 c0, 2 rows high | Contacts.`primary_address_street`, `_city`, `_state`, `_postalcode`, `_country` | core |  |  | Composite OSC control edited in a popup. Sub-fields (street, city, province, postal code, country) are standard OSC fields. |
+| `Contact.State` (label "Staat", required in screenshot) | **3 booleans** `cRMModules.marketing`, `.sales`, `.service` (verified in schema: all not nullable). No `state` property exists on Contact. Screenshot chip "Service" fits | Overzicht r0 c1 | `tkc_crm_modules_c` | new | multienum (3 items), or 3 `bool` fields | Marketing, Sales, Service (fixed set from the REST structure) | Confirmed by schema as the only 3-value structure that fits "Staat"; the business meaning (module access of the contact) is still for the owner to confirm. Default in the XML is not shown. Question 2. |
 | `Contact.OrgId` | Integer, link to Organization (standard) | Overzicht r1 c1, report 8001 (search) | Contacts.`account_id` / `account_name` | core | | | Relationship `accounts_contacts`. |
 | `Contact.SalesAcctId` (label "Verkoper") | Link to Account (staff) | Overzicht r2 c1 | Contacts.`assigned_user_id` | core | | | OSC staff account becomes SuiteCRM user. Needs an OSC account to user mapping in the import. Confirm that "Verkoper" is the owner (open question 6). |
-| `Contact.Title` | Text (standard) | Overzicht r3 c1 | Contacts.`title` | core | | | |
-| `Contact.Login` (label "Aanmelding") | Text (standard, portal login) | Overzicht r4 c1 | none | drop | | | Customer portal login. SuiteCRM customer portal is out of scope. In the screenshot the value equals the email address. Confirm (open question 5). |
+| `Contact.Title` | Text, standard (verified: string 80, nullable) | Overzicht r3 c1 | Contacts.`title` | core |  |  | SuiteCRM `title` varchar(255): fits. |
+| `Contact.Login` (label "Aanmelding") | Text, standard (verified: string 255, nullable) | Overzicht r4 c1 | none | drop |  |  | Customer portal login. SuiteCRM customer portal is out of scope. In the screenshot the value equals the email address. Confirm (open question 5). |
 | `SlaContainer` (label "SLA's") | Relationship control (Contact to SLA instance) | Overzicht r5 c1 | none | drop | | | SuiteCRM has no SLA entity on Contacts. SLAs are an Incident topic. See section 4. |
-| `Contact.CustomFields.c.oscusergroup` (label "OSC Usergroup") | Boolean (dropdown) | Overzicht r6 c0 | `tkc_osc_usergroup_c` | new | bool | Yes / No (to be verified) | User group flag (member of OSC user group). Needs business confirmation. |
-| `Contact.MaOptIn` (label "Opt-in overal toepassen") | Boolean (standard marketing field) | Overzicht r6 c1 | Contacts.`email_opt_out` (inverted), plus `lawful_basis` where a consent basis is needed | core | | | "Apply opt-in everywhere". Inverse of `email_opt_out`. Decision needed: also store in `lawful_basis` (open question 8). |
-| `Contact.CustomFields.c.kmmdeelname` (label "KMM") | Boolean (dropdown) | Overzicht r7 c0 | `tkc_kmm_c` | new | bool | Yes / No (to be verified) | KMM participation ("deelname" = participation). |
-| `Contact.CustomFields.c.functieniveau` (label "Functie niveau") | Unverified (not a boolean, no dropdown flag; screenshot shows a dropdown) | Overzicht r7 c1 | `tkc_function_level_c` | new | enum, varchar(100) | **Not known** | Probably a menu (function level). Values from REST. Open question 1. |
-| `Contact.CustomFields.c.tkccafedeelname` (label "TKC Cafe") | Boolean (dropdown) | Overzicht r8 c0 | `tkc_tkc_cafe_c` | new | bool | Yes / No (to be verified) | TKC Cafe participation. |
-| `Contact.CustomFields.c.language` (label "Taal") | Unverified (menu, screenshot shows value "Nederlands") | Overzicht r8 c1 | `tkc_language_c` (or core `preferred_language` if one exists in the vardefs; not found in Contacts vardefs) | new | enum, varchar(10) | **Not known** | Screenshot shows a dropdown with one language value. Full list from REST. |
-| `Contact.CustomFields.c.servicetomorrow` (label "Service Tomorrow") | Boolean (dropdown) | Overzicht r9 c0 | `tkc_service_tomorrow_c` | new | bool | Yes / No (to be verified) | |
-| `Contact.CustomFields.c.nieuwsbrief` (label "Nieuwsbrief") | Boolean (dropdown) | Overzicht r9 c1 | `tkc_newsletter_c` | new | bool | Yes / No (to be verified) | Newsletter subscription. Screenshot shows value "Nee" (No). Related to marketing consent: see open question 8. |
-| `Contact.CustomFields.c.freshworksusergroup` (label "Freshworks Usergroup") | Boolean (dropdown) | Overzicht r10 c0 | `tkc_freshworks_usergroup_c` | new | bool | Yes / No (to be verified) | |
-| `Contact.CtypeId` (label "Type contactpersoon") | Menu (standard contact type) | Overzicht r10 c1 | `tkc_contact_type_c` | new | enum, varchar(100) | **Not known** | Core has no contact type. `lead_source` has a different meaning. Values from REST. |
-| `Contact.CustomFields.c.ert` (label "ERT") | Boolean (dropdown) | Overzicht r11 c0 | none (proposed) | drop | | | Name suggests a test or experiment field. Confirm with the user (open question 4). |
-| `Contact.CustomFields.c.test` (label "Test") | Boolean (dropdown) | Overzicht r12 c0 | none (proposed) | drop | | | Name "Test". Likely a test field. Confirm (open question 4). |
-| `Contact.CId` (info bar) | Integer ID (standard) | Info bar | `osc_id_c` (rule: every imported record keeps its OSC key) | new | int(11) or varchar(36), indexed | | Import key for idempotent re-imports. Contact ID and Contact reference number may differ; use the numeric `ID`. |
+| `Contact.CustomFields.c.oscusergroup` (label "OSC Usergroup") | Boolean (verified), nullable | Overzicht r6 c0 | `tkc_osc_usergroup_c` | new | bool | Yes / No. Tst1 counts (7981 contacts): empty 7749, No 191, Yes 41 | Needs business confirmation. Nullable in REST. Tst1 data has three states (see counts). SuiteCRM `bool` has no empty state: import maps empty to No. |
+| `Contact.MaOptIn` (label "Opt-in overal toepassen") | Boolean (verified: `marketingSettings.marketingOptIn`, nullable). `surveyOptIn` also exists (not on workspace) | Overzicht r6 c1 | Contacts.`email_opt_out` (inverted), plus `lawful_basis` where a consent basis is needed | core |  |  | "Apply opt-in everywhere". Inverse of `email_opt_out`. Decision needed: also store in `lawful_basis` (open question 8). |
+| `Contact.CustomFields.c.kmmdeelname` (label "KMM") | Boolean (verified), nullable | Overzicht r7 c0 | `tkc_kmm_c` | new | bool | Yes / No. Counts: empty 7028, Yes 828, No 125 | KMM participation. Nullable in REST. Tst1 data has three states (see counts). SuiteCRM `bool` has no empty state: import maps empty to No. |
+| `Contact.CustomFields.c.functieniveau` (label "Functie niveau") | **Menu** (verified: id + lookupName), nullable | Overzicht r7 c1 | `tkc_function_level_c` | new | enum, varchar(10) | 297 C, 298 M, 299 O (3 items; the values are single letters, the meaning is not in OSC). Counts: C 308, M 1251, O 982, empty 5440 | Menu is verified. The letters have no explanation in the metadata: owner to give the labels (question 13). |
+| `Contact.CustomFields.c.tkccafedeelname` (label "TKC Cafe") | Boolean (verified), nullable | Overzicht r8 c0 | `tkc_tkc_cafe_c` | new | bool | Yes / No. Counts: empty 7317, Yes 614, No 50 | TKC Cafe participation. Nullable in REST. Tst1 data has three states (see counts). SuiteCRM `bool` has no empty state: import maps empty to No. |
+| `Contact.CustomFields.c.language` (label "Taal") | **Menu** (verified: id + lookupName), nullable, label "language" | Overzicht r8 c1 | `tkc_language_c` (or core `preferred_language` if one exists in the vardefs; not found in Contacts vardefs) | new | enum, varchar(10) | 288 Nederlands, 289 Engels (2 items). Counts: Nederlands 7966, Engels 15, empty 0 | SuiteCRM Contacts has no language field in core vardefs. Keys proposal: `nl`, `en`. Every contact has a value in tst1. |
+| `Contact.CustomFields.c.service_tomorrow` (label "Service Tomorrow") | Boolean (verified), nullable | Overzicht r9 c0 | `tkc_service_tomorrow_c` | new | bool | Yes / No. Counts: empty 6725, Yes 1226, No 30 | Nullable in REST. Tst1 data has three states (see counts). SuiteCRM `bool` has no empty state: import maps empty to No. |
+| `Contact.CustomFields.c.nieuwsbrief` (label "Nieuwsbrief") | Boolean (verified), nullable | Overzicht r9 c1 | `tkc_newsletter_c` | new | bool | Yes / No. Counts: No 6857, Yes 1121, empty 3 | Newsletter subscription. Almost never empty: import empty as No. Related to marketing consent: question 8. |
+| `Contact.CustomFields.c.freshworks_usergroup` (label "Freshworks Usergroup") | Boolean (verified), nullable | Overzicht r10 c0 | `tkc_freshworks_usergroup_c` | new | bool | Yes / No. Counts: empty 7977, No 4, Yes 0 | Used on only 4 contacts and never Yes. Candidate to drop (question 4). |
+| `Contact.CtypeId` (label "Type contactpersoon") | Menu (verified: `contactType`, NamedID, nullable), 14 items | Overzicht r10 c1 | `tkc_contact_type_c` | new | enum, varchar(10) | 1 TKBC Prospect, 2 TKBC Klant, 3 TKBC support, 4 TKBC sales, 5 SSC Prospect, 6 SSC Klant, 7 SSC Support, 8 SSC Sales, 9 [customer G] - klant, 10 [customer H] Klant, 11 [customer H] Leverancier, 12 FS, 13 TKC - Bodybuildert, 14 SPAM. Counts: empty 7503, 1: 41, 2: 43, 3: 8, 4: 1, 5: 1, 6: 1, 10: 7, 12: 3, 13: 8, 14 (SPAM): 365. Items 7, 8, 9, 11 are unused | Value 14 = SPAM is the value that the incident SPAM button sets. 365 contacts are SPAM in tst1: the owner decides if they are imported (question 14). |
+| `Contact.CustomFields.c.ert` (label "ERT") | Boolean (verified), nullable | Overzicht r11 c0 | none (proposed) | drop |  | Yes / No. Counts: empty 7975, Yes 3, No 3 | Set on 6 contacts only. Proposed drop stays (question 4). |
+| `Contact.CustomFields.form.test` (package `form`, label "Test") | Boolean (verified), nullable | Overzicht r12 c0 | none (proposed) | drop |  | Counts: empty 7981 (all) | No contact has a value. Drop confirmed by data. |
+| `Contact.CId` (info bar) | Integer ID (standard) | Info bar | `osc_id_c` (rule: every imported record keeps its OSC key) | new | varchar(20), indexed (OSC ID integer up to 9223372036854775807) |  | Import key for idempotent re-imports. Contact ID and Contact reference number may differ; use the numeric `ID`. |
 | `Contact.Created` | DateTime (standard) | Info bar | Contacts.`date_entered` | core | | | Import sets it explicitly. |
 | `Contact.Updated` | DateTime (standard) | Info bar | Contacts.`date_modified` | core | | | |
 | `Contact.RuleState` | System field | Info bar | none | drop | | | Rule engine state. Not data. |
 
-Counts: **core 11** (first, last, email, phone, address, org, sales rep, title, opt-in, created, updated),
+Counts (recounted, 27 rows): **core 11** (first, last, email, phone, address, org, sales rep, title, opt-in, created, updated),
 **new 11** (State, 8 custom fields incl. Functieniveau/Language, contact type, `osc_id_c`),
 **drop 5** (Login, SLA, ERT, Test, RuleState).
 Detail: new = State, Oscusergroup, KMM, TKC Cafe, Service Tomorrow, Freshworks Usergroup,
@@ -94,6 +93,47 @@ Functieniveau, Language, Nieuwsbrief, CtypeId, `osc_id_c`.
 
 Existing custom vardefs in `public/legacy/custom/Extension/modules/Contacts/Ext/Vardefs/`: only
 `jjwg_maps_*` overrides (Google Maps module). No conflict with the proposed names.
+
+### 2a. REST findings (tst1, 2026-11-20)
+Method: `GET contacts?limit=1` and `GET contacts/<id>` for one record, parsed in `data/osc/rest-output/`.
+Only key names and JSON types were read. The list endpoint is `contacts`; ROQL table is `Contacts`
+(`Contact` fails). Test environment holds 7981 contacts.
+
+- **Collection name** is `contacts`. `metadata-catalog/Contact` gives 404; `metadata-catalog/contacts`
+  gives only links. The field schema needs `Accept: application/schema+json`, which `osc-get.sh` cannot send.
+- **API names corrected** (REST differs from the XML-derived guess): `service_tomorrow`,
+  `freshworks_usergroup` (with underscore). `test` and `test2` are in package `form`
+  (`CustomFields.form.test`), not `c`. `ert` is `c.ert`.
+- **Custom fields in package `c`** (all present on the sample): `custid`, `contact_survey_text`,
+  `deelname_event` (JSON bool), `kmmdeelname`, `kmmbedeelname`, `oscusergroup`, `tkccafedeelname`,
+  `service_tomorrow`, `kmm_en`, `language` (object `id` + `lookupName`: **menu field**, confirmed),
+  `deelnemer_st`, `functieniveau`, `freshworks_usergroup`, `ert`, `favoriete_drank`, `andere_suggesties`,
+  `reden_geen_komst`, `rn_client`, `nieuwsbrief` (JSON bool), `events`, `secure_id`, `force_update` (JSON int),
+  `cp_first_widget`, `support_contact_type`. Fields that are null on the sample show no type.
+  Not on the workspace and not mapped: `custid`, `contact_survey_text`, `deelname_event`, `kmmbedeelname`,
+  `kmm_en`, `deelnemer_st`, `favoriete_drank`, `andere_suggesties`, `reden_geen_komst`, `rn_client`,
+  `events`, `secure_id`, `force_update`, `cp_first_widget`, `support_contact_type`, `form.test2` (question 12).
+- **Standard structures** present: `name{first,last}`, `emails` (collection), `phones` (collection),
+  `address{street,city,postalCode,stateOrProvince,country}`, `channelUsernames` (collection),
+  `contactType` (NamedID, null on sample), `organization`, `salesSettings{salesAccount,acquiredDate}`,
+  `marketingSettings{marketingOptIn,surveyOptIn,emailFormat,contactLists,marketingOrganizationName,...}`,
+  `source` (NamedID hierarchy), `login`, `disabled`, `title`, `externalReference`, `fileAttachments`, `notes`,
+  `serviceSettings{sLAInstances,...}`. `cRMModules{marketing,sales,service}` are three JSON bools.
+- **"Staat" (schema-confirmed as `cRMModules`, 2026-11-20; business meaning open):** the screenshot chip value "Service" fits `cRMModules`
+  (Marketing / Sales / Service module access flags). The workspace field id is `State`; REST has no
+  `state` property on Contact. If confirmed it is three booleans, not a menu. Proposal: three bool fields
+  or one multienum `tkc_crm_modules_c` (marketing, sales, service). Needs the user to confirm.
+- **Emails, phones, channels:** item structure and type values are now verified (section 2a-1 and the table rows).
+- **Consent in REST:** `marketingSettings.marketingOptIn`, `marketingSettings.surveyOptIn`,
+  `custom nieuwsbrief` (bool). `MaOptIn` on the workspace corresponds to `marketingOptIn`.
+  Per-address flags: only `invalid` exists per email address (verified 2026-11-20); there is no per-address opt-out.
+
+### 2a-1. REST verification 2026-11-20 (schemas, menus, counts)
+Method: `metadata-catalog/contacts` and `.../contacts/customFields/c` with `Accept: application/schema+json`, menu resources `namedIDs/contacts/...` and `.../customFields/c/<field>` (the menu URL form `namedIDs/<object>/customFields/c/<field>` works), and aggregate ROQL (`GROUP BY` counts). No contact record was read. Raw files: `data/osc/rest-output/s/` and `v/` (gitignored). tst1 holds 7981 contacts.
+- Standard properties verified: `title` string 80, `login` string 255, `externalReference` string 20, `disabled` bool, `name` object (not null), `emails` item (address 255, addressType, invalid), `phones` item (number 40, phoneType), `channelUsernames` item (channelType, userNumber 40, username 255), `marketingSettings` (`marketingOptIn`, `surveyOptIn`, bools, nullable), `cRMModules` (3 bools, not null), `contactType` menu, `organization`.
+- Channel types (`channelTypes`, 15 items): 1 CSS e-mail, 2 MA e-mail, 3 Telefoon, 4 Fax, 5 Boeken, 6 CSS web, 7 MA web, 8 Chat, 9 E-mail, 10 Community, 11 Twitter, 12 YouTube, 13 RSS, 14 Facebook, 16 SRM Engage. Not on the workspace.
+- Yes/No flags are **nullable** and tst1 data has three states (empty, Yes, No) for every flag. Counts are in the table rows.
+- Custom fields **not on the workspace** (types verified): `custid` string 10, `contact_survey_text` string 1333, `deelname_event` bool, `kmmbedeelname` bool, `kmm_en` bool, `deelnemer_st` bool, `favoriete_drank` menu, `andere_suggesties` string 1333, `reden_geen_komst` menu, `rn_client` bool ("Is RightNow Mailbox?"), `events` menu, `secure_id` string 255, `force_update` integer, `cp_first_widget` menu, `support_contact_type` menu (326 Manager, 327 Medewerker), `form.test2` bool. Values of `favoriete_drank`, `reden_geen_komst`, `events`, `cp_first_widget` were not read. Proposal: drop all (data minimisation) until the owner names a field (question 12).
 
 ### OSC standard Contact fields that exist but are NOT on this workspace
 Not in the export, so not mapped: second and third email, other phone types, mailing address
@@ -144,12 +184,9 @@ No workspace rules exist in the export, so no workflow mapping for rules.
 
 ## 5. Open questions for the user
 
-REST access would answer questions 1, 2, 6 and parts of 3 and 8 (metadata and menu values).
+REST is done for this entity (section 2a-1) except two sub-schemas (see "Still open" below).
 
-1. **Custom field types, lengths and menu values.** Not verifiable now. Needed from REST
-   (`metadata-catalog/Contact` and the menu definitions): exact API names, and the data types of
-   `functieniveau`, `language`, `CtypeId`, the "Staat" field, and the nine boolean flags
-   (does an empty value exist besides Yes/No?). Dropdown lists will be copied from REST, not guessed.
+1. **Custom field types, lengths and menu values.** CLOSED by REST 2026-11-20 (section 2a-1). Flags are nullable.
 2. **What is "Staat" (State)?** It is required in the screenshot and shown as a chip with the value
    "Service". Is it the contact status, the address state/province, or a custom field?
    Is it single or multi select? Does it drive other behavior?
@@ -178,5 +215,12 @@ REST access would answer questions 1, 2, 6 and parts of 3 and 8 (metadata and me
   "TKC programs and groups" in the mockup.
 - Screenshot: it shows a record with real contact data (name, email address, login) in the form fields.
   Not copied here. See the report to the user.
-- Next step: user review of this draft, then REST metadata (when access is ready) to fill the
-  "Not known" cells, then the ux-designer builds the mockup.
+- Next step: user review of the verified mapping and the open questions, then the ux-designer builds the mockup.
+
+### Still open after REST (2026-11-20)
+REST-answerable: lengths of `name.first`, `name.last` and the `address` sub-fields (`metadata-catalog/contacts/name` and `.../contacts/address` not read; SuiteCRM `first_name`/`last_name` varchar(100) and address fields are likely long enough, not verified).
+Business questions added by the REST data:
+12. **Fields not on the workspace.** 16 custom fields exist only in REST (section 2a-1). Confirm drop for all, or name those to keep (for example `support_contact_type` Manager/Medewerker).
+13. **Function level.** The menu `functieniveau` has the values C, M, O. What do they mean (labels for the SuiteCRM list)?
+14. **SPAM contacts.** 365 contacts have type SPAM (14) in tst1. Import them, skip them, or import without activity? Contact type values 7, 8, 9, 11 are unused: migrate the whole list of 14 or only the used values?
+15. **Flags with three states.** Import empty as No (proposal), or keep a three-state dropdown?
