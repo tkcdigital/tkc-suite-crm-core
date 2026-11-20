@@ -6,7 +6,16 @@ cache/*
 upload/*
 !upload/index.html
 # Ignore some files and directories from the custom directory.
-custom/
+# TKC: custom/ holds our upgrade-safe customizations. Version the source parts,
+# ignore the parts SuiteCRM generates (compiled Ext files, history, working dirs, keys).
+custom/*
+!custom/index.html
+!custom/Extension/
+!custom/modules/
+!custom/themes/
+!custom/include/
+!custom/language/
+custom/include/javascript/
 custom/history/*
 custom/blowfish/*
 custom/modulebuilder/*
@@ -109,7 +118,7 @@ tests/_output/*
 BrowserStackLocal
 browserstack.err
 cache/
-custom/**/
+# TKC: 'custom/**/' removed — custom/ rules are at the top of this file.
 .sass-cache/
 
 # Ignore testing environment
