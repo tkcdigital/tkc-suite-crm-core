@@ -1,10 +1,20 @@
 # TKC SuiteCRM: draft backlog and sprint plan
 
-> Status: **DRAFT. The owner must approve it. No issue exists in the planning tool for these items yet.**
+> Status: **Approved and loaded into SUITE on 2026-11-20 (see the last section). The planning tool is the truth for status.**
 > Author: product-owner. Date: 2026-11-20. Planning epic: SUITE-25.
 > Updated 2026-11-20: the owner accepted A1 to A20, and the architect added plan §11 (addendum). This draft applies both.
+> Updated 2026-11-20 (owner inputs): production volumes, a read-only OSC database as the extract source, inactive users for former staff, and the role decisions. See §0.
 > Source: `docs/plan/implementation-plan.md` (called "the plan" below). Narrative: `docs/backlog.md`.
 > Open issues that this draft does not duplicate: SUITE-7 (OSC REST verification) and SUITE-9 (extension check). Stories that need them list them as dependencies.
+
+---
+
+## 0. Owner inputs of 2026-11-20 (applied in this draft)
+
+1. **Production volumes (OSC production, not tst1).** Incidents 74,142. Contacts 9,232. Organizations 796. Opportunities 2,159. The thread volume is unknown and will be large. Stories that import or list data use these figures. The import must run in batches. The run time is measured at production scale. The case import and the thread import must be resumable.
+2. **Extract source.** The OSC extract is a database. The owner gives the agents read-only access. The credentials come through Proton Pass and `pass-cli`. Agents never see a value. The owner JSONL extract (old A18) is gone. The owner story E4-S8 now provides the database access. The new story E4-S18 builds a reader for that database. **Gate A (E4-S7) must pass before any agent reads the database.** The anonymizer reads from the database and writes anonymized output to `data/osc/anon/`.
+3. **Former OSC staff.** The admin disables the accounts of past staff. The staff map creates or links **inactive SuiteCRM users** for former staff. The single `tkc_migration` user is gone.
+4. **Role decisions.** Admins can see the Finance data. The case priority starts empty. The MVP has no Finance role, Export is None and Cases delete is None. Later iterations are logged as SUITE-26 (configurable roles), SUITE-27 (export per role) and SUITE-28 (delete per role). They have the label "Backlog" and no sprint. This draft does not duplicate them.
 
 ---
 
@@ -341,11 +351,12 @@ Note: The owner accepted A1 to A20 on 2026-11-20 (plan §11.1). Fields that fix 
 
 ### E4. OSC import framework and anonymized sample
 
-Goal: An idempotent, guarded import. The anonymized sample runs at full volume. Real data does not enter before gate B.
+Goal: An idempotent, guarded, resumable import. The anonymized sample runs at production volume. Real data does not enter before gate B.
 Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-access.md`. Size L. Sprints 1–2.
+Volumes (OSC production): Incidents 74,142. Contacts 9,232. Organizations 796. Opportunities 2,159. Thread entries: unknown, large. Source: a read-only OSC database (E4-S8, E4-S18). Gate A (E4-S7) comes before any agent reads it.
 
 #### E4-S1 — Import: Build the import command, the upserter and the checkpoint
-**Description:** `tkc:osc:import <entity|all> --source=<dir> [--dry-run|--execute] [--limit=n] [--since=<osc-id>]` reads JSONL and upserts by `osc_id_c`. Plan: §5.1. This story is too large to verify as one unit.
+**Description:** `tkc:osc:import <entity|all> --source=<dir|db> [--dry-run|--execute] [--limit=n] [--since=<osc-id>]` reads JSONL (fixtures and anonymized output) or the OSC database reader (E4-S18) and upserts by `osc_id_c`. Plan: §5.1. This story is too large to verify as one unit.
 **Acceptance criteria:**
 1. All five tasks have passed.
 2. A run without `--execute` writes no record.
@@ -355,32 +366,40 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 ##### E4-S1-T1 — Add the command and the JSONL reader
 **Acceptance criteria:**
 1. The command `tkc:osc:import` exists in `extensions/tkc/backend/Import/Console/OscImportCommand.php`.
-2. The reader reads one JSONL file per entity.
+2. The JSONL reader reads one JSONL file per entity. The reader streams the file and does not load it into memory.
 3. The command rejects a source directory that is outside `data/` or `scripts/seed/fixtures/`.
-4. A dry run prints the counts of records that it would create and update.
+4. The command accepts `--source=db` and uses the reader from E4-S18 for it.
+5. A dry run prints the counts of records that it would create and update.
 **Size:** M · **Sprint:** 1 · **Depends on:** E3-S10 · **Assumptions:** A18
 
 ##### E4-S1-T2 — Add the upserter
 **Acceptance criteria:**
 1. The upserter finds a record with `osc_id_c = ? AND deleted = 0`.
 2. The upserter creates the record when none exists and updates it when one exists.
-3. The upserter saves in batches of 200.
-4. A PHPUnit test shows that two runs give the same record count.
+3. The upserter saves in batches. The batch size is a config value with the default 200.
+4. The upserter keeps memory use flat over the whole run. A test with 50,000 synthetic records shows it.
+5. A PHPUnit test shows that two runs give the same record count.
 **Size:** M · **Sprint:** 1 · **Depends on:** E4-S1-T1 · **Assumptions:** none
 
 ##### E4-S1-T3 — Add the checkpoint and the log
 **Acceptance criteria:**
 1. The command writes a checkpoint in `data/osc/import-state/` after each batch.
-2. A new run with the same source continues from the checkpoint.
+2. A new run with the same source continues from the checkpoint. A test stops a run in the middle and resumes it. The final counts are the same as for an uninterrupted run.
 3. The log in `data/osc/import-logs/<run>.log` has counts and IDs only.
 4. A test shows that the log has no field content.
+5. The log gives the run time and the record count of each batch.
 **Size:** M · **Sprint:** 1 · **Depends on:** E4-S1-T2 · **Assumptions:** none
 
-##### E4-S1-T4 — Add the staff map
+##### E4-S1-T4 — Add the staff map and the inactive users for former staff
+**Description:** The admin disables the accounts of past OSC staff. The importer creates or links an inactive SuiteCRM user for each former staff member. Records keep their original owner and author.
 **Acceptance criteria:**
 1. The command reads `data/osc/staff-map.csv` (OSC account id to `user_name`).
-2. An unmapped OSC account id becomes the inactive user `tkc_migration`.
-3. The run report gives the count of unmapped ids, not their names.
+2. The importer links an OSC account id in the map to the SuiteCRM user in the map. The user can be active or inactive.
+3. The importer creates an inactive SuiteCRM user for an OSC account id that is not in the map and has no user. The `user_name` is derived from the OSC account id.
+4. An inactive user created by the importer cannot sign in, has no role and gets no email.
+5. A second run creates no duplicate user.
+6. No user `tkc_migration` exists.
+7. The run report gives the count of linked users and of created inactive users, not their names.
 **Size:** S · **Sprint:** 1 · **Depends on:** E4-S1-T2 · **Assumptions:** none
 
 ##### E4-S1-T5 — Add the `--only-fields` option
@@ -424,14 +443,17 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 **Size:** M · **Sprint:** 1 · **Depends on:** E4-S1, E4-S10, E4-S11 · **Assumptions:** none
 
 #### E4-S5 — Anonymizer: Replace personal data with synthetic values
-**Description:** `tkc:osc:anonymize --in=data/osc/export --out=data/osc/anon` keeps ids, menu ids, dates, relations and volumes. It replaces names, emails, phones, streets, free text and subjects. The seed is deterministic. It also covers thread text.
+**Description:** `tkc:osc:anonymize --source=db --out=data/osc/anon` reads from the read-only OSC database through the reader in E4-S18. It keeps ids, menu ids, dates, relations and volumes. It replaces names, emails, phones, streets, free text and subjects. The seed is deterministic. It also covers thread text. It processes the data in batches and can resume (production volume: 74,142 incidents and a large thread set). It runs only after gate A.
 **Acceptance criteria:**
-1. The command reads from `data/osc/export` and writes to `data/osc/anon`.
+1. The command reads from the OSC database reader (E4-S18) and writes JSONL files to `data/osc/anon/`.
 2. Ids, menu ids, dates and relations stay the same.
 3. Names, emails, phones, streets, free text, subjects and thread bodies are synthetic.
 4. A second run with the same seed gives the same output.
 5. The command refuses an output path outside `data/`.
-**Size:** M · **Sprint:** 1 · **Depends on:** E4-S1-T1 · **Assumptions:** A17
+6. The command writes no real value to a log, a file or a screen. The output has no real data.
+7. The command streams the data in batches and resumes after an interruption.
+8. The command refuses to read the database before the issue E4-S7 (gate A) is Done.
+**Size:** M · **Sprint:** 1 · **Depends on:** E4-S1-T1, E4-S18 · **Assumptions:** A17
 
 #### E4-S6 — Anonymizer: Test the output for personal data
 **Description:** A test reads a synthetic input that has known "personal" tokens. It checks that no token is in the output.
@@ -442,29 +464,33 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 **Size:** S · **Sprint:** 1 · **Depends on:** E4-S5 · **Assumptions:** none
 
 #### E4-S7 — Security gate A: Review the anonymizer and the guards
-**Description:** The security-officer reviews the anonymizer, the PII-leak test and the import guards. Gate A opens the way for the owner-run extract. Plan §5.4 step 2.
+**Description:** The security-officer reviews the anonymizer, the PII-leak test, the import guards and the database reader. Gate A opens the way for agent access to the read-only OSC database. No agent reads the database before gate A. Plan §5.4 step 2.
 **Acceptance criteria:**
 1. The security-officer states in writing that the guards in E4-S2 are complete.
 2. The security-officer states in writing that the anonymizer passes the test in E4-S6.
-3. The comment lists each finding with its fix.
-4. The gate is open only when no finding is open.
-**Size:** S · **Sprint:** 1 · **Depends on:** E4-S2, E4-S5, E4-S6 · **Assumptions:** A18, A19
+3. The security-officer states in writing that the database reader (E4-S18) is read-only and holds no credential in code or logs.
+4. The comment lists each finding with its fix.
+5. The gate is open only when no finding is open.
+**Size:** S · **Sprint:** 1 · **Depends on:** E4-S2, E4-S5, E4-S6, E4-S18 · **Assumptions:** A18, A19
 
-#### E4-S8 — Owner task: Run the OSC bulk extract
-**Description:** **Assigned to the owner.** The owner runs the bulk extract with the read-only API user and `pass-cli run`. Agents do not run bulk extracts. Rule: `.claude/rules/osc-access.md`. Plan: A18.
+#### E4-S8 — Owner task: Provide read-only access to the OSC database
+**Description:** **Assigned to the owner.** The owner gives the agents read-only access to the OSC database. The credentials go into Proton Pass (vault `TKC-SUITE`, `pass://` references in `.claude/scripts/secrets.env`). Agents never see a value. No agent reads the database before gate A (E4-S7). Rule: `.claude/rules/osc-access.md`, `.claude/rules/secrets.md`. Plan: A18.
 **Acceptance criteria:**
-1. The owner writes one JSONL file per entity to `data/osc/export/` (gitignored). The files use REST field names.
-2. The entities are organizations, contacts, opportunities, both contract types, incidents and incident threads.
-3. The owner gives the record counts per entity, including the thread count, in a comment (counts only).
-4. No file from the extract is in git.
-**Size:** M · **Sprint:** 1 · **Depends on:** E4-S7, SUITE-7 · **Assumptions:** A18
+1. The owner creates a database user that has SELECT rights only. The user has no write right and no DDL right.
+2. The owner stores the credentials in Proton Pass in the vault `TKC-SUITE` and adds the `pass://` references to `.claude/scripts/secrets.env`.
+3. The owner states in a comment the database engine, the schema names and the tables of the seven entities (organizations, contacts, opportunities, both contract types, incidents and incident threads). The comment has no record data.
+4. The owner states in a comment the record counts per entity, including the thread count (counts only).
+5. The owner states in a comment which network path the agents use and who can revoke the access.
+6. The owner states in a comment that the access starts only after gate A (E4-S7) is Done.
+**Size:** M · **Sprint:** 1 · **Depends on:** E4-S7 · **Assumptions:** A18
 
 #### E4-S9 — Owner task: Provide the staff map
-**Description:** **Assigned to the owner.** The owner gives the list that maps OSC staff accounts to SuiteCRM users. The users are in the SuiteCRM admin list.
+**Description:** **Assigned to the owner.** The owner gives the list that maps OSC staff accounts to SuiteCRM users. The users are in the SuiteCRM admin list. Past staff: the admin disables their accounts. The importer creates or links inactive users for them (E4-S1-T4).
 **Acceptance criteria:**
 1. The owner places `data/osc/staff-map.csv` in the repository folder (gitignored).
 2. The owner states in a comment whether the map uses login or email.
-3. The owner states who owns the records of inactive staff.
+3. The map marks each OSC account of past staff, or the owner states in a comment how to find them.
+4. The admin disables the SuiteCRM accounts of past staff that already have a user.
 **Size:** S · **Sprint:** 1 · **Depends on:** none · **Assumptions:** none
 
 #### E4-S10 — Import: Map Organizations to Accounts and Finance rows
@@ -508,11 +534,11 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 3. The mapper does not set `renewal_reminder_date`.
 4. No reminder email goes out during the import (Mailpit is empty).
 5. The synthetic fixtures include both contract types.
-6. The anonymized import of contracts gives the extract count.
+6. The anonymized import of contracts gives the OSC database count.
 **Size:** S · **Sprint:** 4 · **Depends on:** E4-S12, E11-S1, E4-S17 · **Assumptions:** A13
 
 #### E4-S14 — Import: Map OSC Incidents to Cases
-**Description:** The mapper creates Cases with the primary contact, the other contacts and the account. This story is too large to verify as one unit. Mapping: `docs/osc-mapping/incident.md`.
+**Description:** The mapper creates Cases with the primary contact, the other contacts and the account. The volume is 74,142 incidents. The import runs in batches and is resumable. This story is too large to verify as one unit. Mapping: `docs/osc-mapping/incident.md`.
 **Acceptance criteria:**
 1. All three tasks have passed.
 2. The synthetic fixtures include cases.
@@ -534,6 +560,7 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 3. The mapper sets `tkc_date_closed_c` from OSC for closed cases.
 4. The mapper sets the primary contact and the account.
 5. The mapper does not read the 26 REST-only fields.
+6. The case import runs in batches and resumes from the checkpoint after a stop. A test with 100,000 synthetic cases shows the same final count after a stop and a resume.
 **Size:** M · **Sprint:** 2 · **Depends on:** E4-S14-T1 · **Assumptions:** A4, A11, A12
 
 ##### E4-S14-T3 — Link the other contacts and the primary contact in the M:N set
@@ -560,34 +587,53 @@ Plan: §3 W8, §5. Rules: `.claude/rules/data-privacy.md`, `.claude/rules/osc-ac
 **Size:** S · **Sprint:** 2 · **Depends on:** E3-S1, E4-S12, E4-S14 · **Assumptions:** A7, A12
 
 #### E4-S17 — Import: Run the anonymized full-volume import and report the result
-**Description:** The team anonymizes the owner extract locally. The team imports it into local Docker. This story is too large to verify as one unit. Plan §5.4 step 3. Output stays in `data/`.
+**Description:** The team anonymizes the data from the read-only OSC database locally (E4-S5, after gate A). The anonymized output goes to `data/osc/anon/`. The team imports it into local Docker at production volume. This story is too large to verify as one unit. Plan §5.4 step 3. Output stays in `data/`.
 **Acceptance criteria:**
 1. All three tasks have passed.
 2. The report on the issue has counts, run time and unmapped values only.
 3. Mailpit is empty after the run.
-**Size:** M · **Sprint:** 2 · **Depends on:** E4-S7, E4-S8, E4-S9 · **Assumptions:** A17, A18
+4. The total run time at production scale is on the issue, with the batch size used.
+**Size:** M · **Sprint:** 2 · **Depends on:** E4-S7, E4-S8, E4-S9, E4-S5, E4-S18 · **Assumptions:** A17, A18
 
 ##### E4-S17-T1 — Import Accounts and Contacts at full volume
 **Acceptance criteria:**
-1. The local database has about 738 accounts and 7981 contacts (the tst1 volume).
+1. The local database has 796 accounts and 9,232 contacts (the OSC production volume).
 2. A second run gives the same counts.
 3. The run report counts the unmapped ids.
+4. The run time for each entity is on the issue.
 **Size:** S · **Sprint:** 2 · **Depends on:** E4-S10, E4-S11 · **Assumptions:** A18
 
 ##### E4-S17-T2 — Import Opportunities and Cases at full volume
 **Acceptance criteria:**
-1. The local database has about 1964 opportunities and 4053 cases.
+1. The local database has 2,159 opportunities and 74,142 cases (the OSC production volume).
 2. Contracts are not in this run. E4-S13 imports them in Sprint 4.
 3. A second run gives the same counts.
+4. The case import runs in batches. A stop and a resume gives the same final counts.
+5. The run time for the case import at production scale is on the issue. The result shows whether the run fits in one working day.
 **Size:** M · **Sprint:** 2 · **Depends on:** E4-S12, E4-S14, E4-S15, E4-S17-T1 · **Assumptions:** A18
 
 ##### E4-S17-T3 — Write the import report
 **Acceptance criteria:**
 1. The report gives the run time per entity.
 2. The report gives the unmapped values for product, category and status.
-3. The report gives the thread count from the extract.
+3. The report gives the thread count from the OSC database.
 4. The report has no field content.
+5. The report states the expected run time of the thread import (E9-S5), based on the thread count and the measured speed.
 **Size:** S · **Sprint:** 2 · **Depends on:** E4-S17-T2 · **Assumptions:** none
+
+#### E4-S18 — Import: Add a read-only reader for the OSC database
+**Description:** The import framework gets a reader for the read-only OSC database. The command uses it with `--source=db`. The anonymizer uses it too. The reader runs SELECT statements only, in batches by key, and keeps a checkpoint. Credentials come only through `pass-cli run --env-file .claude/scripts/secrets.env`. The reader runs against the real database only after gate A (E4-S7). Before gate A, tests use a local synthetic database. Rules: `.claude/rules/secrets.md`, `.claude/rules/data-privacy.md`, `.claude/rules/osc-access.md`.
+**Acceptance criteria:**
+1. The reader opens a read-only connection. The reader runs SELECT statements only. A test shows that an INSERT, UPDATE or DDL statement is refused by the reader.
+2. The reader reads the credentials from environment variables that `pass-cli run` sets. No credential is in code, config, git or a log.
+3. The reader reads each entity in batches ordered by the OSC id (keyset paging). Memory use stays flat for 74,142 incidents.
+4. The reader keeps a checkpoint per entity in `data/osc/import-state/` and resumes after a stop.
+5. The reader reads only the columns in the approved mapping (data minimization).
+6. The reader logs counts, ids and run time only, never field content.
+7. The reader refuses to connect to the real database before the issue E4-S7 (gate A) is Done.
+8. A test with a local synthetic database shows the batches, the checkpoint and the resume.
+9. `scripts/seed/README.md` describes the reader and the `pass-cli run` call.
+**Size:** M · **Sprint:** 1 · **Depends on:** E4-S1-T1, E3-S10 · **Assumptions:** A18
 
 ---
 
@@ -776,7 +822,7 @@ Plan: §4.3. Mockup: `designs/screens/cases/mockup.html`. Mapping: `docs/osc-map
 1. The list shows reference (mono font), subject, account, primary contact, status, priority and queue pills, assigned user and date modified.
 2. The filters are queue, status, state, priority, impact, assigned user, product and category. The list shows priority as a column and does not show impact as a default column.
 3. The core mass update changes queue, status and assigned user.
-4. The list loads the 4053 imported cases with no error.
+4. The list loads the 74,142 imported cases with no error. The first page shows in the time the owner sets in E13-S9.
 **Size:** M · **Sprint:** 3 · **Depends on:** E3-S5, E5-S1, E4-S17-T2 · **Assumptions:** A2, A5
 
 #### E8-S3 — Cases: Generate the case reference and set the closed date
@@ -898,7 +944,7 @@ Plan: §3 W6. Size M. Sprints 3–4.
 **Size:** S · **Sprint:** 4 · **Depends on:** E3-S7, E9-S5 · **Assumptions:** A17
 
 #### E9-S5 — Import: Map incident threads to AOP_Case_Updates
-**Description:** The mapper imports all thread entries. It sets the entry type and the channel. It does not import attachments. Plan §5.2, row 7.
+**Description:** The mapper imports all thread entries. The thread volume is unknown and large (74,142 incidents). The import runs in batches and is resumable. The report gives the run time. It sets the entry type and the channel. It does not import attachments. Plan §5.2, row 7.
 **Acceptance criteria:**
 1. The import creates one AOP_Case_Updates row per OSC thread entry with `osc_id_c`.
 2. The row links to its case.
@@ -909,7 +955,9 @@ Plan: §3 W6. Size M. Sprints 3–4.
 7. The import creates no file attachment and no audit history.
 8. No update email goes out (Mailpit is empty).
 9. A second run gives the same row count.
-10. The report gives the entry count only.
+10. The report gives the entry count and the run time only.
+11. The import runs in batches and resumes from the checkpoint after a stop. A test shows the same final count after a stop and a resume.
+12. A run at production scale gives a measured run time on the issue.
 **Size:** M · **Sprint:** 3 · **Depends on:** E4-S14, E3-S7, E4-S2, E9-S7 · **Assumptions:** A17, A18
 
 #### E9-S6 — Case thread: Insert a standard text into a reply (conditional)
@@ -953,7 +1001,7 @@ Plan: §4.4. Mockup: `designs/screens/opportunities/mockup.html`. Mapping: `docs
 **Persona/goal/benefit:** As a sales rep, I want the list to show stage and quote number, so that I track my deals.
 **Acceptance criteria:**
 1. The list shows name, account, stage pill with percent, amount, expected close, assigned user and quote number.
-2. The list loads the 1964 imported opportunities with no error.
+2. The list loads the 2,159 imported opportunities with no error.
 3. The result matches the mockup.
 **Size:** S · **Sprint:** 4 · **Depends on:** E3-S8, E5-S1, E4-S17-T2 · **Assumptions:** A14
 
@@ -1092,16 +1140,16 @@ Plan: §3 W10, §5.4. Rule: `.claude/rules/data-privacy.md`. Size M. Sprints 2, 
 
 #### E13-S1 — Roles: Create the two TKC roles and the admin rule with a migration
 **Persona/goal/benefit:** As an admin, I want the roles to exist after every deploy, so that access is the same in each environment.
-**Description:** An idempotent extension migration (`extensions/tkc/Migrations/Version…SeedRoles.php`, data only) creates the roles "TKC Sales" and "TKC Service". A person with the SuiteCRM `is_admin` flag is the admin; this flag bypasses ACL. Finance staff use "TKC Service". A role "TKC Finance" is not built (the plan assumes Finance staff do not need `tkc_AccountFinance`). No security groups exist in phase 1. The plan puts this work in Sprint 5. This draft puts it in Sprint 2 because E6-S5 needs it. Plan: §11.2.
+**Description:** An idempotent extension migration (`extensions/tkc/Migrations/Version…SeedRoles.php`, data only) creates the roles "TKC Sales" and "TKC Service". A person with the SuiteCRM `is_admin` flag is the admin; this flag bypasses ACL. Finance staff use "TKC Service". A role "TKC Finance" is not built (owner decision 2026-11-20: the MVP has no Finance role). Admins see the Finance data (owner decision). Export is None and Cases delete is None in the MVP (owner decision). Later iterations: SUITE-26 (configurable roles), SUITE-27 (export per role) and SUITE-28 (delete per role). They have the label "Backlog" and no sprint. No security groups exist in phase 1. The plan puts this work in Sprint 5. This draft puts it in Sprint 2 because E6-S5 needs it. Plan: §11.2.
 **Acceptance criteria:**
-1. After `tkc:config:apply`, the roles "TKC Sales" and "TKC Service" exist. No other TKC role exists.
+1. After `tkc:config:apply`, the roles "TKC Sales" and "TKC Service" exist. No other TKC role exists (later: SUITE-26).
 2. A second run creates no duplicate role and changes no grant.
 3. For "TKC Sales" the grants are as follows (access, view, list, edit, delete, export, mass update). Accounts and Contacts: yes, All, All, All, Owner, None, All. Opportunities: yes, All, All, All, Owner, None, All. Cases: yes, All, All, All, None, None, None. Case Updates: yes, All, All, Owner, None, None, None. AOS_Contracts: yes, All, All, All, Owner, None, None. `tkc_AccountFinance`: yes, All, All, All, None, None, None. Quotes and Products: yes, All, All, All, Owner, None, None. Calls, Meetings, Tasks, Notes, Documents, Emails: yes, All, All, Owner, Owner, None, None.
 4. For "TKC Service" the grants are as follows. Accounts and Contacts: yes, All, All, All, None, None, None. Opportunities: yes, All, All, None, None, None, None. Cases: yes, All, All, All, None, None, All. Case Updates: yes, All, All, Owner, None, None, None. AOS_Contracts: yes, All, All, None, None, None, None. Quotes and Products: yes, All, All, None, None, None, None. Calls, Meetings, Tasks, Notes, Documents, Emails: same as "TKC Sales". `tkc_AccountFinance`: disabled.
-5. Delete on Cases is None for both roles. Export is None for both roles on every module.
+5. Delete on Cases is None for both roles (later: SUITE-28). Export is None for both roles on every module (later: SUITE-27).
 6. Import is None for both roles on every module. Data enters only with `tkc:osc:import`.
 7. A user with "TKC Service" and no admin flag cannot open `tkc_AccountFinance`.
-8. The security-officer accepts in writing that an admin sees the Finance data.
+8. The security-officer accepts in writing that an admin sees the Finance data (owner decision of 2026-11-20).
 9. The permission table and the admin rule are in `docs/admin-guide.md`.
 **Size:** M · **Sprint:** 2 · **Depends on:** E3-S3 · **Assumptions:** A6, A9
 
@@ -1129,7 +1177,7 @@ Plan: §3 W10, §5.4. Rule: `.claude/rules/data-privacy.md`. Size M. Sprints 2, 
 **Size:** S · **Sprint:** 2 · **Depends on:** E1-S1 · **Assumptions:** none
 
 #### E13-S5 — Owner task: Provide the production menu ids
-**Description:** **Assigned to the owner.** The mapping needs the production ids of product 551, category 552 and status 103. This needs read-only production credentials and an approved call (`--prod-approved`). Mapping: `docs/osc-mapping/incident.md` Q21. SUITE-7 is related.
+**Description:** **Assigned to the owner.** The mapping needs the production ids of product 551, category 552 and status 103. This needs read-only production access and an approved call (`--prod-approved`). The read-only database access (E4-S8) can replace the REST call when the owner agrees. Mapping: `docs/osc-mapping/incident.md` Q21. SUITE-7 is related.
 **Acceptance criteria:**
 1. The owner approves each production call in a comment.
 2. The ids of the menu values are in `extensions/tkc/config/tkc_import_maps.php` (ids only, no record data).
@@ -1137,7 +1185,7 @@ Plan: §3 W10, §5.4. Rule: `.claude/rules/data-privacy.md`. Size M. Sprints 2, 
 **Size:** S · **Sprint:** 3 · **Depends on:** SUITE-7 · **Assumptions:** A18
 
 #### E13-S6 — Security gate B: Approve the guards and the data minimisation for real data
-**Description:** The security-officer checks the guards in the target environment and the data minimisation. The owner approves the run. Plan §5.4 step 4.
+**Description:** The security-officer checks the guards in the target environment, the database reader and the data minimisation. The owner approves the run. Plan §5.4 step 4.
 **Acceptance criteria:**
 1. The security-officer confirms each guard in E4-S2 in the target environment.
 2. The security-officer confirms that the import reads only the fields in the approved mapping.
@@ -1146,11 +1194,12 @@ Plan: §3 W10, §5.4. Rule: `.claude/rules/data-privacy.md`. Size M. Sprints 2, 
 **Size:** S · **Sprint:** 6 · **Depends on:** E13-S2, E13-S3, E13-S5, E4-S17 · **Assumptions:** A6, A18, A19
 
 #### E13-S7 — Import: Run the real-data dry run
-**Description:** The team runs `tkc:osc:import --dry-run` on the real extract. The report has counts and unmapped values only.
+**Description:** The team runs `tkc:osc:import --source=db --dry-run` on the real OSC database. The report has counts and unmapped values only.
 **Acceptance criteria:**
 1. The dry run writes no record.
 2. The report gives counts per entity and the unmapped values.
 3. The report has no field content.
+4. The report gives the run time per entity at production scale and the expected run time of the real run.
 **Size:** M · **Sprint:** 6 · **Depends on:** E13-S6 · **Assumptions:** A18
 
 #### E13-S8 — Release: Run the full regression, the UAT and the release notes
@@ -1164,19 +1213,20 @@ Plan: §3 W10, §5.4. Rule: `.claude/rules/data-privacy.md`. Size M. Sprints 2, 
 
 #### E13-S9 — Performance: Measure list and record load times at full volume
 **Acceptance criteria:**
-1. The measure gives the load time of each of the four lists with the full anonymized data.
+1. The measure gives the load time of each of the four lists with the full anonymized data (74,142 cases, 9,232 contacts, 796 accounts, 2,159 opportunities and the thread set).
 2. The measure gives the load time of the Case record with its thread.
 3. A value above the limit that the owner sets has a fix story.
 **Size:** M · **Sprint:** 5 · **Depends on:** E8-S2, E9-S5, E10-S2 · **Assumptions:** A18
 
 #### E13-S10 — Import: Run the real import and the cut-over checklist
-**Description:** Run only after gate B, the dry run, the UAT and the owner's approval. The cut-over checklist covers sequences, users and the OSC read-only date.
+**Description:** Run only after gate B, the dry run, the UAT and the owner's approval. The run reads the OSC database with `--source=db`. The cut-over checklist covers sequences, users (including the inactive users of former staff) and the OSC read-only date.
 **Acceptance criteria:**
-1. The real run creates the counts that the dry run reported.
+1. The real run creates the counts that the dry run reported. A stop and a resume gives the same counts.
 2. Mailpit or the sink holds no customer email after the run.
 3. The sequences are above the highest imported value (E4-S16).
 4. The owner signs the cut-over checklist.
 5. The document-agent updates `scripts/seed/README.md` and the mapping status.
+6. The run time at production scale is on the issue.
 **Size:** M · **Sprint:** 7+ · **Depends on:** E13-S6, E13-S7, E13-S8 · **Assumptions:** A18, A19
 
 ---
@@ -1256,27 +1306,28 @@ Sprints last two weeks. One agent team works in parallel: backend work (E3, E4) 
 ### Sprint 1: Data model, import framework and gate A
 
 **Goal:** All TKC fields exist after Repair, the guarded import runs twice on synthetic data with the same counts, and gate A is open.
-**Stories:** E2-S6, E3-S1 to E3-S11, E4-S1 (T1 to T5), E4-S2 to E4-S7, E4-S9, E4-S10, E4-S11, E4-S8.
-**Demo:** Repair shows no change on the second run. The synthetic import of Accounts, Contacts and Finance rows runs twice with the same counts. A run with `--only-fields` keeps a user edit. Mailpit stays empty. The anonymizer passes the leak test. The security-officer opens gate A. The owner starts the extract.
-**Owner action before the sprint:** The staff-map format (E4-S9), the production volumes and the extract method (A18).
-**Dependency check:** E3 depends on E1 (Sprint 0). E4-S4 needs E4-S10 and E4-S11 (same sprint, order inside). E4-S8 needs E4-S7 (same sprint, last). E2-S6 needs E2-S3 and E2-S5 (Sprint 0).
-**Risk:** The load is high (about 42 days). The mappers for Opportunities and Cases are in Sprint 2. The contract vardefs and the contract mapper are in Sprint 4.
+**Stories:** E2-S6, E3-S1 to E3-S11, E4-S1 (T1 to T5), E4-S2 to E4-S7, E4-S9, E4-S10, E4-S11, E4-S18, E4-S8.
+**Demo:** Repair shows no change on the second run. The synthetic import of Accounts, Contacts and Finance rows runs twice with the same counts. A run with `--only-fields` keeps a user edit. Mailpit stays empty. The anonymizer passes the leak test. The security-officer opens gate A. The agents get read-only access to the OSC database. The anonymizer reads from it.
+**Owner action before the sprint:** The staff-map format and the list of past staff (E4-S9). The read-only database user and the Proton Pass entries (E4-S8, only after gate A is open). The production volumes are known (section 0).
+**Dependency check:** E3 depends on E1 (Sprint 0). E4-S4 needs E4-S10 and E4-S11 (same sprint, order inside). E4-S8 needs E4-S7 (same sprint, last). E4-S18 needs E4-S1-T1 (same sprint). E4-S5 needs E4-S18 (same sprint, order inside). E2-S6 needs E2-S3 and E2-S5 (Sprint 0).
+**Risk:** The load is high (about 45 days). The anonymizer and the reader must handle 74,142 incidents and a large thread set in batches. The measured run time can force a smaller batch or a longer run window. The thread count is unknown until the owner reports it (E4-S8). The mappers for Opportunities and Cases are in Sprint 2. The contract vardefs and the contract mapper are in Sprint 4.
 
 ### Sprint 2: Accounts, Contacts and the anonymized data
 
 **Goal:** Accounts and Contacts show as in the mockups on anonymized full-volume data, and the Finance data is visible to the Sales role only.
 **Stories:** E4-S12, E4-S14, E4-S15, E4-S16, E4-S17 (T1 to T3), E5-S1 to E5-S5, E6-S1 to E6-S5, E7-S1, E7-S2, E13-S1, E13-S4.
-**Demo:** About 8 700 anonymized accounts and contacts in the redesigned lists and records. The pills and the Yes/No controls work. The SPAM filter works. A Sales user sees the Finance tab and a Service user does not. Opportunities and cases are in the database. Contracts come in Sprint 4.
+**Demo:** 796 anonymized accounts and 9,232 anonymized contacts in the redesigned lists and records. The pills and the Yes/No controls work. The SPAM filter works. A Sales user sees the Finance tab and a Service user does not. Opportunities and cases are in the database. Contracts come in Sprint 4.
 **Owner action before the sprint:** The Finance field meaning and the Replicon and SharePoint URL templates (org Q6, Q12, Q4). The consent model and function-level labels (contact Q8, Q13, Q14). The staff-map owner for inactive staff.
-**Dependency check:** E5 needs E2-S3 (Sprint 0) and spikes S9 and S10 (Sprint 0). E6-S5 needs E13-S1 (same sprint, order inside). E6 and E7 list stories need E4-S17-T1 (same sprint, first). E4-S17 needs E4-S8 and E4-S9 (Sprint 1).
+**Risk:** The anonymized import of 74,142 cases can run for hours. The story E4-S17-T2 measures the run time. The import must resume after a stop.
+**Dependency check:** E5 needs E2-S3 (Sprint 0) and spikes S9 and S10 (Sprint 0). E6-S5 needs E13-S1 (same sprint, order inside). E6 and E7 list stories need E4-S17-T1 (same sprint, first). E4-S17 needs E4-S8, E4-S9 and E4-S18 (Sprint 1).
 
 ### Sprint 3: Cases and the thread import
 
 **Goal:** Cases show as in the mockup with the status bar and the record actions, the thread is imported with cleaned HTML, and the import sends no email.
 **Stories:** E7-S3, E7-S4, E8-S1 to E8-S6 (E8-S5 with T1 to T5), E9-S1, E9-S2, E9-S5, E9-S7, E13-S5.
-**Demo:** 4 053 anonymized cases with their threads. The status bar, "Solve as CX", "Solve as eGain", "Route to Finance" and "Mark as spam" work. A new case gets a reference. The Priority pill and the Impact pill show. A thread entry with a script tag shows no script. Mailpit is empty after the thread import.
+**Demo:** 74,142 anonymized cases with their threads. The status bar, "Solve as CX", "Solve as eGain", "Route to Finance" and "Mark as spam" work. A new case gets a reference. The Priority pill and the Impact pill show. A thread entry with a script tag shows no script. Mailpit is empty after the thread import.
 **Owner action before the sprint:** The "Assign to me" presets (incident Q3 to Q7 remainder). The production menu ids (E13-S5). The AOP email rule on a staff reply and the inbound mailbox rule (incident Q14, Q20).
-**Dependency check:** E8 needs E3 (Sprint 1), E4-S14 (Sprint 2), E5-S4 (Sprint 2) and spikes S8 and S9 (Sprint 0). E9-S5 needs E4-S14 (Sprint 2) and E9-S7 (same sprint, first). E7-S3 and E7-S4 need E7-S1 (Sprint 2). The extract must hold the threads (E4-S8).
+**Dependency check:** E8 needs E3 (Sprint 1), E4-S14 (Sprint 2), E5-S4 (Sprint 2) and spikes S8 and S9 (Sprint 0). E9-S5 needs E4-S14 (Sprint 2) and E9-S7 (same sprint, first). E7-S3 and E7-S4 need E7-S1 (Sprint 2). The database must hold the threads (E4-S8). The thread import must be resumable (E9-S5).
 
 ### Sprint 4: Opportunities, contracts and the styled thread
 
@@ -1337,39 +1388,42 @@ The owner accepted all defaults on 2026-11-20. No decision is open. The architec
 | A15 | Import all five phone types and all SPAM contacts. |
 | A16 | Drop the credential fields. The CRM modules field is **not built in Sprint 1**. It waits for the owner's answer (EN-9, plan §11.7). |
 | A17 | Import all thread entries. Do not import attachments or audit history. |
-| A18 | The owner runs the OSC bulk extract (E4-S8). |
+| A18 | The OSC extract is a read-only database. The owner gives the access (E4-S8). Agents read it only after gate A (E4-S7), through a reader (E4-S18). Credentials via Proton Pass. |
 | A19 | Mailpit in Docker. The import refuses to run without a sink host. |
 | A20 | Base currency EUR. Number format nl-NL. UI language en_us. |
 
-### 5.2 Assumptions inside the addendum that the owner still confirms
+### 5.2 Decisions inside the addendum
 
-| Item | Default in the plan |
+The owner decided these on 2026-11-20. The security-officer still signs them in E13-S1.
+
+| Item | Decision |
 |---|---|
-| Role "TKC Finance" | Not built. Finance staff use "TKC Service" and do not see `tkc_AccountFinance`. |
-| Export | None for all roles on all modules. The owner can relax it with the security-officer. |
-| Cases delete | None for all roles. |
-| Admin access | An admin sees the Finance data. The security-officer must accept this (E13-S1). |
-| Default of Priority | Empty. The story E3-S5 checks the core code that reads the default. |
-| Thread entry types | OSC types 6 and 7 map to `note`, type 5 (chat) to `customer`, type 8 (voice) to `customer_proxy`. |
-| Priority or Impact in the header | Priority in the header and list. The team swaps them with a small metadata change if agents use Impact more. |
+| Role "TKC Finance" | Not built in the MVP. Finance staff use "TKC Service" and do not see `tkc_AccountFinance`. Later: SUITE-26 (configurable roles). |
+| Export | None for all roles on all modules. Later: SUITE-27 (export per role). |
+| Cases delete | None for all roles. Later: SUITE-28 (delete per role). |
+| Admin access | An admin sees the Finance data (decided). The security-officer accepts this in E13-S1. |
+| Default of Priority | Empty (decided). The story E3-S5 checks the core code that reads the default. |
+| Former OSC staff | The admin disables their accounts. The import creates or links inactive users (E4-S1-T4). No `tkc_migration` user. |
+| Thread entry types | Default in the plan: OSC types 6 and 7 map to `note`, type 5 (chat) to `customer`, type 8 (voice) to `customer_proxy`. The owner still confirms. |
+| Priority or Impact in the header | Default in the plan: Priority in the header and list. The team swaps them with a small metadata change if agents use Impact more. The owner still confirms. |
 
 ### 5.3 Open business questions per sprint
 
 | Before sprint | Question | Epic |
 |---|---|---|
 | 0 | Finish SUITE-9. | E1 |
-| 1 | Production volumes, extract method, thread counts (A18). | E4 |
-| 1 | Staff map: login or email. Owner of the inactive staff records. | E4 |
+| 1 | Thread count and the database details (E4-S8). Production volumes are known (section 0). | E4 |
+| 1 | Staff map: login or email. List of past staff (E4-S9). | E4 |
 | 2 | Finance field meaning. Replicon and SharePoint URLs. Site Werkzaamheden report. | E6 |
 | 2 | Consent model, function-level labels, SPAM import. | E7 |
 | 3 | "Assign to me" presets. | E8 |
-| 3 | Production ids of product 551, category 552 and status 103 (needs read-only production credentials). | E8 |
+| 3 | Production ids of product 551, category 552 and status 103 (needs read-only production access). | E8 |
 | 3 | AOP email on a staff reply. Inbound mailbox case rule. | E8, E9 |
 | 4 | Bodies of the standard texts 10, 20, 33, 40, 41, 341 and 371. | E9 |
 | 4 | Quote number yearly restart. AOS quotes. Two amounts and dates. Approach. Won-date rule. | E10 |
 | 4 | `Kanalen` against support level. Units of `Duur` and `ChangeDrempel`. `DatumRenewal`. Contract status. Incident link. | E11 |
 | 5 | Email view in use. Dashboard tabs per role. Activity Stream in use. | E12 |
-| 5 | Security acceptance of the credential drops, the guards, admin access to Finance data and the export rule. | E13 |
+| 5 | Security acceptance of the credential drops, the guards, admin access to Finance data and the export rule (decided; the security-officer signs). | E13 |
 | 6 | Approval of the real-data dry run. | E13 |
 | open | CRM modules ("State") field: keep or drop (org Q5, contact Q2). The field is not built until the owner answers (EN-9). | EN |
 
@@ -1382,10 +1436,10 @@ The owner accepted all defaults on 2026-11-20. No decision is open. The architec
 | Item | Count |
 |---|---|
 | Epics (E1 to E14) | 14, plus the unscheduled "Enhancements" bucket (9 placeholders, not counted below) |
-| Stories | 100 (E1: 7, E2: 6, E3: 11, E4: 17, E5: 6, E6: 5, E7: 4, E8: 6, E9: 7, E10: 8, E11: 3, E12: 5, E13: 10, E14: 5) |
+| Stories | 101 (E1: 7, E2: 6, E3: 11, E4: 18, E5: 6, E6: 5, E7: 4, E8: 6, E9: 7, E10: 8, E11: 3, E12: 5, E13: 10, E14: 5) |
 | Stories that have tasks | 5 (E1-S7, E4-S1, E4-S14, E4-S17, E8-S5) |
 | Tasks | 21 (5 spikes, 5 import-command tasks, 3 case-mapper tasks, 3 import-run tasks, 5 case-action tasks) |
-| Owner-assigned stories | 3 (E4-S8 extract, E4-S9 staff map, E13-S5 production ids) |
+| Owner-assigned stories | 3 (E4-S8 database access, E4-S9 staff map, E13-S5 production ids) |
 | Security-officer gates | 2 (E4-S7 gate A, E13-S6 gate B) |
 | Process handlers | 10 in E8, 1 in E10 |
 
@@ -1394,7 +1448,7 @@ Effort per sprint. The count uses leaf items only (a story with tasks counts thr
 | Sprint | Leaf items | Rough days | Note |
 |---|---|---|---|
 | 0 | 5 S, 11 M | 27 | Five spikes; tokens and base theme |
-| 1 | 12 S, 15 M | 42 | Highest load. Backend (E3, E4) and frontend (E2) run in parallel. |
+| 1 | 12 S, 16 M | 44 | Highest load. Backend (E3, E4) and frontend (E2) run in parallel. |
 | 2 | 8 S, 15 M | 38 | High load. Import, shared components, two screens. |
 | 3 | 7 S, 10 M | 27 | One screen, ten actions, thread import, HTML cleaning |
 | 4 | 11 S, 4 M | 19 | Contract fields, contract import, quote number |
@@ -1402,7 +1456,7 @@ Effort per sprint. The count uses leaf items only (a story with tasks counts thr
 | 6 | 1 S, 2 M | 5 | Gate B, dry run, UAT |
 | 7+ | 1 S, 5 M | 11 | Real import and Azure |
 
-Before this update, Sprint 1 had about 45 days and Sprint 2 about 42 days. Sprints 1 and 2 are still the heaviest. Sprints 5 to 7+ are light. The team can pull stories forward when the dependencies allow.
+Before the owner inputs, Sprint 1 had about 42 days (44 days with the database reader) and Sprint 2 about 38 days. Sprints 1 and 2 are still the heaviest. Sprints 5 to 7+ are light. The team can pull stories forward when the dependencies allow.
 
 ### 6.2 Gaps and inconsistencies
 
@@ -1421,11 +1475,177 @@ Before this update, Sprint 1 had about 45 days and Sprint 2 about 42 days. Sprin
 
 **Still open:**
 
-1. Case menu ids. The Sprint 2 anonymized case import uses the tst1 ids. The production ids (incident Q21) come from the owner in Sprint 3 (E13-S5) and are needed before gate B.
-2. Extract content. The thread import (Sprint 3) needs the threads in the Sprint 1 extract. E4-S8 lists the threads as required content.
-3. Gate A order. The extract is the last item of Sprint 1 (plan §5.4). A delay moves the Sprint 2 import.
+1. Case menu ids. The Sprint 2 anonymized case import uses the ids in the database that the owner opens (E4-S8). Check that they are production ids. The production ids (incident Q21) come from the owner in Sprint 3 (E13-S5) and are needed before gate B.
+2. Database content. The thread import (Sprint 3) needs the threads in the database. E4-S8 lists the thread table as required. The thread volume is still unknown and large.
+3. Gate A order. The database access (E4-S8) is the last item of Sprint 1 (plan §5.4). A delay moves the Sprint 2 import.
 4. Contracts mockup. No mockup exists for contracts. E11-S2 has no mockup link. The ux-designer may need a small mockup before Sprint 4.
 5. Start state. SUITE-9 and the `extensions/tkc/` scaffold are open. E1 depends on SUITE-9.
 6. Contract decision A13. The owner accepted the default, but the contract vardefs wait until Sprint 4. A change to a `tkc_` module after Sprint 4 starts costs M to L.
 7. Plan §3 and §4.1 still list `tkc_crm_modules_c` and four roles. Plan §11.7 corrects them. The document-agent must apply the corrections to the plan text.
 8. Load. Sprints 1 and 2 stay above the later sprints (see 6.1). More moves need the owner's view on scope.
+
+---
+
+## Loaded into SUITE (2026-11-20)
+
+The product-owner loaded the approved backlog into the planning project SUITE on 2026-11-20 with the owner's go. No sprint is started. No item is started. Every item has the status To Do.
+
+**Totals:** 14 epics (E1 to E14) plus 1 epic "Enhancements (not scheduled)" (EN), 101 stories, 21 tasks, 9 placeholders EN-1 to EN-9. That makes 146 new issues, SUITE-29 to SUITE-174. SUITE-1 to SUITE-28 are unchanged. SUITE-26, SUITE-27 and SUITE-28 keep the label "Backlog" and have no sprint.
+
+**Decisions at load time:**
+
+1. The story count is 101, not 100. The new story E4-S18 (OSC database reader) is part of the owner input in section 0.
+2. The placeholders EN-1 to EN-9 are stories under one small epic EN (SUITE-43). They have the label "Backlog" and no sprint. Each has one AC: the owner approves scope and AC before work starts.
+3. Size is in the description and in the story points field (S = 1, M = 3, L = 8). Priority follows the sprint: Sprints 0 and 1 high, Sprints 2 to 6 medium, Sprint 7+ and enhancements low.
+4. **Sprints are not in the planning tool.** The agent account has no right to create sprints (HTTP 403 on `POST /sprints`) and no right to create labels (HTTP 403 on `POST /labels`). The sprint of each item is in its description ("**Sprint:** n") and in the table below. The wrapper has the verbs `sprints`, `sprint-create` and `sprint-add`, and the option `create --sprint`. The owner must create the sprints "Sprint 0" to "Sprint 6" and "Sprint 7+" in the planning tool (state planned), or give the agent account the right. Then the agent runs `sprint-add` with the issues of each sprint from this table.
+5. During the load, two loader processes ran at the same time by mistake. They made two partial copies of E4-S11 and E4-S12. The product-owner reused those four issues (SUITE-88 to SUITE-91) for E4-S11 to E4-S14. The titles, descriptions, points and AC were rewritten and checked. No duplicate remains. The numbers match the dependency references in the descriptions.
+6. Dependency references in descriptions and AC use the form `SUITE-n (E4-S7)`.
+
+| Draft ID | SUITE ID | Type | Sprint |
+|---|---|---|---|
+| E1 | SUITE-29 | epic | - |
+| E2 | SUITE-30 | epic | - |
+| E3 | SUITE-31 | epic | - |
+| E4 | SUITE-32 | epic | - |
+| E5 | SUITE-33 | epic | - |
+| E6 | SUITE-34 | epic | - |
+| E7 | SUITE-35 | epic | - |
+| E8 | SUITE-36 | epic | - |
+| E9 | SUITE-37 | epic | - |
+| E10 | SUITE-38 | epic | - |
+| E11 | SUITE-39 | epic | - |
+| E12 | SUITE-40 | epic | - |
+| E13 | SUITE-41 | epic | - |
+| E14 | SUITE-42 | epic | - |
+| EN | SUITE-43 | epic (Enhancements) | none (Backlog) |
+| E1-S1 | SUITE-44 | story | 0 |
+| E1-S2 | SUITE-45 | story | 0 |
+| E1-S3 | SUITE-46 | story | 0 |
+| E1-S4 | SUITE-47 | story | 0 |
+| E1-S5 | SUITE-48 | story | 0 |
+| E1-S6 | SUITE-49 | story | 0 |
+| E1-S7 | SUITE-50 | story | 0 |
+| E1-S7-T1 | SUITE-51 | task | 0 |
+| E1-S7-T2 | SUITE-52 | task | 0 |
+| E1-S7-T3 | SUITE-53 | task | 0 |
+| E1-S7-T4 | SUITE-54 | task | 0 |
+| E1-S7-T5 | SUITE-55 | task | 0 |
+| E2-S1 | SUITE-56 | story | 0 |
+| E2-S2 | SUITE-57 | story | 0 |
+| E2-S3 | SUITE-58 | story | 0 |
+| E2-S4 | SUITE-59 | story | 0 |
+| E2-S5 | SUITE-60 | story | 0 |
+| E2-S6 | SUITE-61 | story | 1 |
+| E3-S1 | SUITE-62 | story | 1 |
+| E3-S2 | SUITE-63 | story | 1 |
+| E3-S3 | SUITE-64 | story | 1 |
+| E3-S4 | SUITE-65 | story | 1 |
+| E3-S5 | SUITE-66 | story | 1 |
+| E3-S6 | SUITE-67 | story | 1 |
+| E3-S7 | SUITE-68 | story | 1 |
+| E3-S8 | SUITE-69 | story | 1 |
+| E3-S9 | SUITE-70 | story | 1 |
+| E3-S10 | SUITE-71 | story | 1 |
+| E3-S11 | SUITE-72 | story | 1 |
+| E4-S1 | SUITE-73 | story | 1 |
+| E4-S1-T1 | SUITE-74 | task | 1 |
+| E4-S1-T2 | SUITE-75 | task | 1 |
+| E4-S1-T3 | SUITE-76 | task | 1 |
+| E4-S1-T4 | SUITE-77 | task | 1 |
+| E4-S1-T5 | SUITE-78 | task | 1 |
+| E4-S2 | SUITE-79 | story | 1 |
+| E4-S3 | SUITE-80 | story | 1 |
+| E4-S4 | SUITE-81 | story | 1 |
+| E4-S5 | SUITE-82 | story | 1 |
+| E4-S6 | SUITE-83 | story | 1 |
+| E4-S7 | SUITE-84 | story | 1 |
+| E4-S8 | SUITE-85 | story | 1 |
+| E4-S9 | SUITE-86 | story | 1 |
+| E4-S10 | SUITE-87 | story | 1 |
+| E4-S11 | SUITE-88 | story | 1 |
+| E4-S12 | SUITE-89 | story | 2 |
+| E4-S13 | SUITE-90 | story | 4 |
+| E4-S14 | SUITE-91 | story | 2 |
+| E4-S14-T1 | SUITE-92 | task | 2 |
+| E4-S14-T2 | SUITE-93 | task | 2 |
+| E4-S14-T3 | SUITE-94 | task | 2 |
+| E4-S15 | SUITE-95 | story | 2 |
+| E4-S16 | SUITE-96 | story | 2 |
+| E4-S17 | SUITE-97 | story | 2 |
+| E4-S17-T1 | SUITE-98 | task | 2 |
+| E4-S17-T2 | SUITE-99 | task | 2 |
+| E4-S17-T3 | SUITE-100 | task | 2 |
+| E4-S18 | SUITE-101 | story | 1 |
+| E5-S1 | SUITE-102 | story | 2 |
+| E5-S2 | SUITE-103 | story | 2 |
+| E5-S3 | SUITE-104 | story | 2 |
+| E5-S4 | SUITE-105 | story | 2 |
+| E5-S5 | SUITE-106 | story | 2 |
+| E5-S6 | SUITE-107 | story | 5 |
+| E6-S1 | SUITE-108 | story | 2 |
+| E6-S2 | SUITE-109 | story | 2 |
+| E6-S3 | SUITE-110 | story | 2 |
+| E6-S4 | SUITE-111 | story | 2 |
+| E6-S5 | SUITE-112 | story | 2 |
+| E7-S1 | SUITE-113 | story | 2 |
+| E7-S2 | SUITE-114 | story | 2 |
+| E7-S3 | SUITE-115 | story | 3 |
+| E7-S4 | SUITE-116 | story | 3 |
+| E8-S1 | SUITE-117 | story | 3 |
+| E8-S2 | SUITE-118 | story | 3 |
+| E8-S3 | SUITE-119 | story | 3 |
+| E8-S4 | SUITE-120 | story | 3 |
+| E8-S5 | SUITE-121 | story | 3 |
+| E8-S5-T1 | SUITE-122 | task | 3 |
+| E8-S5-T2 | SUITE-123 | task | 3 |
+| E8-S5-T3 | SUITE-124 | task | 3 |
+| E8-S5-T4 | SUITE-125 | task | 3 |
+| E8-S5-T5 | SUITE-126 | task | 3 |
+| E8-S6 | SUITE-127 | story | 3 |
+| E9-S1 | SUITE-128 | story | 3 |
+| E9-S2 | SUITE-129 | story | 3 |
+| E9-S3 | SUITE-130 | story | 4 |
+| E9-S4 | SUITE-131 | story | 4 |
+| E9-S5 | SUITE-132 | story | 3 |
+| E9-S6 | SUITE-133 | story | 4 |
+| E9-S7 | SUITE-134 | story | 3 |
+| E10-S1 | SUITE-135 | story | 4 |
+| E10-S2 | SUITE-136 | story | 4 |
+| E10-S3 | SUITE-137 | story | 4 |
+| E10-S4 | SUITE-138 | story | 4 |
+| E10-S5 | SUITE-139 | story | 4 |
+| E10-S6 | SUITE-140 | story | 4 |
+| E10-S7 | SUITE-141 | story | 4 |
+| E10-S8 | SUITE-142 | story | 4 |
+| E11-S1 | SUITE-143 | story | 4 |
+| E11-S2 | SUITE-144 | story | 4 |
+| E11-S3 | SUITE-145 | story | 4 |
+| E12-S1 | SUITE-146 | story | 5 |
+| E12-S2 | SUITE-147 | story | 5 |
+| E12-S3 | SUITE-148 | story | 5 |
+| E12-S4 | SUITE-149 | story | 5 |
+| E12-S5 | SUITE-150 | story | 5 |
+| E13-S1 | SUITE-151 | story | 2 |
+| E13-S2 | SUITE-152 | story | 5 |
+| E13-S3 | SUITE-153 | story | 5 |
+| E13-S4 | SUITE-154 | story | 2 |
+| E13-S5 | SUITE-155 | story | 3 |
+| E13-S6 | SUITE-156 | story | 6 |
+| E13-S7 | SUITE-157 | story | 6 |
+| E13-S8 | SUITE-158 | story | 6 |
+| E13-S9 | SUITE-159 | story | 5 |
+| E13-S10 | SUITE-160 | story | 7+ |
+| E14-S1 | SUITE-161 | story | 7+ |
+| E14-S2 | SUITE-162 | story | 7+ |
+| E14-S3 | SUITE-163 | story | 7+ |
+| E14-S4 | SUITE-164 | story | 7+ |
+| E14-S5 | SUITE-165 | story | 7+ |
+| EN-1 | SUITE-166 | story (placeholder) | none (Backlog) |
+| EN-2 | SUITE-167 | story (placeholder) | none (Backlog) |
+| EN-3 | SUITE-168 | story (placeholder) | none (Backlog) |
+| EN-4 | SUITE-169 | story (placeholder) | none (Backlog) |
+| EN-5 | SUITE-170 | story (placeholder) | none (Backlog) |
+| EN-6 | SUITE-171 | story (placeholder) | none (Backlog) |
+| EN-7 | SUITE-172 | story (placeholder) | none (Backlog) |
+| EN-8 | SUITE-173 | story (placeholder) | none (Backlog) |
+| EN-9 | SUITE-174 | story (placeholder) | none (Backlog) |
