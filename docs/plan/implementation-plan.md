@@ -1,6 +1,6 @@
 # TKC SuiteCRM — build architecture and implementation plan
 
-> Phase 5 (Plan) · Author: architect · Date: 2026-11-20 · Planning: SUITE-25 · Status: **DRAFT — the owner must confirm the assumptions in §2.**
+> Phase 5 (Plan) · Author: architect · Date: 2026-11-20 · Planning: SUITE-25 · Status: **Approved 2026-11-20** — the owner accepted the defaults of A1–A20 and the §11 addendum (roles, handler list, thread fields, priority vs. impact, hand-written Finance module).
 > Inputs: `docs/assessment/customization-feasibility.md` (D1–D12, S1/S3/S5), `docs/architecture.md`, `docs/backlog.md`, `docs/osc-mapping/{organization,contact,incident,opportunity}.md`, `designs/system/components.md`, and the design notes in `designs/screens/*/mockup.html`.
 > Rules: `.claude/rules/suitecrm-customization.md`, `workflow-order.md`, `data-privacy.md`. Every build story still gets its own architect prescription (workflow step 1). This plan sets the frame for those prescriptions.
 
@@ -29,7 +29,7 @@
 
 ## 2. Assumptions
 
-Every row is an **ASSUMPTION — owner to confirm**. The plan uses the default in each row. Effort: S < 1 day, M 1–3 days, L > 3 days.
+**Owner decision 2026-11-20: all defaults accepted** (with the §11.7 corrections). The plan uses the default in each row. Effort: S < 1 day, M 1–3 days, L > 3 days.
 
 | # | Topic | Recommended default | Reason | Cost impact | If the owner overrules |
 |---|---|---|---|---|---|

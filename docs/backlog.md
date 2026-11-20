@@ -11,7 +11,7 @@
 | 2b | OSC field mapping per screen | drafts done; REST verification next |
 | 3 | Design system | done — v0.1 approved 2026-11-20 (`designs/system/`) |
 | 4 | Screen designs (mockups for evaluation) | in review — 7 mockups published 2026-11-20 (SUITE-17) |
-| 5 | Plan | draft — `docs/plan/implementation-plan.md` (assumptions A1–A20 to confirm) |
+| 5 | Plan | done — `docs/plan/implementation-plan.md` approved 2026-11-20 (A1–A20 defaults accepted) |
 | 6 | Epics / stories / tasks in SUITE | draft — `docs/plan/backlog-draft.md` (not yet in the planning tool) |
 | 7 | Sprints | draft — sprint plan in `docs/plan/backlog-draft.md` |
 | 8 | Run the sprints | to do |
@@ -39,6 +39,7 @@
 - [x] architect: scaffold `extensions/tkc/` (SUITE-9; browser check still open).
 
 ## Decisions
+- 2026-11-20 — Implementation plan approved: all assumption defaults A1–A20 accepted (12 case statuses + P1–P4; three-state Yes/No; required primary contact on cases; queue only; Finance fields in a separate `tkc_AccountFinance` module with module ACL; quote number `OFTYY-NNNN` on Opportunity, no quote import; `tkc_<name>_c` naming; one case reference `YYMMDD-NNNNNN`; extras (pipeline board, totals, My day) deferred; attachments not in the first import; owner runs the bulk OSC extract). Roles: TKC Sales + TKC Service + admin flag.
 - 2026-11-20 — Assessment decisions D1–D12 approved (main-table vardefs, delta config, `tkc:repair`, import command with notification guards, Docker PHP 8.3, …) — see `docs/assessment/customization-feasibility.md` §9.
 - 2026-11-20 — OSC screenshots with customer data stay in `data/osc/inputs/` only; the Incident export is redacted in git.
 - 2026-11-20 — Upgrade-safe customization only (extensions/tkc + public/legacy/custom); core patches by exception.
