@@ -63,7 +63,7 @@
 **Outcome:** Sprint 0 is closed. The base is built: build chain, mail sink, tests, metadata contract test, naming rules, design-token theme for both UIs, login page with the TKC Digital logo, and the five spikes S7 to S11. All spike results are go or partial, with owner decisions. Sprint 0 adds no data model and no import. Release notes: `docs/release-notes.md`. The planning tool holds the status of each issue.
 
 **Done in Sprint 0:** SUITE-44 to 50 (50 with spikes 51 to 55), 56 to 60, 175, 177 and 179.
-**Follow-ups (To Do):** SUITE-176, 178, 180, 181, 182, 183, 184, 185, 186 and 187.
+**Follow-ups (To Do):** SUITE-176, 178, 180 (done after Sprint 0), 181, 182, 183, 184, 185, 186 and 187.
 
 ### Sprint 1 starts with
 - SUITE-186 (`radioenum` keyboard focus). It comes before SUITE-103.
@@ -72,6 +72,12 @@
 - SUITE-176 (Symfony `test` env) is open. Plan it early, because the contract test boots the `dev` env as a workaround.
 - SUITE-187 (several records in tabs) is not scheduled. It needs an architect check and a ux-designer mockup first.
 - SUITE-129 needs an architect prescription for the "Messages" tab extension point before the build.
+
+### After Sprint 0 (2026-11-21)
+- **Decision (SUITE-180, owner, option A):** the UI keeps the teal primary hue 195. The brand pink #e95295 (`--tkc-color-brand-pink`) colours only the logo through `--tkc-logo`. Never use it for text. Options B and C are rejected. Design system v0.2, `tokens.json` status APPROVED.
+- SUITE-188 (design-system generator writes the committed `tkc-ds.css` header) is done.
+- SUITE-189 (font change from IBM Plex to Roboto, from the brand guide) is planned. It is not done.
+- The brand guide is a local reference in `designs/`. Git ignores it.
 
 ### Sprint 0 progress notes (2026-11-21)
 - Implemented on branch `sprint/0`: SUITE-44 (build chain), 45 (mail sink), 46 (tests), 47 (metadata contract test, Accounts first), 48, 49, 56 (theme generator), 57 (Angular theme), 58 (Angular overrides), 59 (login logo), 60 (legacy theme).

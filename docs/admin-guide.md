@@ -15,7 +15,7 @@
 - Do not run the command on a shared or Azure environment.
 
 ## Logo (login page and navbar, SUITE-59)
-- The logo comes from git: `public/legacy/custom/themes/suite8/images/company_logo.svg`. The file is the TKC Digital logo in one colour (`currentColor`). The theme tokens set the colour. The brand pink is open in SUITE-180.
+- The logo comes from git: `public/legacy/custom/themes/suite8/images/company_logo.svg`. The file is the TKC Digital logo in one colour (`currentColor`). The token `--tkc-logo` sets the colour (brand pink, SUITE-180). The primary colour does not set it. To change the logo colour, change `PINK_HEX`, `PINK_H` and `PINK` in `designs/system/generator/tokens_gen.py` (do not edit `tokens.json`, it is generated). Then run `python3 -I build_tokens.py && python3 -I assemble.py` in `designs/system/generator`, then `python3 -I scripts/theme/build_theme.py` and `scripts/build.sh`.
 - Do not use the logo upload in Admin. It does not replace the theme image.
 - To change the logo: replace the file, run `docker/dc.sh console cache:clear`, and rebuild if needed.
 - Keep "Supercharged by SuiteCRM" visible.
