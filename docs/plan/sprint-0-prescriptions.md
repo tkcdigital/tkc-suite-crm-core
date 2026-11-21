@@ -14,6 +14,7 @@
 | X5 | Fonts are **self-hosted** (no font CDN). | A font CDN sends each user's IP address to a third party (GDPR). |
 | X6 | Legacy CSS must not use `calc()` with `+`. | Legacy minifier `include/SugarTheme/cssmin.php:65` removes the spaces around `+`. |
 | X9 | Legacy hand-file selectors must not have whitespace before a `:` pseudo (`body :is(`); `build_theme.py --check` fails on it. | Legacy cssmin removes the space, so `body :is(` becomes `body:is(` and matches nothing. |
+| X10 | A hand file must not set `z-index` with an overlay token (`--tkc-z-dropdown`, `-drawer`, `-modal`, `-toast`, `-tooltip`); `build_theme.py --check` fails on it. Local layers (`base`, `sticky`, `navbar`) stay allowed. | The token z-scale (0-700) is below the core overlay scale (modal backdrop 1050 `!important`, modal 1055, toast 1510). SUITE-58 put the modal window under its backdrop. |
 | X7 | Spikes run on throwaway branches in a separate worktree with their own compose project. | They change metadata and the DB. |
 | X8 | Do not add the `.tkc-*` classes from `tkc-ds.css` to the app; map tokens onto **core selectors**. | Core markup cannot change; `tkc-ds.css` is for mockups only. |
 

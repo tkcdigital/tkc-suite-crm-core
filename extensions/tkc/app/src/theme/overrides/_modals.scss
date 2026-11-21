@@ -1,11 +1,8 @@
 // Modals (components.md section 10). Owned by SUITE-58. Core: ng-bootstrap .modal, .modal-content, .modal-backdrop.
 // ng-bootstrap closes a modal with Esc by default; no override here.
-.modal {
-  z-index: var(--tkc-z-modal);
-}
-
+// No z-index here: the token z-scale (0-700) is below the core scale (modal backdrop 1050 !important in core
+// _modal.scss:171, modal window 1055, toast 1510). Overriding only the window put the backdrop on top of it.
 .modal-backdrop {
-  z-index: var(--tkc-z-modal);
   background-color: var(--tkc-backdrop);
 }
 

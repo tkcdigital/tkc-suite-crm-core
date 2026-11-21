@@ -178,6 +178,14 @@ class TestLint(unittest.TestCase):
             self.assertEqual(len(bt.lint_text(css, True, False)), 1, sel)
             self.assertEqual(bt.lint_text(css, False, True), [], sel)
 
+    def test_z_index_overlay_token(self):
+        for tok in ("modal", "toast", "dropdown", "drawer", "tooltip"):
+            css = ".m { z-index: var(--tkc-z-%s); }" % tok
+            self.assertEqual(len(bt.lint_text(css, False, True)), 1, tok)
+            self.assertEqual(len(bt.lint_text(css, True, False)), 1, tok)
+        ok = ".n { z-index: var(--tkc-z-navbar); } .s { z-index: var(--tkc-z-sticky); } .b { z-index: 1; }"
+        self.assertEqual(bt.lint_text(ok, False, True), [])
+
     def test_space_before_pseudo_no_false_positive(self):
         css = (
             "a:hover, a:focus-visible:focus-visible, *:is(a, b) { color: var(--x); }\n"

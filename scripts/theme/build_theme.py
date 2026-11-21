@@ -247,6 +247,10 @@ CALC_PLUS_RE = re.compile(r"calc\([^;{}]*\s\+\s", re.IGNORECASE)
 # X9: whitespace, then ":" in a selector (descendant combinator + pseudo, "body :is("). Legacy cssmin strips the space.
 # A comma before the space is fine ("a, :hover" is not a descendant pattern).
 SPACE_PSEUDO_RE = re.compile(r"[^\s,]\s+:")
+# X10: the token z-scale (0-700) is below the core overlay scale (dropdown 1000, modal backdrop 1050 !important,
+# modal 1055, toast 1510). A hand file must not put an overlay on a token z-index (SUITE-58: the modal window went
+# under its backdrop). Local layers (base, sticky, navbar inside the fixed top bar) stay allowed.
+Z_OVERLAY_RE = re.compile(r"z-index\s*:[^;{}]*--tkc-z-(?:dropdown|drawer|modal|toast|tooltip)\b", re.IGNORECASE)
 
 
 def _strip_comments(text, line_comments):
@@ -275,6 +279,8 @@ def lint_text(text, legacy, scss):
             problems.append("line %d: raw colour function %s" % (line, m.group(0).strip()))
         if legacy and CALC_PLUS_RE.search(chunk):
             problems.append("line %d: calc() with ' + ' (X6)" % line)
+        if Z_OVERLAY_RE.search(chunk):
+            problems.append("line %d: z-index with an overlay token, below the core overlay scale (X10)" % line)
     return problems
 
 

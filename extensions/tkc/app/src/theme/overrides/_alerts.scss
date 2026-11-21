@@ -36,7 +36,7 @@
 
 // Toast: the fixed message from the message service.
 .alert-fixed {
-  z-index: var(--tkc-z-toast);
+  // No z-index: core keeps the toast at 1510, above modals; the token --tkc-z-toast (600) is below them.
   border-radius: var(--tkc-radius-md);
   box-shadow: var(--tkc-shadow-3);
 }

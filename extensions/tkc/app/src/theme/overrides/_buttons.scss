@@ -103,9 +103,10 @@ button:disabled {
   border-color: var(--tkc-danger-solid);
 }
 
-// Core uses ".btn-outline-danger" only as the accent of the filter and record panels (list-filter.component.ts:100,
-// list-filter.store.ts:293 "Clear", record-panel.component.ts:83), not for destructive actions. Core colour: salmon red
-// (components/_button-danger.scss:31). It shows as a primary outline button.
+// Core uses ".btn-outline-danger" as the accent of the filter and record panels: list-filter.component.ts:100 (saved
+// filter Save and Delete; Delete opens a confirmation modal and removes only the user's own saved filter),
+// list-filter.store.ts:293 "Clear", record-panel.component.ts:83 (mass update, Cancel). Core colour: salmon red
+// (components/_button-danger.scss:31). It shows as a primary outline button (security review SUITE-58: accepted).
 .btn-outline-danger {
   color: var(--tkc-primary-default);
   background-color: var(--tkc-surface-default);
