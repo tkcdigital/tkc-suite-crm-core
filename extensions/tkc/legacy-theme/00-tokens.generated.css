@@ -13,6 +13,7 @@
   --tkc-color-brand-800: oklch(0.420 0.085 var(--tkc-brand-hue));
   --tkc-color-brand-900: oklch(0.340 0.068 var(--tkc-brand-hue));
   --tkc-color-brand-950: oklch(0.250 0.050 var(--tkc-brand-hue));
+  --tkc-color-brand-pink: oklch(0.660 0.195 356.5);
   --tkc-color-neutral-0: #ffffff;
   --tkc-color-neutral-50: oklch(0.982 0.009 var(--tkc-brand-hue));
   --tkc-color-neutral-100: oklch(0.962 0.009 var(--tkc-brand-hue));
@@ -155,7 +156,7 @@
   --tkc-layout-content-max: 1536px;
   --tkc-layout-field-col-min: 240px;
   --tkc-brand-hue: 195;
-  --tkc-theme-build: "b218d800d7bc";
+  --tkc-theme-build: "dc654492160a";
 }
 
 :root {
@@ -238,6 +239,7 @@
   --tkc-navbar-search-bg: var(--tkc-color-brand-800);
   --tkc-navbar-search-text: var(--tkc-color-neutral-0);
   --tkc-navbar-search-placeholder: var(--tkc-color-brand-200);
+  --tkc-logo: var(--tkc-color-brand-pink);
   --tkc-header-action-bg: var(--tkc-color-neutral-0);
   --tkc-header-action-text: var(--tkc-color-neutral-800);
   --tkc-header-action-border: var(--tkc-color-neutral-400);
@@ -342,6 +344,7 @@
   --tkc-navbar-search-bg: var(--tkc-color-neutral-900);
   --tkc-navbar-search-text: var(--tkc-color-neutral-100);
   --tkc-navbar-search-placeholder: var(--tkc-color-neutral-400);
+  --tkc-logo: var(--tkc-color-brand-pink);
   --tkc-header-action-bg: var(--tkc-color-neutral-900);
   --tkc-header-action-text: var(--tkc-color-neutral-100);
   --tkc-header-action-border: var(--tkc-color-neutral-600);
