@@ -108,7 +108,10 @@ class TestRender(Base):
 
     def test_fonts_use_self_hosted_path(self):
         out = bt.render_all(self.root)[bt.OUT_STYLE_REL]
-        self.assertIn('url("/legacy/custom/themes/suite8/fonts/IBMPlexSans-Regular-Latin1.woff2")', out)
+        self.assertIn('url("/legacy/custom/themes/suite8/fonts/Roboto-Variable-latin.woff2")', out)
+        self.assertIn("font-weight: 400 700;", out)
+        self.assertIn("U+0100-02BA", out)
+        self.assertNotIn("IBMPlexSans", out)
         self.assertNotIn("googleapis", out)
 
     def test_determinism_and_lf(self):

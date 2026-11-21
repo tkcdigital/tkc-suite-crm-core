@@ -33,7 +33,10 @@ Edit tokens in `designs/system/generator/`, then regenerate `tokens.json`, then 
 
 ## Fonts
 
-IBM Plex Sans 400, 500, 600, 700 and IBM Plex Mono 400, Latin1 subset, are in
-`public/legacy/custom/themes/suite8/fonts/` with `OFL.txt`. Source: npm `@ibm/plex-sans@2.0.0` and
-`@ibm/plex-mono@2.5.0` (`fonts/split/woff2/*-Latin1.woff2`). The `@font-face` rules use the path
+Roboto (one variable file per subset, `font-weight: 400 700`) and IBM Plex Mono 400 are in
+`public/legacy/custom/themes/suite8/fonts/`. Roboto files: `Roboto-Variable-latin.woff2` and
+`Roboto-Variable-latin-ext.woff2`, licence `Roboto-OFL.txt`. Source: npm
+`@fontsource-variable/roboto@5.3.0` (`files/roboto-latin-wght-normal.woff2`,
+`files/roboto-latin-ext-wght-normal.woff2`; `unicode-range` copied from `wght.css`). Plex Mono (Latin1
+subset, `OFL.txt`): npm `@ibm/plex-mono@2.5.0`. The `@font-face` rules use the path
 `/legacy/custom/themes/suite8/fonts/`. There is no font CDN (X5).
