@@ -1,0 +1,76 @@
+// Navbar (components.md section 1). Core selectors from core layout/_navbar.scss.
+.navbar {
+  background-color: var(--tkc-navbar-bg);
+  color: var(--tkc-navbar-text-default);
+  min-height: var(--tkc-layout-navbar-height);
+  z-index: var(--tkc-z-navbar);
+
+  .navbar-action-group {
+    .action-link svg,
+    .action-link svg path,
+    .action-link svg polygon,
+    .global-action-icon svg,
+    .global-action-icon svg path,
+    .global-action-icon svg polygon {
+      fill: var(--tkc-navbar-text-muted);
+    }
+  }
+}
+
+.mobilenavbar {
+  background-color: var(--tkc-navbar-bg);
+}
+
+.nav-link {
+  color: var(--tkc-navbar-text-muted);
+}
+
+.nav-link:hover,
+a.home-nav-link {
+  color: var(--tkc-navbar-text-default);
+}
+
+.nav-link:hover {
+  background-color: var(--tkc-navbar-item-hover);
+}
+
+// Core has !important on the active colour; keep it so the TKC rule wins at equal specificity.
+.nav-item.active .nav-link-nongrouped,
+.nav-item.active .nav-link-grouped,
+.nav-item.active .home-nav-link {
+  color: var(--tkc-navbar-text-default) !important;
+  background-color: var(--tkc-navbar-item-active);
+  border-top: 0;
+  border-bottom: var(--tkc-border-width-thick) solid var(--tkc-navbar-indicator);
+}
+
+.nav-item.active .home-nav-link svg {
+  fill: var(--tkc-navbar-indicator);
+}
+
+.global-link-item:hover,
+.navbar-toggler:hover svg path {
+  color: var(--tkc-navbar-indicator);
+  stroke: var(--tkc-navbar-indicator);
+}
+
+.submenu,
+.globalactions {
+  background-color: var(--tkc-navbar-bg);
+  color: var(--tkc-navbar-text-muted);
+}
+
+// Focus ring on the dark navbar uses the indicator colour (components.md section 0).
+.navbar :focus-visible {
+  outline-color: var(--tkc-navbar-indicator);
+  outline-offset: calc(var(--tkc-focus-ring-width) * -1);
+}
+
+.navbar .search-bar-term {
+  background-color: var(--tkc-navbar-search-bg);
+  color: var(--tkc-navbar-search-text);
+}
+
+.navbar .search-bar-term::placeholder {
+  color: var(--tkc-navbar-search-placeholder);
+}

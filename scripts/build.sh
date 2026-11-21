@@ -73,7 +73,8 @@ else
 
   step 4 "yarn build:shell"
   yarn build:shell
-  # Step 4b (SUITE-57) goes here: python3 -I scripts/theme/check_bundle.py
+  step 4b "TKC theme is in the shell bundle (check_bundle.py)"
+  python3 -I scripts/theme/check_bundle.py
 
   step 5 "yarn build:extension tkc"
   yarn build:extension tkc
@@ -114,8 +115,10 @@ $DC console tkc:repair --execute
 step 11 "tkc:config:apply"
 $DC console tkc:config:apply
 
-step 12 "cache:clear"
+step 12 "cache:clear (Symfony cache and the cached legacy theme CSS)"
 $DC console cache:clear
+# SugarTheme minifies the custom Dawn CSS only when no cached copy exists (SUITE-60).
+$DC exec -T -u www-data app rm -f public/legacy/cache/themes/suite8/css/Dawn/style.css
 
 step 13 "Smoke test ${APP_URL}"
 code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$APP_URL" || true)"

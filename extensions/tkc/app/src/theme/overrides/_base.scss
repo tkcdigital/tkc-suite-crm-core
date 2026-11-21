@@ -1,0 +1,37 @@
+// Base: font, size, text colour, canvas, links, focus ring, reduced motion (components.md section 0).
+// Set on body, not html (X4). Core sets "Lato" on html, body (core _typography.scss:30), so body must be set here.
+body {
+  font-family: var(--tkc-font-family-sans);
+  font-size: var(--tkc-font-size-md);
+  font-weight: var(--tkc-font-weight-regular);
+  line-height: var(--tkc-line-height-normal);
+  color: var(--tkc-text-default);
+  background-color: var(--tkc-surface-canvas);
+}
+
+a,
+a.clickable {
+  color: var(--tkc-text-link-default);
+}
+
+a:hover,
+a.clickable:hover {
+  color: var(--tkc-text-link-hover);
+}
+
+::placeholder {
+  color: var(--tkc-text-placeholder);
+}
+
+:focus-visible {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
+  outline-offset: var(--tkc-focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important; // core sets scroll-behavior: smooth on html, body
+  }
+}

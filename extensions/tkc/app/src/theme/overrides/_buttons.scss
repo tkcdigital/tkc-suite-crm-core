@@ -1,0 +1,104 @@
+// Buttons (components.md section 2). Core selectors from core components/_button*.scss.
+// Core button rules use the same specificity; the TKC bundle comes later, so source order wins.
+button,
+.btn {
+  border-radius: var(--tkc-radius-md);
+  font-family: inherit;
+  font-weight: var(--tkc-font-weight-medium);
+  transition: background-color var(--tkc-duration-fast) var(--tkc-easing-standard),
+    border-color var(--tkc-duration-fast) var(--tkc-easing-standard);
+}
+
+// Primary
+.btn-primary,
+.login-button {
+  color: var(--tkc-primary-on);
+  background-color: var(--tkc-primary-default);
+  border-color: var(--tkc-primary-default);
+}
+
+.btn-primary:hover,
+.login-button:hover {
+  color: var(--tkc-primary-on);
+  background-color: var(--tkc-primary-hover);
+  border-color: var(--tkc-primary-hover);
+}
+
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled).active,
+.show > .btn-primary.dropdown-toggle {
+  color: var(--tkc-primary-on);
+  background-color: var(--tkc-primary-active);
+  border-color: var(--tkc-primary-active);
+}
+
+.btn-primary:focus,
+.btn-primary.focus,
+.btn-primary:not(:disabled):not(.disabled):active:focus,
+.show > .btn-primary.dropdown-toggle:focus {
+  color: var(--tkc-primary-on);
+  box-shadow: none; // core draws a bootstrap box-shadow ring; the global :focus-visible outline replaces it
+}
+
+// Secondary (header actions, Cancel, Filters)
+.btn-secondary,
+.btn-outline-secondary,
+.settings-button,
+.settings-button.btn,
+.action-button {
+  color: var(--tkc-header-action-text);
+  fill: var(--tkc-header-action-text);
+  background-color: var(--tkc-header-action-bg);
+  border: var(--tkc-border-width-thin) solid var(--tkc-field-border-default);
+  text-transform: none;
+  letter-spacing: var(--tkc-letter-spacing-normal);
+}
+
+.btn-secondary:hover,
+.btn-outline-secondary:hover,
+.settings-button:hover,
+.settings-button.btn:hover,
+.action-button:hover,
+.btn-outline-secondary:not(:disabled):not(.disabled):active,
+.btn-outline-secondary:not(:disabled):not(.disabled).active,
+.show > .btn-outline-secondary.dropdown-toggle,
+.settings-button.active,
+.settings-button.btn.active {
+  color: var(--tkc-header-action-text);
+  fill: var(--tkc-header-action-text);
+  background-color: var(--tkc-header-action-hover);
+  border-color: var(--tkc-field-border-default);
+}
+
+.btn-secondary:focus,
+.btn-secondary.focus,
+.btn-outline-secondary:focus,
+.btn-outline-secondary.focus {
+  box-shadow: none;
+}
+
+// Core removes the outline on .settings-button focus with !important; restore the ring for keyboard users.
+.settings-button:focus-visible,
+.settings-button.btn:focus-visible {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring) !important;
+  outline-offset: var(--tkc-focus-ring-offset);
+}
+
+// Disabled
+.btn-primary:disabled,
+.btn-primary.disabled,
+.btn-secondary:disabled,
+.btn-secondary.disabled,
+.settings-button:disabled,
+button:disabled {
+  color: var(--tkc-text-disabled);
+  background-color: var(--tkc-field-bg-disabled);
+  cursor: not-allowed;
+}
+
+// Danger
+.btn-danger {
+  color: var(--tkc-danger-on-solid);
+  background-color: var(--tkc-danger-solid);
+  border-color: var(--tkc-danger-solid);
+}
