@@ -42,7 +42,11 @@
 node_modules
 
 # Compiled Output
-/public/
+# /public/ itself is build output, but public/legacy is tracked source (TKC: un-ignored
+# so new legacy customizations in public/legacy/custom/ can be committed).
+/public/*
+!/public/legacy/
+/public/legacy/vendor/
 /dist/
 
 # Tmp
@@ -50,8 +54,12 @@ node_modules
 !/tmp/.gitkeep
 
 # Custom
-/extensions/
-!extensions/.gitkeep
+# TKC: our own extension (extensions/tkc) is versioned; other extensions stay ignored.
+/extensions/*
+!/extensions/.gitkeep
+!/extensions/defaultExt/
+!/extensions/tkc/
+/extensions/tkc/public/
 !extensions/defaultExt/app
 !extensions/defaultExt/backend
 !extensions/defaultExt/config
@@ -71,3 +79,31 @@ composer.phar
 # SASS
 # /public/legacy/themes/suite8/css/Dawn/style.css
 # /public/legacy/themes/suite8/css/Noon/style.css
+
+# TKC project
+/data/
+CLAUDE.md
+CLAUDE_SETUP_APPROACH.md
+PROJECT_SETUP.md
+/.claude/
+/.claude/*.secrets
+/.claude/settings.local.json
+/.claude/worktrees/
+/.claude/scripts/*.env
+/.curl_check_main_page
+/.installed_checked
+/.yarn/
+.DS_Store
+/public/legacy/.installed_checked
+
+# Docker dev environment (secrets and container state stay local)
+/docker/.env
+/docker/state/
+
+# Python bytecode and test coverage output (SUITE-177)
+__pycache__/
+*.pyc
+/coverage/
+
+# Local MCP config (machine paths, project id). Template: .mcp.example.json
+/.mcp.json

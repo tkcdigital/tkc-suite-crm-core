@@ -1,0 +1,5 @@
+# Mail sink (SUITE-45). Hosts that count as the dev mail sink.
+# One value for the Mailpit container name; the import guard (SUITE-79, E4-S2) reads tkc.mail.sink_hosts.
+parameters:
+  env(TKC_MAIL_SINK_HOSTS): 'mailpit'
+  tkc.mail.sink_hosts: '%env(csv:TKC_MAIL_SINK_HOSTS)%'

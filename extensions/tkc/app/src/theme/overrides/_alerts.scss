@@ -1,0 +1,68 @@
+// Alerts and toasts (components.md section 9). Owned by SUITE-58. Core: .alert, .message-container, .alert-fixed (_message.scss).
+.alert {
+  border: var(--tkc-border-width-thin) solid var(--tkc-border-default);
+  border-left-width: var(--tkc-border-width-thick);
+  border-radius: var(--tkc-radius-md);
+  font-size: var(--tkc-font-size-md);
+}
+
+.alert-success {
+  color: var(--tkc-success-subtle-text);
+  background-color: var(--tkc-success-subtle-bg);
+  border-color: var(--tkc-success-subtle-border);
+  border-left-color: var(--tkc-success-solid);
+}
+
+.alert-info {
+  color: var(--tkc-info-subtle-text);
+  background-color: var(--tkc-info-subtle-bg);
+  border-color: var(--tkc-info-subtle-border);
+  border-left-color: var(--tkc-info-solid);
+}
+
+.alert-warning {
+  color: var(--tkc-warning-subtle-text);
+  background-color: var(--tkc-warning-subtle-bg);
+  border-color: var(--tkc-warning-subtle-border);
+  border-left-color: var(--tkc-warning-solid);
+}
+
+.alert-danger {
+  color: var(--tkc-danger-subtle-text);
+  background-color: var(--tkc-danger-subtle-bg);
+  border-color: var(--tkc-danger-subtle-border);
+  border-left-color: var(--tkc-danger-solid);
+}
+
+// Toast: the fixed message from the message service.
+.alert-fixed {
+  // No z-index: core keeps the toast at 1510, above modals; the token --tkc-z-toast (600) is below them.
+  border-radius: var(--tkc-radius-md);
+  box-shadow: var(--tkc-shadow-3);
+}
+
+// Inner message: Bootstrap ".shadow" (!important, 0 .5rem 1rem rgba(0,0,0,.15)) stacks on the wrapper shadow.
+.alert-fixed .message.shadow {
+  box-shadow: none !important;
+}
+
+// Placement (section 9): bottom right, top on phone. Core is top centre by CSS only (_message.scss:29, no JS):
+// position fixed, top 3.3em, left 0, margin-left calc(50% - 20rem) (calc(50% - 12rem) below $breakpoint-large).
+.alert-fixed {
+  top: auto;
+  right: var(--tkc-space-6);
+  bottom: var(--tkc-space-6);
+  left: auto;
+  margin-left: 0;
+  padding: 0;
+}
+
+// Exception: CSS custom properties do not work in media queries, so the phone breakpoint is a literal (spec has none).
+@media (max-width: 47.9375rem) {
+  .alert-fixed {
+    top: var(--tkc-space-4);
+    right: var(--tkc-space-4);
+    bottom: auto;
+    left: var(--tkc-space-4);
+  }
+}

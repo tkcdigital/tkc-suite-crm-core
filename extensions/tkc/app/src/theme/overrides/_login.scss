@@ -1,0 +1,97 @@
+// Login page (SUITE-59). Core: .login-view, .login-form, .login-button (login.component.html).
+// The "Supercharged by SuiteCRM" notice sits in the core footer and stays visible (AGPL section 7(b)).
+.login-view {
+  background-color: var(--tkc-surface-canvas);
+  background-image: radial-gradient(circle at 15% 10%, var(--tkc-primary-subtle-bg), transparent 45%),
+    radial-gradient(circle at 85% 90%, var(--tkc-primary-subtle-border), transparent 40%);
+
+  .login-form {
+    padding: var(--tkc-space-8);
+    background-color: var(--tkc-surface-raised);
+    border: var(--tkc-border-width-thin) solid var(--tkc-border-default);
+    border-radius: var(--tkc-radius-xl);
+    box-shadow: var(--tkc-shadow-3);
+    font-family: var(--tkc-font-family-sans);
+    color: var(--tkc-text-default);
+  }
+
+  // Logo (TKC Digital): the SVG uses currentColor. The text is a cut-out in the circle.
+  .logo {
+    color: var(--tkc-primary-default);
+    display: inline-block;
+    width: var(--tkc-space-16); // no logo size token; nearest step of the scale
+    height: var(--tkc-space-16);
+  }
+
+  .logo svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  // Core: .login-form svg path { fill: grey } (0,1,2). This selector is (0,3,1) and wins at any rule order.
+  .login-form .logo svg path {
+    fill: currentColor;
+  }
+
+  // Core: .login-form input { width: 24em; margin: .3em } in a media query (0,1,1).
+  // This selector is (0,2,1), so the input stays inside the card at any rule order.
+  .login-form input,
+  .login-form select {
+    box-sizing: border-box;
+    min-height: var(--tkc-density-control-height);
+    color: var(--tkc-field-text);
+    background-color: var(--tkc-field-bg-default);
+    border: var(--tkc-border-width-thin) solid var(--tkc-field-border-default);
+    border-radius: var(--tkc-radius-md);
+    width: 100%;
+    margin: var(--tkc-space-1) 0;
+  }
+
+  input:hover,
+  select:hover {
+    border-color: var(--tkc-field-border-hover);
+  }
+
+  input:focus,
+  select:focus {
+    border-color: var(--tkc-field-border-focus);
+  }
+
+  input::placeholder {
+    color: var(--tkc-text-placeholder);
+  }
+
+  .login-button {
+    width: 100%;
+    min-height: var(--tkc-size-touch-min);
+    margin: var(--tkc-space-4) 0 0;
+    letter-spacing: var(--tkc-letter-spacing-normal);
+    border-radius: var(--tkc-radius-md);
+  }
+
+  .forgotten-password-link,
+  .back-link {
+    color: var(--tkc-text-link-default);
+  }
+
+  .forgotten-password-link:hover {
+    color: var(--tkc-text-link-hover);
+  }
+}
+
+// The navbar shows the same theme image (TKC Digital logo) in the navbar text colour. The text is a cut-out.
+.navbar .logo {
+  display: inline-block;
+  width: var(--tkc-size-icon-lg);
+  height: var(--tkc-size-icon-lg);
+  color: var(--tkc-navbar-text-default);
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  svg path {
+    fill: currentColor;
+  }
+}

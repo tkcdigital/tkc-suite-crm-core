@@ -1,0 +1,46 @@
+/* SUITE-60 hand partial: buttons (legacy Dawn). Tokens only. */
+
+.btn,
+input.button,
+input[type="button"],
+input[type="submit"],
+button.button {
+  font-family: var(--tkc-font-family-sans);
+  font-size: var(--tkc-font-size-md);
+  font-weight: var(--tkc-font-weight-medium);
+  border-radius: var(--tkc-radius-md);
+}
+
+.btn-primary,
+input.button.primary,
+input[type="submit"].button.primary {
+  background-color: var(--tkc-primary-default);
+  border-color: var(--tkc-primary-default);
+  color: var(--tkc-primary-on);
+}
+
+.btn-primary:hover,
+input.button.primary:hover {
+  background-color: var(--tkc-primary-hover);
+  border-color: var(--tkc-primary-hover);
+  color: var(--tkc-primary-on);
+}
+
+.btn-primary:active,
+input.button.primary:active {
+  background-color: var(--tkc-primary-active);
+  border-color: var(--tkc-primary-active);
+}
+
+.btn-default,
+input.button:not(.primary) {
+  background-color: var(--tkc-header-action-bg);
+  border: var(--tkc-border-width-thin) solid var(--tkc-header-action-border);
+  color: var(--tkc-header-action-text);
+}
+
+.btn-default:hover,
+input.button:not(.primary):hover {
+  background-color: var(--tkc-header-action-hover);
+  color: var(--tkc-header-action-text);
+}

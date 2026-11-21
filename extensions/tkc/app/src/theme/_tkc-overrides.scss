@@ -1,0 +1,13 @@
+// TKC override index (SUITE-57). Imports only. Owner: SUITE-57; SUITE-58/59 edit their partials, never this file.
+// Rules use core selectors (X8: no .tkc-* classes) and tokens only (no hex/rgb/hsl).
+@import 'overrides/base';
+@import 'overrides/navbar';
+@import 'overrides/buttons';
+@import 'overrides/fields';
+@import 'overrides/tabs';
+@import 'overrides/panels';
+@import 'overrides/list';
+@import 'overrides/subpanels';
+@import 'overrides/alerts';
+@import 'overrides/modals';
+@import 'overrides/login';

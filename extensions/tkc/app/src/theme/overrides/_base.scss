@@ -1,0 +1,50 @@
+// Base: font, size, text colour, canvas, links, focus ring, reduced motion (components.md section 0).
+// Set on body, not html (X4). Core sets "Lato" on html, body (core _typography.scss:30), so body must be set here.
+body {
+  font-family: var(--tkc-font-family-sans);
+  font-size: var(--tkc-font-size-md);
+  font-weight: var(--tkc-font-weight-regular);
+  line-height: var(--tkc-line-height-normal);
+  color: var(--tkc-text-default);
+  background-color: var(--tkc-surface-canvas);
+}
+
+a,
+a.clickable {
+  color: var(--tkc-text-link-default);
+}
+
+a:hover,
+a.clickable:hover {
+  color: var(--tkc-text-link-hover);
+}
+
+::placeholder {
+  color: var(--tkc-text-placeholder);
+}
+
+// Core sets "outline: 0" plus a box-shadow ring on several selectors that beat a bare :focus-visible (0,1,0):
+//   :focus-visible (_input.scss:225)            outline 0, box-shadow .1rem blue   (0,1,0)
+//   .form-control:focus, .custom-select:focus   outline 0, box-shadow .2rem blue   (0,2,0)
+//   .btn:focus (bootstrap _buttons)             outline 0, box-shadow .2rem blue   (0,2,0)
+// The listed selectors below tie at (0,2,0) with the core rules and come later in the bundle, so source order wins.
+// box-shadow is cleared so only one ring (our outline) shows.
+:focus-visible,
+.btn:focus-visible,
+.form-control:focus-visible,
+.custom-select:focus-visible,
+.nav-link:focus-visible,
+button.line-action-item:focus-visible, // list row action button: core adds no ring, the browser default shows (SUITE-57)
+a:focus-visible {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
+  outline-offset: var(--tkc-focus-ring-offset);
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important; // core sets scroll-behavior: smooth on html, body
+  }
+}

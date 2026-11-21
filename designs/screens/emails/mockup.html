@@ -1,0 +1,245 @@
+<title>TKC Emails Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../system/tkc-ds.css">
+<style>
+[hidden]{display:none!important}
+.page{max-width:var(--tkc-layout-content-max);margin:0 auto;padding:var(--tkc-space-4)}
+.doc-mark{width:1.75rem;height:1.75rem;border-radius:var(--tkc-radius-md);background:var(--tkc-navbar-indicator);color:var(--tkc-navbar-bg);display:grid;place-items:center;font-weight:700}
+.mockbar{display:flex;flex-wrap:wrap;gap:var(--tkc-space-3);align-items:center;background:var(--tkc-surface-sunken);border-bottom:1px solid var(--tkc-border-default);padding:var(--tkc-space-2) var(--tkc-space-4);font-size:var(--tkc-font-size-sm);color:var(--tkc-text-muted)}
+.mockbar a{margin-left:auto}
+.cap{font-size:var(--tkc-font-size-xs);color:var(--tkc-text-muted);text-transform:uppercase;letter-spacing:var(--tkc-letter-spacing-caps);font-weight:var(--tkc-font-weight-semibold);margin:0}
+.note{color:var(--tkc-text-muted);font-size:var(--tkc-font-size-sm);margin:var(--tkc-space-2) 0;max-width:62rem}
+.row{display:flex;flex-wrap:wrap;gap:var(--tkc-space-2);align-items:center}
+.scroll-x{overflow-x:auto}
+.lg{display:inline-block;font-size:var(--tkc-font-size-2xs);font-weight:var(--tkc-font-weight-semibold);background:var(--tkc-warning-subtle-bg);color:var(--tkc-warning-subtle-text);border:1px solid var(--tkc-warning-subtle-border);border-radius:var(--tkc-radius-sm);padding:0 .3rem;white-space:nowrap;line-height:1.5}
+.frame{border:2px dashed var(--tkc-warning-subtle-border);border-radius:var(--tkc-radius-lg);padding:var(--tkc-space-3);margin-top:var(--tkc-space-2)}
+.frame>.frame-label{display:flex;flex-wrap:wrap;gap:var(--tkc-space-2);align-items:center;margin:0 0 var(--tkc-space-3);font-size:var(--tkc-font-size-sm);color:var(--tkc-text-muted)}
+.moduletitle{display:flex;flex-wrap:wrap;align-items:center;gap:var(--tkc-space-3);margin-bottom:var(--tkc-space-3)}
+.moduletitle h1{font-size:var(--tkc-font-size-2xl)}
+.moduletitle .grow{flex:1 1 12rem}
+.mail{display:grid;grid-template-columns:15rem minmax(0,1fr);gap:var(--tkc-space-3);align-items:start}
+.folders{background:var(--tkc-surface-default);border:1px solid var(--tkc-border-default);border-radius:var(--tkc-radius-lg);padding:var(--tkc-space-2)}
+.folders .cap{padding:var(--tkc-space-2) var(--tkc-space-2) var(--tkc-space-1)}
+.fl{display:flex;width:100%;align-items:center;justify-content:space-between;gap:var(--tkc-space-2);min-height:var(--tkc-density-control-height);padding:0 var(--tkc-space-2);border:0;border-radius:var(--tkc-radius-sm);background:none;color:var(--tkc-text-default);font:inherit;text-align:left;cursor:pointer}
+.fl:hover{background:var(--tkc-surface-sunken)}
+.fl[aria-current=true]{background:var(--tkc-primary-subtle-bg);color:var(--tkc-primary-subtle-text);font-weight:var(--tkc-font-weight-semibold)}
+.fl .tkc-count{margin-left:auto}
+.fl svg{margin-right:var(--tkc-space-1)}
+.fl span.l{display:inline-flex;align-items:center}
+.tkc-table tr.unread td{font-weight:var(--tkc-font-weight-semibold)}
+.tkc-table tr.unread td:first-child{box-shadow:inset 3px 0 0 var(--tkc-primary-default)}
+.snip{display:block;font-weight:var(--tkc-font-weight-regular);color:var(--tkc-text-muted);font-size:var(--tkc-font-size-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:32rem}
+.preview{margin-top:var(--tkc-space-3)}
+.pv-head{padding:var(--tkc-space-4);border-bottom:1px solid var(--tkc-border-default)}
+.pv-head h2{font-size:var(--tkc-font-size-xl);margin-bottom:var(--tkc-space-2)}
+.pv-body{padding:var(--tkc-space-4);max-width:46rem}
+.pv-body p{margin:0 0 var(--tkc-space-3)}
+.pv-meta{display:grid;grid-template-columns:auto 1fr;gap:var(--tkc-space-1) var(--tkc-space-3);font-size:var(--tkc-font-size-sm);margin:var(--tkc-space-3) 0 0}
+.pv-meta dt{color:var(--tkc-text-muted)}.pv-meta dd{margin:0}
+.pv-actions{display:flex;flex-wrap:wrap;gap:var(--tkc-space-2);margin-top:var(--tkc-space-3);align-items:center}
+.pop{position:relative;display:inline-block}
+.pop .tkc-menu{right:auto;left:0}
+.tkc-menu hr{border:0;border-top:1px solid var(--tkc-border-default);margin:var(--tkc-space-1) 0}
+.editor{border:1px solid var(--tkc-field-border-default);border-radius:var(--tkc-radius-md);background:var(--tkc-field-bg-default);overflow:hidden}
+.editor:focus-within{border-color:var(--tkc-field-border-focus);box-shadow:0 0 0 2px var(--tkc-field-border-focus)}
+.editor__bar{display:flex;flex-wrap:wrap;gap:var(--tkc-space-1);padding:var(--tkc-space-1) var(--tkc-space-2);background:var(--tkc-surface-sunken);border-bottom:1px solid var(--tkc-border-default)}
+.editor__bar button{min-width:2rem;min-height:2rem;border:0;background:none;border-radius:var(--tkc-radius-sm);color:var(--tkc-text-default);font:inherit;font-weight:var(--tkc-font-weight-semibold);cursor:pointer}
+.editor__bar button:hover{background:var(--tkc-surface-default)}
+.editor textarea{border:0;width:100%;min-height:12rem;padding:var(--tkc-space-3);background:transparent;color:var(--tkc-field-text);font:inherit;resize:vertical;outline:0;display:block}
+.form{display:grid;gap:var(--tkc-density-field-gap);max-width:52rem;padding:var(--tkc-space-4)}
+.form .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:var(--tkc-space-4)}
+.foot{display:flex;flex-wrap:wrap;gap:var(--tkc-space-2);padding-top:var(--tkc-space-3);border-top:1px solid var(--tkc-border-default)}
+.notes{border-top:2px solid var(--tkc-border-strong);margin-top:var(--tkc-space-8);padding-top:var(--tkc-space-5)}
+.notes h2{font-size:var(--tkc-font-size-2xl);margin-bottom:var(--tkc-space-3)}
+.notes h3{font-size:var(--tkc-font-size-lg);margin:var(--tkc-space-6) 0 var(--tkc-space-2)}
+.notes li{margin-bottom:var(--tkc-space-1);max-width:62rem}
+.notes table{border-collapse:collapse;font-size:var(--tkc-font-size-sm);min-width:38rem}
+.notes th,.notes td{text-align:left;vertical-align:top;padding:var(--tkc-space-2) var(--tkc-space-3);border-bottom:1px solid var(--tkc-border-default)}
+.notes th{background:var(--tkc-table-header-bg);color:var(--tkc-table-header-text)}
+@media (max-width:900px){.mail{grid-template-columns:minmax(0,1fr)}.folders{display:flex;gap:var(--tkc-space-1);overflow-x:auto}.folders .cap{display:none}.fl{width:auto;white-space:nowrap;border:1px solid var(--tkc-border-default)}.snip{max-width:16rem}}
+@media (max-width:750px){.page{padding:var(--tkc-space-4)}.tkc-btn,.fl,.tkc-menu button,.editor__bar button{min-height:var(--tkc-size-touch-min)}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+<symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+<symbol id="i-clip" viewBox="0 0 24 24"><path d="m20 11-8.5 8.5a5 5 0 0 1-7-7L13 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L14 7"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></symbol>
+<symbol id="i-err" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6zM14 3v5h5"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-4M4 5v4h4M4 13a8 8 0 0 0 14 4m2 2v-4h-4"/></symbol>
+<symbol id="i-reply" viewBox="0 0 24 24"><path d="M10 8 4 13l6 5v-3.5c5 0 8 1 10 4-.5-5-3.5-8.500-10-9z"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m4 12 16-8-6 16-2-7z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol></svg>
+<a class="skip" href="#main">Skip to content</a>
+
+<nav class="tkc-navbar" aria-label="Main">
+<div class="tkc-navbar__logo"><span class="doc-mark" aria-hidden="true">T</span><span>TKC CRM</span></div>
+<div class="tkc-navbar__items">
+<a class="tkc-navbar__item hide-sm" href="#main">Home</a><a class="tkc-navbar__item hide-sm" href="#main">Accounts</a><a class="tkc-navbar__item hide-sm" href="#main">Contacts</a>
+<a class="tkc-navbar__item hide-sm" href="#main">Cases</a><a class="tkc-navbar__item" href="#main" aria-current="page">Emails</a>
+</div>
+<div class="tkc-navbar__search" role="search"><svg aria-hidden="true" class="i sm"><use href="#i-search"/></svg><input type="search" placeholder="Search records (/)" aria-label="Global search"></div>
+<div class="tkc-navbar__tools"><button class="tkc-navbar__tool" type="button" aria-label="Notifications, 3 unread"><svg aria-hidden="true" class="i"><use href="#i-bell"/></svg></button><button class="tkc-navbar__tool" type="button" aria-label="User menu"><span class="tkc-avatar">SV</span></button></div>
+</nav>
+
+<div class="mockbar">
+<span>Mockup view</span>
+<div class="tkc-seg" role="radiogroup" aria-label="Mockup view"><label><input type="radio" name="mockview" value="inbox" checked>Inbox</label><label><input type="radio" name="mockview" value="compose">Compose</label></div>
+<span>Tag <span class="lg">[legacy]</span> = legacy screen, restyle only.</span>
+<a href="#notes">Design notes</a>
+</div>
+
+<main id="main" class="page">
+<div class="frame">
+<p class="frame-label"><span class="lg">[legacy]</span> This area renders in the legacy iframe (SuiteCRM 7 layer). The navbar above is the Angular shell. Structure stays; colours, type, spacing and controls come from the tokens through the Dawn override.</p>
+
+<!-- ============ INBOX ============ -->
+<section data-view="inbox" aria-labelledby="h-in">
+<div class="moduletitle"><h1 id="h-in">Emails</h1>
+<button class="tkc-btn tkc-btn--primary" type="button" data-goto="compose"><svg aria-hidden="true" class="i sm"><use href="#i-plus"/></svg>Compose</button>
+<button class="tkc-btn tkc-btn--secondary" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-refresh"/></svg>Check mail</button>
+<span class="grow"></span>
+<button class="tkc-btn tkc-btn--ghost" type="button">Settings</button></div>
+
+<div class="mail">
+<nav class="folders" aria-label="Mail folders">
+<p class="cap">Service mailbox</p>
+<button class="fl" type="button" aria-current="true"><span class="l"><svg aria-hidden="true" class="i sm"><use href="#i-mail"/></svg>Inbox</span><span class="tkc-count">12</span></button>
+<button class="fl" type="button"><span class="l"><svg aria-hidden="true" class="i sm"><use href="#i-send"/></svg>Sent</span></button>
+<button class="fl" type="button"><span class="l"><svg aria-hidden="true" class="i sm"><use href="#i-edit"/></svg>Drafts</span><span class="tkc-count">1</span></button>
+<button class="fl" type="button"><span class="l"><svg aria-hidden="true" class="i sm"><use href="#i-file"/></svg>Archive</span></button>
+<button class="fl" type="button"><span class="l"><svg aria-hidden="true" class="i sm"><use href="#i-err"/></svg>Spam</span><span class="tkc-count">3</span></button>
+<button class="fl" type="button"><span class="l"><svg aria-hidden="true" class="i sm"><use href="#i-trash"/></svg>Trash</span></button>
+<p class="cap" style="margin-top:var(--tkc-space-3)">My mailbox</p>
+<button class="fl" type="button"><span class="l"><svg aria-hidden="true" class="i sm"><use href="#i-mail"/></svg>Inbox</span><span class="tkc-count">2</span></button>
+<button class="fl" type="button"><span class="l"><svg aria-hidden="true" class="i sm"><use href="#i-send"/></svg>Sent</span></button>
+</nav>
+
+<div>
+<div class="tkc-list">
+<div class="tkc-list__toolbar">
+<div class="grow"><label class="tkc-searchfield"><span class="sr-only">Search emails</span><svg aria-hidden="true" class="i sm"><use href="#i-search"/></svg><input class="tkc-input" placeholder="Search sender, subject or text" type="search"></label></div>
+<label class="sr-only" for="flt">Show</label><select id="flt" class="tkc-select" style="width:auto"><option>All</option><option>Unread</option><option>With attachment</option><option>Not linked to a record</option></select>
+<button class="tkc-btn tkc-btn--secondary" type="button" disabled><svg aria-hidden="true" class="i sm"><use href="#i-trash"/></svg>Delete</button>
+</div>
+<div class="scroll-x"><table class="tkc-table" style="min-width:46rem"><caption class="sr-only">Inbox, newest first</caption><thead><tr>
+<th class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select all emails"></label></th>
+<th><span class="sr-only">Attachment</span></th><th>From</th><th>Subject</th><th>Related to</th><th class="num" aria-sort="descending">Date <svg aria-hidden="true" class="i sm"><use href="#i-up"/></svg></th></tr></thead>
+<tbody>
+<tr class="unread is-selected"><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select email from Jan de Vries" checked></label></td><td><svg aria-hidden="true" class="i sm"><use href="#i-clip"/></svg><span class="sr-only">Has attachment</span></td><td>Jan de Vries</td><td><a href="#pv">Re: Printer portal login fails after SSO change</a><span class="snip">Thanks, the cache reset did not help. I attached a new screenshot of the error.</span></td><td><a href="#pv" class="mono">261120-004217</a></td><td class="num">20 Nov 14:31</td></tr>
+<tr class="unread"><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select email from Eva Mulder"></label></td><td></td><td>Eva Mulder</td><td><a href="#pv">Console crashes when the incident list opens</a><span class="snip">Since this morning the console closes without a message.</span></td><td><span class="tkc-pill tkc-pill--neutral tkc-pill--plain">Not linked</span></td><td class="num">20 Nov 13:58</td></tr>
+<tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select email from Noor Bakker"></label></td><td><svg aria-hidden="true" class="i sm"><use href="#i-clip"/></svg><span class="sr-only">Has attachment</span></td><td>Noor Bakker</td><td><a href="#pv">Invoice 2026-0412 shows the wrong VAT rate</a><span class="snip">Please find the invoice attached. The rate should be 9 percent.</span></td><td><a href="#pv" class="mono">261120-004209</a></td><td class="num">20 Nov 13:40</td></tr>
+<tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select email from Daan Visser"></label></td><td></td><td>Daan Visser</td><td><a href="#pv">Quote for 10 extra licences</a><span class="snip">Can you send a quote before Friday?</span></td><td><a href="#pv" class="mono">261119-004131</a></td><td class="num">19 Nov 15:20</td></tr>
+<tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select email from Unknown sender"></label></td><td></td><td>newsletter@example.test</td><td><a href="#pv">Unsubscribe confirmation</a><span class="snip">You have been removed from the list.</span></td><td><a href="#pv" class="mono">261119-004102</a></td><td class="num">19 Nov 09:01</td></tr>
+</tbody></table></div>
+<div class="tkc-list__foot"><span>1-5 of 12</span><nav class="tkc-pager" aria-label="Pagination"><button type="button" disabled aria-label="Previous page"><svg aria-hidden="true" class="i"><use href="#i-chev-l"/></svg></button><button type="button" aria-current="page">1</button><button type="button">2</button><button type="button" aria-label="Next page"><svg aria-hidden="true" class="i"><use href="#i-chev-r"/></svg></button></nav><span></span></div>
+</div>
+
+<section class="tkc-panel preview" id="pv" aria-label="Email preview">
+<div class="pv-head">
+<h2>Re: Printer portal login fails after SSO change</h2>
+<span class="tkc-pill tkc-pill--accent">Related to case 261120-004217</span>
+<dl class="pv-meta"><dt>From</dt><dd>Jan de Vries &lt;j.devries@example.test&gt;</dd><dt>To</dt><dd>Service mailbox &lt;service@example.test&gt;</dd><dt>Date</dt><dd>20 Nov 2026, 14:31</dd></dl>
+<div class="pv-actions">
+<button class="tkc-btn tkc-btn--primary" type="button" data-goto="compose"><svg aria-hidden="true" class="i sm"><use href="#i-reply"/></svg>Reply</button>
+<button class="tkc-btn tkc-btn--secondary" type="button">Reply all</button>
+<button class="tkc-btn tkc-btn--secondary" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-mail"/></svg>Forward</button>
+<div class="pop"><button class="tkc-btn tkc-btn--secondary" type="button" aria-haspopup="menu" aria-expanded="false" data-pop="mk">Create or link <svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg></button>
+<ul class="tkc-menu" id="mk" role="menu" aria-label="Create or link" hidden>
+<li role="none"><button role="menuitem" type="button">Create case</button></li>
+<li role="none"><button role="menuitem" type="button">Create contact</button></li>
+<li role="none"><button role="menuitem" type="button">Create task</button></li>
+<li role="none"><hr></li>
+<li role="none"><button role="menuitem" type="button">Link to a record</button></li></ul></div>
+<button class="tkc-btn tkc-btn--danger-quiet tkc-btn--icon" type="button" aria-label="Delete email"><svg aria-hidden="true" class="i sm"><use href="#i-trash"/></svg></button>
+</div></div>
+<div class="pv-body">
+<p>Hello Sam,</p>
+<p>Thanks, the cache reset did not help. Two more colleagues on the second floor now see the same error E-402 at sign-in. I attached a new screenshot.</p>
+<p>Kind regards,<br>Jan de Vries<br>Acme Facilities BV</p>
+<div class="tkc-attach"><a href="#pv"><svg aria-hidden="true" class="i sm"><use href="#i-file"/></svg>error-screen-2.png <small>1.4 MB</small></a></div>
+</div></section>
+</div>
+</div>
+</section>
+
+<!-- ============ COMPOSE ============ -->
+<section data-view="compose" aria-labelledby="h-co" hidden>
+<div class="moduletitle"><h1 id="h-co">Compose email</h1><span class="grow"></span><button class="tkc-btn tkc-btn--ghost" type="button" data-goto="inbox">Back to inbox</button></div>
+<form class="tkc-panel" onsubmit="return false"><div class="form">
+<div class="two">
+<div class="tkc-field"><label for="c-from">From</label><select id="c-from" class="tkc-select"><option>Service mailbox &lt;service@example.test&gt;</option><option>Sam Vermeer &lt;s.vermeer@example.test&gt;</option></select></div>
+<div class="tkc-field"><label for="c-rel">Related to</label><div class="tkc-input-group"><input id="c-rel" class="tkc-input mono" value="Case 261120-004217"><button class="tkc-btn" type="button" aria-label="Select record"><svg aria-hidden="true" class="i"><use href="#i-search"/></svg></button></div></div>
+</div>
+<div class="tkc-field"><label for="c-to">To <span class="req">*</span></label><input id="c-to" class="tkc-input" type="email" spellcheck="false" autocomplete="off" value="j.devries@example.test" required></div>
+<div class="row"><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" id="b-cc" aria-expanded="false" aria-controls="ccbox">Add CC / BCC</button></div>
+<div class="two" id="ccbox" hidden><div class="tkc-field"><label for="c-cc">CC</label><input id="c-cc" class="tkc-input" type="email" spellcheck="false" autocomplete="off" placeholder="name@example.test"></div><div class="tkc-field"><label for="c-bcc">BCC</label><input id="c-bcc" class="tkc-input" type="email" spellcheck="false" autocomplete="off" placeholder="name@example.test"></div></div>
+<div class="tkc-field"><label for="c-sub">Subject <span class="req">*</span></label><input id="c-sub" class="tkc-input" value="Re: Printer portal login fails after SSO change [Case 261120-004217]" required></div>
+<div class="tkc-field"><label for="c-tpl">Email template</label><div class="row"><select id="c-tpl" class="tkc-select" style="flex:1 1 12rem"><option>None</option><option>Case update</option><option>Case closed</option></select><button class="tkc-btn tkc-btn--secondary" type="button">Insert</button></div></div>
+<div class="tkc-field"><span class="lbl" id="c-bl">Message</span>
+<div class="editor" role="group" aria-labelledby="c-bl"><div class="editor__bar" role="toolbar" aria-label="Text formatting"><button type="button" aria-label="Bold">B</button><button type="button" aria-label="Italic"><i>I</i></button><button type="button" aria-label="Underline"><u>U</u></button><button type="button" aria-label="Bulleted list">&#8226;</button><button type="button" aria-label="Insert link">Link</button></div>
+<textarea aria-labelledby="c-bl">Hello Jan,
+
+Thanks for the screenshot. We found the cause in the SSO settings and fix it today.
+
+Kind regards,
+Sam Vermeer</textarea></div></div>
+<div class="row"><button class="tkc-btn tkc-btn--secondary tkc-btn--sm" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-clip"/></svg>Attach file</button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button">Add document</button><span class="tkc-help">No attachments</span></div>
+<div class="foot"><button class="tkc-btn tkc-btn--primary" type="submit"><svg aria-hidden="true" class="i sm"><use href="#i-send"/></svg>Send</button><button class="tkc-btn tkc-btn--secondary" type="button">Save draft</button><button class="tkc-btn tkc-btn--danger-quiet" type="button" data-goto="inbox" style="margin-left:auto">Discard</button></div>
+</div></form>
+</section>
+</div>
+
+<!-- ============ DESIGN NOTES ============ -->
+<section class="notes" id="notes" aria-labelledby="h-notes">
+<h2 id="h-notes">Design notes</h2>
+<p class="note">Emails, SUITE-23. Cosmetic only. OSC keeps emails inside the incident thread, so there is no OSC mapping and no new field. Built on style guide v0.1, light mode only for sprint 1. Synthetic data only.</p>
+<h3>Decisions</h3>
+<ul>
+<li><b>Legacy structure kept:</b> module title with Compose and Check mail, folder tree on the left, list, preview, and the compose form. Only the look changes.</li>
+<li><b>Same look as Cases and the other redesigned screens:</b> teal primary button, compact table (32 px rows), pills, 2 px focus ring, IBM Plex. Unread rows are bold with a teal edge, so unread is not shown by colour alone.</li>
+<li><b>Related to</b> shows the case reference in mono, with a link. It uses the standard parent (Related to) field of the email.</li>
+<li>Reply, Reply all, Forward and Create or link are standard legacy actions. The actions sit in the preview header, close to the text.</li>
+<li>Layout at 390 px: folders turn into a horizontal strip, the list scrolls inside its own box, the preview stacks below. The legacy screen is not responsive by default. The mobile view is a goal for the Dawn override, not a promise.</li>
+</ul>
+<h3>Legacy build notes</h3>
+<ul>
+<li>Renders in the legacy iframe. The Angular shell CSS does not reach it, so the tokens are compiled into <code>public/legacy/custom/themes/suite8/css/Dawn/style.css</code> (same file as the other legacy screens).</li>
+<li>Legacy selectors to restyle (the frontend engineer confirms each in the running app): list table (<code>table.list.view</code>), module title, toolbar buttons, folder tree, compose form fields, the editor toolbar.</li>
+<li>The list columns, folder names and the preview pane in this mockup follow the legacy email client. If a part differs in 8.10, the frontend engineer keeps the legacy part and only restyles it.</li>
+</ul>
+<h3>[custom] items</h3>
+<p class="note">None. Everything on this screen is standard legacy. No Angular work. The <span class="lg">[legacy]</span> tags mark restyle targets.</p>
+<h3>Open questions</h3>
+<ol>
+<li>Which legacy email view does the owner use in practice: this client (folders and preview), or only the list on a Case record? Without that, the restyle covers the client only.</li>
+<li>Does the team want emails shown on the Case thread (Cases mockup) instead of this screen? That would be a Cases change, not an Emails change.</li>
+<li>Rich text editor: the mockup shows the standard toolbar. A change of editor is out of scope.</li>
+</ol>
+</section>
+</main>
+
+<script>
+(function(){
+document.documentElement.setAttribute('data-theme','light');
+var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function show(v){$$('[data-view]').forEach(function(e){e.hidden=e.dataset.view!==v});$$('input[name=mockview]').forEach(function(r){r.checked=r.value===v});window.scrollTo(0,0)}
+$$('input[name=mockview]').forEach(function(r){r.addEventListener('change',function(){show(r.value)})});
+$$('[data-goto]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();show(a.dataset.goto)})});
+function closePops(){$$('[data-pop]').forEach(function(b){var m=$('#'+b.dataset.pop);if(m){b.setAttribute('aria-expanded','false');m.hidden=true}})}
+$$('[data-pop]').forEach(function(b){var m=$('#'+b.dataset.pop);if(!m)return;b.addEventListener('click',function(e){e.stopPropagation();var o=m.hidden;closePops();m.hidden=!o;b.setAttribute('aria-expanded',o)})});
+document.addEventListener('click',closePops);
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closePops()});
+$('#b-cc').addEventListener('click',function(){var h=$('#ccbox').hidden;$('#ccbox').hidden=!h;this.setAttribute('aria-expanded',h)});
+$$('.tkc-table tbody input[type=checkbox]').forEach(function(c){c.addEventListener('change',function(){c.closest('tr').classList.toggle('is-selected',c.checked)})});
+if(location.hash==='#compose')show('compose');
+})();
+</script>

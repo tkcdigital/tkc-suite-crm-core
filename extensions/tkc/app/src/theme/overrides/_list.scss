@@ -1,0 +1,135 @@
+// List view (components.md section 6). Owned by SUITE-58. Core: .light-table, .list-view-table (_light-table.scss).
+// The main list table has no .light-table ancestor (table-body.component.html:34), and subpanel tables sit in
+// .minimal-table / .sub-panel, so the table rules are not scoped by container.
+// Core rows: ".striped-table tbody tr:nth-of-type(odd)" (0,2,2, _listview.scss:97), ".light-table table.list-view-table
+// tr:nth-child(even)" (0,3,2) and ".minimal-table table.table tbody tr:nth-child(odd)" (0,3,3). The selector below
+// ("table.list-view-table.striped-table.table", 3 classes + 1 element) lets state rules reach (0,4,3).
+table.list-view-table.striped-table.table {
+  color: var(--tkc-text-default);
+  background-color: var(--tkc-table-row-default);
+
+  thead,
+  .primary-table-header,
+  th {
+    color: var(--tkc-table-header-text);
+    background-color: var(--tkc-table-header-bg);
+    font-size: var(--tkc-font-size-sm);
+    font-weight: var(--tkc-font-weight-semibold);
+  }
+
+  td,
+  th {
+    border-color: var(--tkc-table-row-border);
+  }
+
+  // Core ".table td, .table th { font-size: .797rem }" (_listview.scss:140) and a core cell colour.
+  td {
+    color: var(--tkc-text-default);
+    font-size: var(--tkc-font-size-md);
+  }
+
+  tbody tr,
+  tbody tr:nth-child(even),
+  tbody tr:nth-child(odd),
+  tbody tr:nth-of-type(odd) {
+    background-color: var(--tkc-table-row-default);
+  }
+
+  tbody tr {
+    height: var(--tkc-density-row-height);
+    transition: background-color var(--tkc-duration-fast) var(--tkc-easing-standard);
+  }
+
+  tbody tr:hover {
+    background-color: var(--tkc-table-row-hover);
+  }
+
+  // Keyboard users: the row that holds focus gets the same fill, plus the global ring on the focused element.
+  tbody tr:focus-within {
+    background-color: var(--tkc-table-row-hover);
+    box-shadow: inset var(--tkc-border-width-thick) 0 0 var(--tkc-primary-default);
+  }
+
+  tbody tr.selected,
+  tbody tr.table-active {
+    background-color: var(--tkc-table-row-selected);
+  }
+}
+
+.light-table {
+  .sort-icon {
+    fill: var(--tkc-text-link-default);
+  }
+
+  .bulk-action {
+    color: var(--tkc-primary-subtle-text);
+  }
+
+  .pagination-button {
+    color: var(--tkc-header-action-text);
+    background-color: var(--tkc-header-action-bg);
+    border: var(--tkc-border-width-thin) solid var(--tkc-field-border-default);
+    border-radius: var(--tkc-radius-md);
+
+    .pagination-icons {
+      fill: var(--tkc-header-action-text);
+    }
+  }
+
+  .pagination-button:hover {
+    background-color: var(--tkc-header-action-hover);
+  }
+}
+
+// Row links. Core ".list-view-table a" (0,1,1, _listview.scss:196) sets burnt-red. "table.list-view-table a" is (0,1,2).
+table.list-view-table a {
+  color: var(--tkc-text-link-default);
+
+  &:hover {
+    color: var(--tkc-text-link-hover);
+  }
+}
+
+// Bulk bar (section 6: primary-subtle-*). Core ".list-view-tableactions" (0,1,0, _listview.scss:176) is $cool-blue;
+// text is $white on .bulk-action (_listview.scss:191), .table-action-button (_button.scss:283), .select-action-group
+// .dropdown-toggle::after (_listview.scss:322). Subpanel and light tables clear the background in core
+// (_minimal-table.scss:94, _light-table.scss:27); the :not keeps that.
+.list-view-tableactions:not(.minimal-table *, .light-table *) {
+  color: var(--tkc-primary-subtle-text);
+  background-color: var(--tkc-primary-subtle-bg);
+  border-bottom: var(--tkc-border-width-thin) solid var(--tkc-primary-subtle-border);
+
+  .bulk-action,
+  .bulk-action-group,
+  .select-action-group .dropdown-toggle::after,
+  .table-action-button {
+    color: var(--tkc-primary-subtle-text);
+  }
+
+  .table-action-button {
+    border-color: var(--tkc-primary-subtle-border);
+  }
+
+  .table-action-button:hover {
+    color: var(--tkc-primary-subtle-text);
+    background-color: var(--tkc-primary-subtle-border);
+  }
+}
+
+// Body text is 14 px (components.md section 0, --tkc-font-size-md). Core scales these containers by .85em.
+.list-view-container,
+.list-view-hr-container,
+.record-view-hr-container,
+.small-font {
+  font-size: var(--tkc-font-size-md);
+}
+
+// Filter panel (core layout/_saved-search.scss:27): core salmon background and coral radio borders.
+.saved-search-container {
+  background-color: var(--tkc-primary-subtle-bg);
+  border: var(--tkc-border-width-thin) solid var(--tkc-primary-subtle-border);
+
+  .radioenum-input label:before {
+    border-color: var(--tkc-border-strong);
+  }
+}

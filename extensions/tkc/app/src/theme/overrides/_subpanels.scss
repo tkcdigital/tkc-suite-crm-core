@@ -1,0 +1,81 @@
+// Subpanels (components.md section 7). Owned by SUITE-58. Core: .sub-panel (_subpanel.scss).
+.sub-panel {
+  div.card {
+    background-color: var(--tkc-surface-default);
+    border: var(--tkc-border-width-thin) solid var(--tkc-border-default);
+    border-radius: var(--tkc-radius-lg);
+    box-shadow: none; // section 7: flat card; core .minimal-table .card sets rgba(0,0,0,.25) 0 2px 4px (_minimal-table.scss:30)
+    overflow: hidden;
+  }
+
+  // Core ".minimal-table .card .card-header" (0,3,0, _minimal-table.scss:37) sets border-top: 3px solid #534d64.
+  // Same specificity, our file is imported later.
+  .panel-card .card-header {
+    border-top: none;
+    border-radius: 0; // the card clips the corners (overflow: hidden); core Bootstrap sets 3px
+    color: var(--tkc-text-default);
+    background-color: var(--tkc-surface-sunken);
+    border-bottom: var(--tkc-border-width-thin) solid var(--tkc-border-default);
+    font-weight: var(--tkc-font-weight-semibold);
+  }
+
+  .subpanel-icon svg {
+    fill: var(--tkc-text-muted);
+    stroke: var(--tkc-text-muted);
+  }
+
+  .list-view-table {
+    tbody tr:hover,
+    tbody tr:focus-within {
+      background-color: var(--tkc-table-row-hover);
+    }
+  }
+
+  .panel-buttons button.button-group-button.btn-outline-light.active {
+    color: var(--tkc-primary-on);
+    background-color: var(--tkc-primary-default);
+    border-color: var(--tkc-primary-default);
+
+    svg {
+      fill: var(--tkc-primary-on);
+    }
+  }
+}
+
+.sub-panel-banner {
+  color: var(--tkc-text-default);
+}
+
+// "Relationships" banner (subpanel-container.component.html:28): "div.card.border.shadow-sm" around the accordion.
+// Bootstrap ".border" and ".shadow-sm" carry !important, so the border colour and shadow need it too.
+.card:has(> .sub-panel-banner) {
+  background-color: var(--tkc-surface-default);
+  border-radius: var(--tkc-radius-lg);
+  overflow: hidden;
+  border-color: var(--tkc-border-default) !important;
+  box-shadow: none !important;
+}
+
+// Core ".sub-panel-banner.accordion .card .card-header" (0,4,0, _subpanel.scss:366): white, 2.1em, bold link.
+.sub-panel-banner.accordion .card .card-header {
+  min-height: var(--tkc-size-touch-min);
+  padding: var(--tkc-space-2) var(--tkc-density-panel-pad);
+  color: var(--tkc-text-default);
+  background: var(--tkc-surface-sunken);
+  border-bottom: none;
+  font-size: var(--tkc-font-size-md);
+  font-weight: var(--tkc-font-weight-semibold);
+
+  a.clickable {
+    color: var(--tkc-text-default);
+    font-weight: var(--tkc-font-weight-semibold);
+
+    svg {
+      fill: var(--tkc-text-muted);
+    }
+  }
+}
+
+.sub-panel-banner-button:hover {
+  background-color: var(--tkc-primary-subtle-bg);
+}

@@ -1,0 +1,216 @@
+<title>TKC Contacts Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../system/tkc-ds.css">
+<style>
+/* Screen-specific layout only. Tokens, no raw values. */
+[hidden]{display:none!important}
+.page{max-width:var(--tkc-layout-content-max);margin:0 auto;padding:var(--tkc-space-4)}
+.stack>*+*{margin-top:var(--tkc-space-4)}
+.scroll-x{overflow-x:auto}
+.cap{font-size:var(--tkc-font-size-xs);color:var(--tkc-text-muted);text-transform:uppercase;letter-spacing:var(--tkc-letter-spacing-caps);font-weight:600}
+.map{display:inline-block;font-size:var(--tkc-font-size-xs);background:var(--tkc-primary-subtle-bg);color:var(--tkc-primary-subtle-text);border:1px solid var(--tkc-primary-subtle-border);border-radius:var(--tkc-radius-sm);padding:.1rem .45rem;margin:0 .25rem .25rem 0;font-weight:500;white-space:normal}
+.map.custom{background:var(--tkc-accent-subtle-bg);color:var(--tkc-accent-subtle-text);border-color:var(--tkc-accent-subtle-border)}
+.mock-bar{background:var(--tkc-surface-sunken);border-bottom:1px dashed var(--tkc-border-strong);padding:var(--tkc-space-2) var(--tkc-space-4);display:flex;flex-wrap:wrap;gap:var(--tkc-space-2) var(--tkc-space-4);align-items:center;font-size:var(--tkc-font-size-sm)}
+.mock-bar .g{display:flex;align-items:center;gap:var(--tkc-space-2);flex-wrap:wrap}
+.mock-bar .tkc-select{width:auto}
+.mock-hidden{flex-basis:100%;color:var(--tkc-text-muted)}
+.filterpop{padding:var(--tkc-space-3) var(--tkc-space-4);border-bottom:1px solid var(--tkc-border-default);display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:var(--tkc-space-4)}
+.checks{display:flex;flex-wrap:wrap;gap:0 var(--tkc-space-4)}
+.rec-body{padding:var(--tkc-space-4)}
+.e{display:none}
+.is-edit .v{display:none}
+.is-edit .e{display:block}
+.is-edit .tkc-input-group.e,.is-edit .e.checks{display:flex}
+.is-edit .only-view{display:none}
+.only-edit{display:none}
+.is-edit .only-edit{display:inline-flex}
+.acl{display:flex;flex-wrap:wrap;gap:var(--tkc-space-2);align-items:center;margin-bottom:var(--tkc-space-3)}
+.links{display:flex;flex-wrap:wrap;gap:var(--tkc-space-3)}
+.tkc-subpanel__head{flex-wrap:wrap}
+.sub-note{padding:var(--tkc-space-2) var(--tkc-space-4);font-size:var(--tkc-font-size-sm);color:var(--tkc-text-muted);border-top:1px solid var(--tkc-border-subtle)}
+.notes{background:var(--tkc-surface-default);border:1px solid var(--tkc-border-default);border-radius:var(--tkc-radius-lg);padding:var(--tkc-space-4) var(--tkc-space-5)}
+.notes h2{font-size:var(--tkc-font-size-xl);margin:0 0 var(--tkc-space-3)}
+.notes h3{font-size:var(--tkc-font-size-md);margin:var(--tkc-space-4) 0 var(--tkc-space-2)}
+.notes ul{margin:0;padding-left:var(--tkc-space-5)}
+.notes li{margin-bottom:var(--tkc-space-1)}
+.matrix td,.matrix th{padding:var(--tkc-space-1) var(--tkc-space-3);border-bottom:1px solid var(--tkc-border-subtle);text-align:left;font-size:var(--tkc-font-size-sm);vertical-align:top}
+.matrix th{color:var(--tkc-text-muted);font-weight:600}
+.tkc-actions{position:relative}
+.page h1{font-size:var(--tkc-font-size-2xl);margin:0}
+.listhead{display:flex;flex-wrap:wrap;gap:var(--tkc-space-2) var(--tkc-space-4);align-items:baseline;justify-content:space-between;margin-bottom:var(--tkc-space-3)}
+.tkc-value .tkc-help{margin-left:var(--tkc-space-2)}
+.is-edit .flagrow.e{display:flex}
+.is-edit .tkc-listfield.e{display:grid}
+.flagrow{flex-wrap:wrap;gap:var(--tkc-space-2);align-items:center}
+.mail-row{display:flex;flex-wrap:wrap;gap:var(--tkc-space-2) var(--tkc-space-3);align-items:center;min-height:var(--tkc-density-control-height)}
+.mail-row .t{color:var(--tkc-text-muted);font-size:var(--tkc-font-size-sm);min-width:9rem}
+@media (max-width:750px){.tkc-fieldgrid .span-2{grid-column:auto}}
+</style>
+
+<a class="skip" href="#main">Skip to main content</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+<symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.200 9.400l6.100-.8z"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6zM14 3v5h5"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+<symbol id="i-cols" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM9 5v14M15 5v14"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+<symbol id="i-sort" viewBox="0 0 24 24"><path d="M8 4v16M4 16l4 4 4-4M16 20V4M12 8l4-4 4 4"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+<symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V4h10v17M14 9h6v12M8 8h2M8 12h2M8 16h2M4 21h16"/></symbol>
+</defs></svg>
+
+<div id="app" data-view="list">
+<div class="mock-bar" role="group" aria-label="Mockup controls (not part of the application)">
+ <span class="cap">Mockup controls</span>
+ <div class="g"><span id="mb-v">View</span>
+  <div class="tkc-seg" role="radiogroup" aria-labelledby="mb-v"><label><input type="radio" name="mv" value="list" checked>List</label><label><input type="radio" name="mv" value="record">Record</label><label><input type="radio" name="mv" value="edit">Edit</label></div></div>
+</div>
+<nav class="tkc-navbar" aria-label="Main">
+ <div class="tkc-navbar__logo"><span class="tkc-avatar" aria-hidden="true">T</span><span>TKC CRM</span></div>
+ <div class="tkc-navbar__items"><a class="tkc-navbar__item hide-sm" href="#">Home</a><a class="tkc-navbar__item hide-sm" href="#">Accounts</a><a class="tkc-navbar__item" href="#" aria-current="page">Contacts</a><a class="tkc-navbar__item hide-sm" href="#">Cases</a><a class="tkc-navbar__item hide-sm" href="#">Opportunities</a><a class="tkc-navbar__item hide-sm" href="#">Quotes</a></div>
+ <div class="tkc-navbar__search" role="search"><svg aria-hidden="true" class="i sm"><use href="#i-search"/></svg><input type="search" placeholder="Search records (/)" aria-label="Global search"></div>
+ <div class="tkc-navbar__tools"><button class="tkc-navbar__tool" type="button" aria-label="Notifications"><svg aria-hidden="true" class="i"><use href="#i-bell"/></svg></button><button class="tkc-navbar__tool" type="button" aria-label="User menu"><span class="tkc-avatar">SV</span></button></div>
+</nav>
+<main id="main" class="page stack">
+<section id="v-list" data-v="list" aria-label="Contacts list">
+ <div class="listhead"><h1>Contacts</h1><span><span class="map">Angular list view, <code>listviewdefs.php</code></span><span class="map custom">[custom] contact-type pill column</span></span></div>
+ <div class="tkc-list">
+  <div class="tkc-list__toolbar">
+   <div class="tkc-searchfield grow"><svg aria-hidden="true" class="i sm"><use href="#i-search"/></svg><input class="tkc-input" type="search" placeholder="Search name, email, organisation" aria-label="Search contacts"></div>
+   <button class="tkc-btn tkc-btn--secondary" type="button" aria-haspopup="listbox">My contacts <svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg></button>
+   <button class="tkc-btn tkc-btn--secondary" type="button" data-toggle="fp" aria-expanded="false" aria-controls="fp"><svg aria-hidden="true" class="i sm"><use href="#i-filter"/></svg>Filters <span class="tkc-count">2</span></button>
+   <button class="tkc-btn tkc-btn--secondary tkc-btn--icon" type="button" aria-label="Choose columns"><svg aria-hidden="true" class="i"><use href="#i-cols"/></svg></button>
+   <button class="tkc-btn tkc-btn--primary" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-plus"/></svg>Create contact</button>
+  </div>
+  <div class="filterpop" id="fp" hidden>
+   <div class="tkc-field"><label for="f-t">Contact type</label><select id="f-t" class="tkc-select"><option>Any</option><option>TKBC Klant</option><option>SSC Prospect</option><option>SPAM</option></select></div>
+   <div class="tkc-field"><label for="f-l">Language</label><select id="f-l" class="tkc-select"><option>Any</option><option>Nederlands</option><option>Engels</option></select></div>
+   <div class="tkc-field"><label for="f-f">Function level</label><select id="f-f" class="tkc-select"><option>Any</option><option>C</option><option>M</option><option>O</option></select></div>
+   <div class="tkc-field"><span class="lbl" id="f-k">KMM</span><div class="tkc-seg" role="radiogroup" aria-labelledby="f-k"><label><input type="radio" name="fk" checked>Any</label><label><input type="radio" name="fk">Yes</label><label><input type="radio" name="fk">No</label><label><input type="radio" name="fk">Not set</label></div></div>
+   <div class="tkc-field"><label for="f-o">Organisation</label><input id="f-o" class="tkc-input" placeholder="Organisation name"></div>
+   <div class="tkc-field"><label for="f-a">Assigned to</label><select id="f-a" class="tkc-select"><option>Anyone</option><option>Sam Vermeer</option><option>Lena Smit</option></select></div>
+  </div>
+  <div class="tkc-filterchips"><span class="cap" style="margin:0">Active filters</span>
+   <span class="tkc-chip">Contact type: not SPAM<button type="button" aria-label="Remove type filter"><svg aria-hidden="true" class="i sm"><use href="#i-x"/></svg></button></span>
+   <span class="tkc-chip">Assigned to: me<button type="button" aria-label="Remove assigned filter"><svg aria-hidden="true" class="i sm"><use href="#i-x"/></svg></button></span>
+   <button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button">Clear all</button></div>
+  <div class="tkc-bulk" role="status"><span>2 selected</span>
+   <button class="tkc-btn tkc-btn--secondary tkc-btn--sm" type="button">Assign to…</button><button class="tkc-btn tkc-btn--secondary tkc-btn--sm" type="button">Mass update</button><button class="tkc-btn tkc-btn--secondary tkc-btn--sm" type="button">Add to target list</button><button class="tkc-btn tkc-btn--secondary tkc-btn--sm" type="button">Export</button><button class="tkc-btn tkc-btn--danger-quiet tkc-btn--sm" type="button">Delete</button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" style="margin-left:auto">Select all 212</button></div>
+  <div class="scroll-x"><table class="tkc-table" style="min-width:72rem"><thead><tr>
+   <th class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select all rows" checked><span class="sr-only">Select all</span></label></th>
+   <th aria-sort="ascending"><button type="button">Name <svg aria-hidden="true" class="i sm"><use href="#i-up"/></svg></button></th><th>Organisation</th><th>Function</th><th>Email</th><th>Mobile</th><th>Contact type</th><th>Language</th><th>Assigned to</th><th class="num"><button type="button">Modified</button></th></tr></thead>
+  <tbody><tr class="is-selected"><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" checked aria-label="Select Jorrit Havenaar"></label></td><td><a href="#" data-go="record">Jorrit Havenaar</a></td><td>Havenwerk Logistiek BV</td><td>Operations manager</td><td>j.havenaar@example.test</td><td>+31 20 555 0121</td><td><span class="tkc-pill tkc-pill--success">TKBC Klant</span></td><td>Nederlands</td><td>Sam Vermeer</td><td class="num">19 Nov 11:05</td></tr><tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select Marit Kuiper"></label></td><td><a href="#" data-go="record">Marit Kuiper</a></td><td>Havenwerk Logistiek BV</td><td>Finance</td><td>m.kuiper@example.test</td><td>+31 20 555 0122</td><td><span class="tkc-pill tkc-pill--success">TKBC Klant</span></td><td>Nederlands</td><td>Sam Vermeer</td><td class="num">19 Nov 09:12</td></tr><tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select Femke de Wit"></label></td><td><a href="#" data-go="record">Femke de Wit</a></td><td>Bakkerij Zonnebloem BV</td><td>Owner</td><td>f.dewit@example.test</td><td>+31 20 555 0131</td><td><span class="tkc-pill tkc-pill--info">TKBC support</span></td><td>Nederlands</td><td>Sam Vermeer</td><td class="num">18 Nov 16:30</td></tr><tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select Pieter Lindeboom"></label></td><td><a href="#" data-go="record">Pieter Lindeboom</a></td><td>Studio Lindeboom</td><td>Director</td><td>p.lindeboom@example.test</td><td>+31 20 555 0132</td><td><span class="tkc-pill tkc-pill--accent">SSC Prospect</span></td><td>Engels</td><td>Lena Smit</td><td class="num">18 Nov 10:03</td></tr><tr class="is-selected"><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" checked aria-label="Select Noor Brandsma"></label></td><td><a href="#" data-go="record">Noor Brandsma</a></td><td>Gemeente Noordermeer</td><td>IT manager</td><td>n.brandsma@example.test</td><td>+31 20 555 0133</td><td><span class="tkc-pill tkc-pill--accent">TKBC Prospect</span></td><td>Nederlands</td><td>Lena Smit</td><td class="num">17 Nov 14:48</td></tr><tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select Roel Mulder"></label></td><td><a href="#" data-go="record">Roel Mulder</a></td><td>Fjordlicht Energy BV</td><td>Account manager</td><td>r.mulder@example.test</td><td>+31 20 555 0134</td><td><span class="tkc-pill tkc-pill--warning">TKC - Bodybuildert</span></td><td>Nederlands</td><td>Sam Vermeer</td><td class="num">17 Nov 09:40</td></tr><tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select Ilse van Dam"></label></td><td><a href="#" data-go="record">Ilse van Dam</a></td><td>Kade 12 Advocaten</td><td>Office manager</td><td>i.vandam@example.test</td><td>—</td><td><span class="tkc-pill tkc-pill--neutral">FS</span></td><td>Nederlands</td><td>Lena Smit</td><td class="num">14 Nov 13:02</td></tr><tr><td class="sel"><label class="tkc-check" style="min-height:0"><input type="checkbox" aria-label="Select Test Spammer"></label></td><td><a href="#" data-go="record">Test Spammer</a></td><td>—</td><td>—</td><td>spam@example.test</td><td>—</td><td><span class="tkc-pill tkc-pill--danger">SPAM</span></td><td>—</td><td>Unassigned</td><td class="num">12 Nov 08:55</td></tr></tbody></table></div>
+  <div class="tkc-list__foot"><span>1–8 of 212</span><nav class="tkc-pager" aria-label="Pagination"><button type="button" disabled aria-label="Previous page"><svg aria-hidden="true" class="i"><use href="#i-chev-l"/></svg></button><button type="button" aria-current="page">1</button><button type="button">2</button><button type="button">3</button><button type="button" aria-label="Next page"><svg aria-hidden="true" class="i"><use href="#i-chev-r"/></svg></button></nav><label>Rows <select class="tkc-select" style="width:auto"><option>20</option><option>50</option></select></label></div>
+ </div>
+</section>
+<section id="v-record" data-v="record" aria-label="Contact record" hidden>
+ <div class="tkc-panel" id="rec">
+  <div class="tkc-record-header">
+   <div class="tkc-record-header__mono" aria-hidden="true">JH</div>
+   <div class="tkc-record-header__id">
+    <div class="tkc-record-header__eyebrow">Contact</div>
+    <h2 style="font-size:var(--tkc-font-size-2xl);margin:0">Jorrit Havenaar</h2>
+    <div class="tkc-record-header__meta"><span class="tkc-pill tkc-pill--success">TKBC Klant</span><span>Operations manager at <a href="#">Havenwerk Logistiek BV</a></span><span>Assigned to Sam Vermeer</span><span>Updated 19 Nov 2026, 11:05</span></div>
+   </div>
+   <div class="tkc-actions">
+    <button class="tkc-btn tkc-btn--secondary tkc-btn--icon only-view" type="button" aria-label="Add to favourites" aria-pressed="false"><svg aria-hidden="true" class="i"><use href="#i-star"/></svg></button>
+    <button class="tkc-btn tkc-btn--secondary only-view" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-cal"/></svg>Schedule meeting</button>
+    <button class="tkc-btn tkc-btn--primary only-view" type="button" data-go="edit"><svg aria-hidden="true" class="i sm"><use href="#i-edit"/></svg>Edit</button>
+    <button class="tkc-btn tkc-btn--secondary only-view" type="button" aria-haspopup="menu" aria-expanded="false" data-toggle="more" aria-controls="more">More <svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg></button>
+    <ul class="tkc-menu" id="more" role="menu" aria-label="More actions" hidden>
+     <li role="none"><button role="menuitem" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-file"/></svg>Duplicate</button></li>
+     <li role="none"><button role="menuitem" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-eye"/></svg>Print view</button></li>
+     <li role="none"><hr></li>
+     <li role="none"><button role="menuitem" type="button" class="danger"><svg aria-hidden="true" class="i sm"><use href="#i-trash"/></svg>Delete</button></li>
+    </ul>
+    <button class="tkc-btn tkc-btn--secondary only-edit" type="button" data-go="record">Cancel</button>
+    <button class="tkc-btn tkc-btn--secondary only-edit" type="button" data-go="record">Save and close <span class="map custom">[custom]</span></button>
+    <button class="tkc-btn tkc-btn--primary only-edit" type="button" data-go="record"><svg aria-hidden="true" class="i sm"><use href="#i-check"/></svg>Save</button>
+   </div>
+  </div>
+  <div class="rec-body"><div class="tkc-layout"><div class="stack">
+   <section class="tkc-panel"><button class="tkc-panel__head" aria-expanded="true" type="button"><svg aria-hidden="true" class="i sm chev"><use href="#i-chev"/></svg><h4>Identity</h4></button><div class="tkc-panel__body"><div class="tkc-fieldgrid"><div class="tkc-field "><label for="c-fn">First name</label><div class="tkc-value v">Jorrit</div><input id="c-fn" class="tkc-input e" value="Jorrit" ></div><div class="tkc-field "><label for="c-ln">Last name <span class="req" aria-hidden="true">*</span></label><div class="tkc-value v">Havenaar</div><input id="c-ln" class="tkc-input e" value="Havenaar" aria-required="true"></div><div class="tkc-field "><label for="c-org">Organisation</label><div class="tkc-value v"><a href="#">Havenwerk Logistiek BV</a></div><div class="tkc-input-group e"><input id="c-org" class="tkc-input" value="Havenwerk Logistiek BV" role="combobox" aria-expanded="false"><button class="tkc-btn" type="button" aria-label="Select organisation"><svg aria-hidden="true" class="i"><use href="#i-search"/></svg></button></div></div><div class="tkc-field "><label for="c-ti">Function</label><div class="tkc-value v">Operations manager</div><input id="c-ti" class="tkc-input e" value="Operations manager" ></div><div class="tkc-field "><label for="c-own">Assigned to</label><div class="tkc-value v">Sam Vermeer</div><div class="tkc-input-group e"><input id="c-own" class="tkc-input" value="Sam Vermeer" role="combobox" aria-expanded="false"><button class="tkc-btn" type="button" aria-label="Select user"><svg aria-hidden="true" class="i"><use href="#i-search"/></svg></button></div><span class="tkc-help e">OSC label: Verkoper.</span></div><div class="tkc-field "><label for="c-ct">Contact type</label><div class="tkc-value v"><span class="tkc-pill tkc-pill--success">TKBC Klant</span></div><select id="c-ct" class="tkc-select e"><option>TKBC Prospect</option><option selected>TKBC Klant</option><option>TKBC support</option><option>TKBC sales</option><option>SSC Prospect</option><option>SSC Klant</option><option>SSC Support</option><option>SSC Sales</option><option>FS</option><option>TKC - Bodybuildert</option><option>SPAM</option></select><span class="tkc-help e">14 values in OSC; value SPAM is set by the Case SPAM action.</span></div><div class="tkc-field "><label for="c-lg">Language</label><div class="tkc-value v">Nederlands</div><select id="c-lg" class="tkc-select e"><option selected>Nederlands</option><option>Engels</option></select></div><div class="tkc-field "><label for="c-fl">Function level</label><div class="tkc-value v"><span class="mono">M</span> <span class="tkc-help">&nbsp;label pending</span></div><select id="c-fl" class="tkc-select e"><option>—</option><option>C</option><option selected>M</option><option>O</option></select><span class="tkc-help e">Meaning of C, M, O is not known (question 13).</span></div><div class="tkc-field span-all"><span class="lbl" id="c-crm">CRM modules</span><div class="tkc-value v" role="group" aria-labelledby="c-crm"><span class="tkc-chips" style="border:0;padding:0;background:none"><span class="tkc-chip">Sales</span><span class="tkc-chip">Service</span></span></div><div class="checks e" role="group" aria-labelledby="c-crm"><label class="tkc-check"><input type="checkbox"> Marketing</label><label class="tkc-check"><input type="checkbox" checked> Sales</label><label class="tkc-check"><input type="checkbox" checked> Service</label></div></div></div></div></section>
+   <section class="tkc-panel"><button class="tkc-panel__head" aria-expanded="true" type="button"><svg aria-hidden="true" class="i sm chev"><use href="#i-chev"/></svg><h4>Contact details</h4><span class="map custom">[custom] email and phone rows with type</span></button><div class="tkc-panel__body"><div class="tkc-fieldgrid"><div class="tkc-field span-all"><span class="lbl" id="c-em">Email addresses</span><div class="v" role="group" aria-labelledby="c-em"><div class="mail-row"><span class="t">Primary</span><a href="#">j.havenaar@example.test</a></div><div class="mail-row"><span class="t">Alternative 1</span><a href="#">jorrit.h@example.test</a></div></div><div class="tkc-listfield e"><div class="tkc-listfield__row" style="grid-template-columns:minmax(0,1fr) 9rem auto auto"><input class="tkc-input" aria-label="Email 1" value="j.havenaar@example.test"><select class="tkc-select" aria-label="Email 1 type"><option selected>Primary</option><option>Alternative 1</option><option>Alternative 2</option></select><label class="tkc-check"><input type="checkbox"> Invalid</label><button class="tkc-btn tkc-btn--icon tkc-btn--ghost" type="button" aria-label="Remove email 1"><svg aria-hidden="true" class="i"><use href="#i-trash"/></svg></button></div><div class="tkc-listfield__row" style="grid-template-columns:minmax(0,1fr) 9rem auto auto"><input class="tkc-input" aria-label="Email 2" value="jorrit.h@example.test"><select class="tkc-select" aria-label="Email 2 type"><option>Primary</option><option selected>Alternative 1</option><option>Alternative 2</option></select><label class="tkc-check"><input type="checkbox"> Invalid</label><button class="tkc-btn tkc-btn--icon tkc-btn--ghost" type="button" aria-label="Remove email 2"><svg aria-hidden="true" class="i"><use href="#i-trash"/></svg></button></div><div><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-plus"/></svg>Add email</button></div></div></div><div class="tkc-field span-all"><span class="lbl" id="c-ph">Phone numbers</span><div class="v" role="group" aria-labelledby="c-ph"><div class="mail-row"><span class="t">Mobile</span>+31 20 555 0121</div><div class="mail-row"><span class="t">Work</span>+31 20 555 0102</div></div><div class="tkc-listfield e"><div class="tkc-listfield__row" style="grid-template-columns:minmax(0,1fr) 9rem auto"><input class="tkc-input" aria-label="Phone 1" value="+31 20 555 0121" inputmode="tel"><select class="tkc-select" aria-label="Phone 1 type"><option>Work</option><option selected>Mobile</option><option>Fax</option><option>Assistant</option><option>Home</option></select><button class="tkc-btn tkc-btn--icon tkc-btn--ghost" type="button" aria-label="Remove phone 1"><svg aria-hidden="true" class="i"><use href="#i-trash"/></svg></button></div><div class="tkc-listfield__row" style="grid-template-columns:minmax(0,1fr) 9rem auto"><input class="tkc-input" aria-label="Phone 2" value="+31 20 555 0102" inputmode="tel"><select class="tkc-select" aria-label="Phone 2 type"><option selected>Work</option><option>Mobile</option><option>Fax</option><option>Assistant</option><option>Home</option></select><button class="tkc-btn tkc-btn--icon tkc-btn--ghost" type="button" aria-label="Remove phone 2"><svg aria-hidden="true" class="i"><use href="#i-trash"/></svg></button></div><div><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-plus"/></svg>Add phone</button></div></div></div><div class="tkc-field span-2"><label for="c-st">Street</label><div class="tkc-value v">Voorbeeldkade 14</div><input id="c-st" class="tkc-input e" value="Voorbeeldkade 14" ></div><div class="tkc-field "><label for="c-pc">Postal code</label><div class="tkc-value v">3011 XX</div><input id="c-pc" class="tkc-input e" value="3011 XX" ></div><div class="tkc-field "><label for="c-ci">City</label><div class="tkc-value v">Rotterdam</div><input id="c-ci" class="tkc-input e" value="Rotterdam" ></div><div class="tkc-field "><label for="c-co">Country</label><div class="tkc-value v">Netherlands</div><input id="c-co" class="tkc-input e" value="Netherlands" ></div></div></div></section>
+   <section class="tkc-panel"><button class="tkc-panel__head" aria-expanded="true" type="button"><svg aria-hidden="true" class="i sm chev"><use href="#i-chev"/></svg><h4>TKC programs and groups</h4><span class="map custom">[custom] Yes / No / Not set</span></button><div class="tkc-panel__body"><div class="tkc-fieldgrid"><div class="tkc-field"><span class="lbl" id="l-f1">KMM</span><div class="tkc-value v"><span class="tkc-pill tkc-pill--success">Yes</span></div><div class="flagrow e" role="group" aria-labelledby="l-f1"><div class="tkc-seg" role="radiogroup" aria-labelledby="l-f1"><label><input type="radio" name="f1" value="1" checked>Yes</label><label><input type="radio" name="f1" value="0">No</label></div><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" data-clear="f1">Clear</button></div></div><div class="tkc-field"><span class="lbl" id="l-f2">TKC Cafe</span><div class="tkc-value v"><span class="tkc-pill tkc-pill--neutral">No</span></div><div class="flagrow e" role="group" aria-labelledby="l-f2"><div class="tkc-seg" role="radiogroup" aria-labelledby="l-f2"><label><input type="radio" name="f2" value="1">Yes</label><label><input type="radio" name="f2" value="0" checked>No</label></div><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" data-clear="f2">Clear</button></div></div><div class="tkc-field"><span class="lbl" id="l-f3">Service Tomorrow</span><div class="tkc-value v"><span class="tkc-pill tkc-pill--success">Yes</span></div><div class="flagrow e" role="group" aria-labelledby="l-f3"><div class="tkc-seg" role="radiogroup" aria-labelledby="l-f3"><label><input type="radio" name="f3" value="1" checked>Yes</label><label><input type="radio" name="f3" value="0">No</label></div><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" data-clear="f3">Clear</button></div></div><div class="tkc-field"><span class="lbl" id="l-f4">OSC Usergroup</span><div class="tkc-value v"><span class="tkc-pill tkc-pill--outline tkc-pill--plain">Not set</span></div><div class="flagrow e" role="group" aria-labelledby="l-f4"><div class="tkc-seg" role="radiogroup" aria-labelledby="l-f4"><label><input type="radio" name="f4" value="1">Yes</label><label><input type="radio" name="f4" value="0">No</label></div><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" data-clear="f4">Clear</button></div></div><div class="tkc-field"><span class="lbl" id="l-f5">Freshworks Usergroup</span><div class="tkc-value v"><span class="tkc-pill tkc-pill--outline tkc-pill--plain">Not set</span> <span class="tkc-help">Candidate to drop.</span></div><div class="flagrow e" role="group" aria-labelledby="l-f5"><div class="tkc-seg" role="radiogroup" aria-labelledby="l-f5"><label><input type="radio" name="f5" value="1">Yes</label><label><input type="radio" name="f5" value="0">No</label></div><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" data-clear="f5">Clear</button></div></div></div><p class="tkc-help" style="margin:var(--tkc-space-3) 0 0">Not set is a third state, kept from OSC. Clear returns a flag to Not set.</p></div></section>
+   <section class="tkc-panel"><button class="tkc-panel__head" aria-expanded="true" type="button"><svg aria-hidden="true" class="i sm chev"><use href="#i-chev"/></svg><h4>Consent</h4></button><div class="tkc-panel__body"><div class="tkc-fieldgrid"><div class="tkc-field"><span class="lbl" id="l-c1">Marketing opt-in (apply everywhere)</span><div class="tkc-value v"><span class="tkc-pill tkc-pill--success">Yes</span></div><div class="flagrow e" role="group" aria-labelledby="l-c1"><div class="tkc-seg" role="radiogroup" aria-labelledby="l-c1"><label><input type="radio" name="c1" value="1" checked>Yes</label><label><input type="radio" name="c1" value="0">No</label></div><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" data-clear="c1">Clear</button></div></div><div class="tkc-field"><span class="lbl" id="l-c2">Survey opt-in</span><div class="tkc-value v"><span class="tkc-pill tkc-pill--neutral">No</span> <span class="tkc-help">Not on the OSC workspace.</span></div><div class="flagrow e" role="group" aria-labelledby="l-c2"><div class="tkc-seg" role="radiogroup" aria-labelledby="l-c2"><label><input type="radio" name="c2" value="1">Yes</label><label><input type="radio" name="c2" value="0" checked>No</label></div><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" data-clear="c2">Clear</button></div></div><div class="tkc-field"><span class="lbl" id="l-c3">Newsletter</span><div class="tkc-value v"><span class="tkc-pill tkc-pill--success">Yes</span></div><div class="flagrow e" role="group" aria-labelledby="l-c3"><div class="tkc-seg" role="radiogroup" aria-labelledby="l-c3"><label><input type="radio" name="c3" value="1" checked>Yes</label><label><input type="radio" name="c3" value="0">No</label></div><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button" data-clear="c3">Clear</button></div></div><div class="tkc-field "><label for="c-lb">Lawful basis</label><div class="tkc-value v">Consent</div><select id="c-lb" class="tkc-select e"><option selected>Consent</option><option>Contract</option><option>Legitimate interest</option></select><span class="tkc-help e">Only if the owner and legal confirm (question 8).</span></div></div></div></section>
+   <div class="stack" aria-label="Related records"><section class="tkc-subpanel" aria-label="Cases"><div class="tkc-subpanel__head"><button class="tkc-subpanel__title" type="button" aria-expanded="true"><svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg>Cases <span class="tkc-count">2</span></button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-plus"/></svg>Create</button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button">Select</button></div><div class="scroll-x"><table class="tkc-table" style="min-width:40rem"><thead><tr><th>Reference</th><th>Subject</th><th>Status</th><th>Priority</th><th class="num">Updated</th></tr></thead><tbody><tr><td class="id">CS-261118-000412</td><td><a href="#">Report export fails on large data sets</a></td><td><span class="tkc-pill tkc-pill--info">Unresolved</span></td><td><span class="tkc-pill tkc-pill--warning tkc-pill--plain">Medium</span></td><td class="num">18 Nov 15:20</td></tr><tr><td class="id">CS-261109-000388</td><td><a href="#">Request for extra console licences</a></td><td><span class="tkc-pill tkc-pill--success">Solved</span></td><td><span class="tkc-pill tkc-pill--neutral tkc-pill--plain">Low</span></td><td class="num">10 Nov 09:14</td></tr></tbody></table></div></section><section class="tkc-subpanel" aria-label="Opportunities"><div class="tkc-subpanel__head"><button class="tkc-subpanel__title" type="button" aria-expanded="true"><svg aria-hidden="true" class="i sm"><use href="#i-chev"/></svg>Opportunities <span class="tkc-count">2</span></button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button"><svg aria-hidden="true" class="i sm"><use href="#i-plus"/></svg>Create</button><button class="tkc-btn tkc-btn--ghost tkc-btn--sm" type="button">Select</button></div><div class="scroll-x"><table class="tkc-table" style="min-width:40rem"><thead><tr><th>Name</th><th>Stage</th><th class="num">Amount</th><th>Close date</th><th>Assigned to</th></tr></thead><tbody><tr><td><a href="#">Servicedesk migration phase 2</a></td><td><span class="tkc-pill tkc-pill--info">Proposal</span></td><td class="num">€ 48.000</td><td>15 Jan 2027</td><td>Sam Vermeer</td></tr><tr><td><a href="#">Support extension 2027</a></td><td><span class="tkc-pill tkc-pill--accent">Negotiation</span></td><td class="num">€ 22.500</td><td>1 Dec 2026</td><td>Sam Vermeer</td></tr></tbody></table></div></section><section class="tkc-subpanel" aria-label="Activities and history (notes, tasks, documents)"><div class="tkc-subpanel__head" data-collapsed><button class="tkc-subpanel__title" type="button" aria-expanded="false"><svg aria-hidden="true" class="i sm" style="transform:rotate(-90deg)"><use href="#i-chev"/></svg>Activities and history (notes, tasks, documents) <span class="tkc-count">6</span></button></div></section></div>
+  </div>
+  <aside class="stack" aria-label="Record information">
+   <section class="tkc-panel"><div class="tkc-panel__head"><h4>Record info</h4></div><div class="tkc-panel__body">
+    <dl class="tkc-dl"><div><dt>OSC ID</dt><dd class="mono">8830412</dd></div><div><dt>Created</dt><dd>14 Jun 2022</dd></div><div><dt>Modified</dt><dd>19 Nov 2026</dd></div><div><dt>Modified by</dt><dd>Sam Vermeer</dd></div></dl>
+    <p class="tkc-help" style="margin:var(--tkc-space-3) 0 0">OSC Info pane equivalent. <span class="map">core: <code>osc_id_c</code>, dates</span></p></div></section>
+  </aside></div></div>
+ </div>
+</section>
+<section class="notes" aria-labelledby="dn">
+ <h2 id="dn">Design notes</h2>
+ <p>Use the mockup controls: List, Record, Edit. Edit shows the whole record in edit state; the layout is the same as the detail view.</p>
+ <h3>Mapping decisions</h3>
+ <ul>
+  <li>The 23 OSC summary controls become four panels: Identity, Contact details, TKC programs and groups, Consent. The two-column OSC grid becomes the standard field grid.</li>
+  <li>"Verkoper" is the owner: label Assigned to. It needs an OSC staff to SuiteCRM user map (question 6).</li>
+  <li>Email: primary goes to <code>email1</code>, the two OSC alternatives to extra address rows. OSC has no opt-out per address, only Invalid. Phones: SuiteCRM has one field per type (work, mobile, fax, assistant, home), so a second number of the same type has no place (question 3).</li>
+  <li>Dropped and not shown: Login (Aanmelding), Reset password, SLA list, ERT, Test, Surveys, Outreach activity, the browser tab "Nieuw tabblad 1", Accept and Reject buttons (Case queue work).</li>
+  <li>Subpanels: Cases and Opportunities as asked. Tasks, Notes and Attachments sit in one collapsed Activities and history subpanel. The audit log is the standard Audit tab.</li>
+  <li>List view: SPAM contacts (365 in the test system) are hidden by a default filter chip, not deleted. The owner decides about import (question 14).</li>
+  <li>Marketing opt-in is the inverse of <code>email_opt_out</code>. The mockup shows it in the OSC sense (Yes = opted in). Lawful basis is shown only if legal confirms (question 8).</li>
+  <li>Function level shows the raw letters C, M, O until the owner gives labels (question 13).</li>
+ </ul>
+ <h3><span class="map custom">[custom]</span> items for the architect</h3>
+ <ul>
+  <li><b>Yes / No / Not set flags.</b> The OSC flags are nullable. A SuiteCRM <code>bool</code> has no empty state. Options: enum Yes/No with an empty value rendered as a segmented radio, or import empty as No (question 15). Needs an Angular field display and edit component. The Clear button is part of this.</li>
+  <li><b>Segmented Yes/No control</b> as the edit component for bool fields (approved in the style guide).</li>
+  <li><b>Email and phone rows with a type.</b> The core email field has primary, opt-out and invalid, but no address type. The phone type list is a view over five fixed fields.</li>
+  <li><b>Contact type pill</b> in the list and header (enum display component, SPAM in the danger style).</li>
+  <li><b>CRM modules as chips</b> in view mode (multienum display) and checkboxes in edit.</li>
+  <li><b>Save and close</b> button.</li>
+  <li>Grouped panel "TKC programs and groups" is standard metadata (a panel with a field grid). Only the field rendering is custom.</li>
+ </ul>
+ <h3>Open questions</h3>
+ <ul>
+  <li>What is "Staat" (CRM modules): contact module access, or something else (question 2)?</li>
+  <li>Keep Freshworks Usergroup (4 contacts, never Yes)? Drop ERT and Test (question 4)?</li>
+  <li>Three-state flags or import empty as No (question 15)? Labels for function level C, M, O (question 13)?</li>
+  <li>Survey opt-in and Newsletter: how do they relate to Marketing opt-in (question 8)?</li>
+  <li>Are other emails, phone types and channel IDs (chat, social) in scope (question 3)?</li>
+  <li>Are Tasks, Notes and Attachments imported, and as Documents or Notes (question 10)?</li>
+ </ul>
+</section>
+</main>
+</div>
+<script>
+(function(){
+ var app=document.getElementById('app'),$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+ function view(v){app.dataset.view=v;document.getElementById('v-list').hidden=v!=='list';document.getElementById('v-record').hidden=v==='list';
+  document.getElementById('rec').classList.toggle('is-edit',v==='edit');
+  var rad=document.querySelector('input[name=mv][value='+v+']');if(rad)rad.checked=true}
+ document.addEventListener('click',function(e){
+  var g=e.target.closest('[data-go]');if(g){e.preventDefault();view(g.dataset.go);window.scrollTo(0,0);return}
+  var c=e.target.closest('[data-clear]');if(c){$('input[name='+c.dataset.clear+']').forEach(function(r){r.checked=false});return}
+  var tg=e.target.closest('[data-toggle]');if(tg){var el=document.getElementById(tg.dataset.toggle),o=el.hidden;el.hidden=!o;tg.setAttribute('aria-expanded',String(o));return}
+  var ph=e.target.closest('.tkc-panel__head[aria-expanded]');if(ph){var o2=ph.getAttribute('aria-expanded')==='true';ph.setAttribute('aria-expanded',String(!o2));ph.nextElementSibling.hidden=o2;return}
+  var st=e.target.closest('.tkc-subpanel__title');if(st){var o3=st.getAttribute('aria-expanded')==='true';st.setAttribute('aria-expanded',String(!o3));$('.scroll-x',st.closest('.tkc-subpanel')).forEach(function(x){x.hidden=o3});st.parentNode.toggleAttribute('data-collapsed',o3);return}
+  var fv=e.target.closest('[aria-label="Add to favourites"]');if(fv)fv.setAttribute('aria-pressed',String(fv.getAttribute('aria-pressed')!=='true'))
+ });
+ document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('more');if(m&&!m.hidden){m.hidden=true;var b=document.querySelector('[data-toggle=more]');b.setAttribute('aria-expanded','false');b.focus()}}});
+ $('input[name=mv]').forEach(function(i){i.addEventListener('change',function(){view(i.value)})});
+ var h=location.hash.slice(1);if(h==='record'||h==='edit')view(h);
+})();
+</script>

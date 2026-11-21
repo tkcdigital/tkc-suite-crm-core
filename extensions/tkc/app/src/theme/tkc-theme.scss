@@ -1,0 +1,7 @@
+// TKC theme entry for the shell build. Replaces the core style.scss entry
+// (index 1 of shell build styles) through extensions/tkc/app/angular.json.
+// 1. Full core theme, unchanged.
+@import '../../../../../core/app/shell/src/themes/suite8/css/style';
+// 2. TKC tokens and overrides, same bundle, so they win the cascade.
+@import 'tkc-tokens';
+@import 'tkc-overrides';

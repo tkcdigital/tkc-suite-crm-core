@@ -1,0 +1,57 @@
+// Form fields (components.md section 4). Core: .field-layout, .form-control, .col-form-label, .required.
+.field-layout {
+  .field-layout-field-label-wrapper label,
+  .field-layout-field-label-wrapper strong {
+    color: var(--tkc-field-label);
+    font-size: var(--tkc-font-size-sm);
+    font-weight: var(--tkc-font-weight-medium);
+  }
+
+  .required {
+    color: var(--tkc-field-border-error);
+  }
+}
+
+.form-control,
+.field-layout input:not([type='checkbox']):not([type='radio']),
+.field-layout select,
+.field-layout textarea {
+  min-height: var(--tkc-density-control-height);
+  color: var(--tkc-field-text);
+  background-color: var(--tkc-field-bg-default);
+  border: var(--tkc-border-width-thin) solid var(--tkc-field-border-default);
+  border-radius: var(--tkc-radius-md);
+  transition: border-color var(--tkc-duration-fast) var(--tkc-easing-standard);
+}
+
+.form-control:hover,
+.field-layout input:not([type='checkbox']):not([type='radio']):hover,
+.field-layout select:hover,
+.field-layout textarea:hover {
+  border-color: var(--tkc-field-border-hover);
+}
+
+.form-control:focus,
+.field-layout input:not([type='checkbox']):not([type='radio']):focus,
+.field-layout select:focus,
+.field-layout textarea:focus {
+  color: var(--tkc-field-text);
+  background-color: var(--tkc-field-bg-default);
+  border-color: var(--tkc-field-border-focus);
+  box-shadow: none; // bootstrap box-shadow ring replaced by the :focus-visible outline in _base.scss (.form-control:focus-visible)
+}
+
+.form-control:disabled,
+.form-control[readonly],
+.field-layout input:disabled,
+.field-layout select:disabled,
+.field-layout textarea:disabled {
+  color: var(--tkc-text-disabled);
+  background-color: var(--tkc-field-bg-disabled);
+}
+
+.form-control.is-invalid,
+.field-layout .ng-invalid.ng-touched {
+  background-color: var(--tkc-field-bg-error);
+  border: var(--tkc-border-width-medium) solid var(--tkc-field-border-error);
+}

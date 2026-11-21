@@ -1,0 +1,64 @@
+/* SUITE-60 hand partial: base typography, colours, links, focus ring (legacy Dawn).
+   Tokens only. Style on body, not html (X4: core sets html font-size 10px). */
+
+body {
+  font-family: var(--tkc-font-family-sans);
+  font-size: var(--tkc-font-size-md);
+  line-height: var(--tkc-line-height-normal);
+  font-weight: var(--tkc-font-weight-regular);
+  color: var(--tkc-text-default);
+  background-color: var(--tkc-surface-canvas);
+}
+
+a {
+  color: var(--tkc-text-link-default);
+}
+
+a:hover,
+a:focus {
+  color: var(--tkc-text-link-hover);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
+  outline-offset: var(--tkc-focus-ring-offset);
+}
+
+/* Core draws a second ring with box-shadow and sets "outline: 0" on focus (Dawn style.scss):
+   ":focus-visible" (0,1,0), ".form-control:focus" (0,2,0), and
+   ".edit-view-row .edit-view-row-item .edit-view-field input[type=text]:focus" (0,5,1, the highest).
+   Each selector starts with the element or class itself and repeats :focus-visible six times (X9: legacy
+   cssmin strips the space in "body :is(", so no descendant-plus-pseudo form). Elements: (0,6,1); classes
+   and attributes: (0,7,0). Both beat (0,5,1). */
+a:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible,
+button:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible,
+input:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible,
+select:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible,
+textarea:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible,
+[tabindex]:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible,
+.form-control:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible:focus-visible {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
+  outline-offset: var(--tkc-focus-ring-offset);
+  box-shadow: none;
+}
+
+/* Module title. <body> has no class in legacy, so no body selector. Core title rules that set size or colour:
+   ".moduleTitle h2" (0,1,1), ".view-module-EmailMan.view-action-index .moduleTitle .module-title-text" (0,4,0, highest),
+   ".view-module-Connectors .moduleTitle h2.module-title-text" (0,3,1), ".language .moduleTitle .module-title-text" (0,3,0).
+   Repeating .moduleTitle five times adds (0,4,0): h2 selectors are (0,5,1), the span/class selector (0,5,0). */
+.moduleTitle.moduleTitle.moduleTitle.moduleTitle.moduleTitle h2,
+.moduleTitle.moduleTitle.moduleTitle.moduleTitle.moduleTitle h2.module-title-text,
+.moduleTitle.moduleTitle.moduleTitle.moduleTitle.moduleTitle .module-title-text {
+  font-size: var(--tkc-font-size-2xl);
+  font-weight: var(--tkc-font-weight-semibold);
+  color: var(--tkc-text-default);
+}
+
+.moduleTitle.moduleTitle.moduleTitle.moduleTitle.moduleTitle h2 a {
+  color: var(--tkc-text-link-default);
+}
