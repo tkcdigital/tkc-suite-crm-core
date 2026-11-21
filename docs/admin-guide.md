@@ -23,7 +23,7 @@
 ## Legacy asset version (SUITE-181)
 - The config key `js_custom_version` in `public/legacy/config_override.php` sets the `?v=` value of the legacy CSS, JS and sprite URLs.
 - The build sets it with `tkc:legacy:asset-version` (build step 11b). Never set it by hand. Never add it to `scripts/config/config_override.template.php`.
-- The value is `tkc` and 12 hex characters. It changes when the legacy theme CSS or a theme font changes.
+- The value is `tkc` and 12 hex characters. It changes when the legacy theme CSS or a theme font changes. It also changes after a vendor update (`composer.lock`) or an upstream release (`public/legacy/suitecrm_version.php`), so the browser loads new legacy JS (SUITE-183).
 - No browser hard reload is needed after a theme change.
 - On an Azure environment, run `tkc:legacy:asset-version` after `tkc:config:apply`. Reload php-fpm when `opcache.validate_timestamps=0`. A CDN must use the query string in its cache key.
 - Details: `docs/architecture.md` § Legacy theme.

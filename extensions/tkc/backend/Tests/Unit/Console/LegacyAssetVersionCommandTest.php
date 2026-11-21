@@ -22,6 +22,8 @@ class LegacyAssetVersionCommandTest extends TestCase
         $w('public/legacy/include/javascript/yui/build/base/base-min.css', 'yui');
         $w('public/legacy/custom/themes/suite8/css/Dawn/style.css', 'custom');
         $w('public/legacy/custom/themes/suite8/fonts/a.woff2', 'font');
+        $w('composer.lock', '{}');
+        $w('public/legacy/suitecrm_version.php', '<?php');
         $this->target = $this->root . '/override.php';
         file_put_contents($this->target, "<?php\n\$sugar_config['other_key'] = 'keep';\n");
     }

@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`)
 
 ### Delivered
 
@@ -14,8 +14,16 @@
 | Font | The app uses Roboto (variable, weights 400 to 700), the brand guide font. IBM Plex Sans is removed. IBM Plex Mono 400 stays. Both fonts are self-hosted. The app loads no external font. The Roboto files are 72528 bytes. The old Plex Sans files were 87844 bytes. The design system and the 7 mockups use Roboto. | SUITE-189 |
 | Legacy asset version | The legacy CSS URL now changes with the theme and font content. The new command `tkc:legacy:asset-version` sets `js_custom_version`. The build runs it in step 11b. A browser hard reload is not needed after a theme change. The value is global, so it also versions the legacy JS, sprites and `yui.css`. | SUITE-181 |
 | Radio fields | In the Angular UI, a keyboard user can now reach radio fields (`radioenum`, `enum-radio`) with Tab. The arrow keys move between the options. The focused option shows a focus ring. Each radio group has an accessible name (`aria-label`; not yet checked with a screen reader). The empty option shows the label "Not set". The filter panel radios ("Direction") get the same behaviour. The legacy UI is not changed. | SUITE-186 |
+| Dependency fix | The lock files now hold fixed versions for the HIGH and critical advisories. Composer has 43 updates (19 packages with advisories, 24 transitive), all inside the upstream constraints. These include Symfony 6.4.50, Guzzle, Smarty, phpseclib, Flysystem, `jmespath.php` (critical) and TinyMCE 8.10.2 for the legacy UI. In `yarn.lock`, `dompurify` is 3.4.18 and the `tinymce` 7.2.1 entry is merged into 7.9.3. The Angular edit field no longer loads the TinyMCE `media` plugin. After a vendor update or an upstream release, the legacy asset URL changes, so browsers load new legacy JS. Some advisories stay accepted with conditions (see below). | SUITE-183 |
 
 ### What changes for admins and developers
+- Dependency updates (SUITE-183):
+  - Update locked packages as `docs/architecture.md` § Dependency re-resolve commands and `LOCAL_SETUP.md` § Dependency updates describe. Run Composer as `www-data` with `--no-security-blocking`.
+  - Each security-driven version has a row in `docs/architecture.md` § Overrides register. Never hand-merge a lock file at an upstream merge.
+  - `docs/architecture.md` § Accepted dependency advisories lists what stays open and why.
+  - The new D5 delta `extensions/tkc/config/tkc_tinymce.php` removes the TinyMCE `media` plugin from the Angular edit field.
+  - `tkc:legacy:asset-version` now also hashes `composer.lock` and `public/legacy/suitecrm_version.php`. It stops with exit code 1 when one is missing.
+  - Azure conditions are in `docs/environments.md`.
 - The build has two new steps. Step 7b clears the cache so the console knows new `tkc:*` commands. Step 11b runs `tkc:legacy:asset-version`. Step 14 also checks that the legacy login page links `Dawn/style.css?v=`.
 - Never set `js_custom_version` by hand or in the config template. The build sets it.
 - On Azure, run `tkc:legacy:asset-version` after `tkc:config:apply`. Reload php-fpm when `opcache.validate_timestamps=0`. A CDN must use the query string in its cache key.
@@ -93,7 +101,9 @@ The spike code stays on `spike/*` branches. It is never merged. The obsolete dev
 | SUITE-186 | Resolved after Sprint 0 for the Angular UI. See "Since Sprint 0". |
 | SUITE-180 | Resolved after Sprint 0. See "Since Sprint 0". |
 | Build size | The Angular initial bundle is over budget (10.78 MB against 9.44 MB). The cause is not checked. |
-| SUITE-183 | Open dependency advisories (HIGH). |
+| SUITE-183 | Resolved after Sprint 0. The security-officer approved it with conditions on 2026-11-21. The gate checks are in SUITE-156 (real-data import) and SUITE-164 (Azure deploy). The CI gate SUITE-163 enforces the Angular rules. See "Since Sprint 0". Accepted advisories stay open on conditions: `api-platform/core` (medium), `zbateson/mail-mime-parser` (high, no inbound mailbox with real data until SUITE-192), Angular 18 (`@angular/common`, `core`, `router`), npm `tinymce` 7.9.3, `dompurify` in `monaco-editor`, the 50 build-time packages and 3 abandoned packages. |
+| SUITE-192 | `zbateson/mail-mime-parser` 3.x. It blocks email-to-case. |
+| SUITE-193 | Azure upload storage (`AZURE_BLOB_INSTANCES`). |
 
 ### Follow-ups (To Do)
 
@@ -104,7 +114,9 @@ The spike code stays on `spike/*` branches. It is never merged. The obsolete dev
 | SUITE-180 | Done after Sprint 0. The owner approved the brand colour (option A). See "Since Sprint 0". |
 | SUITE-181 | Done after Sprint 0. The legacy CSS URL version follows the content. See "Since Sprint 0". |
 | SUITE-182 | Label association and keyboard access to "Forgot password". |
-| SUITE-183 | Dependency advisories (HIGH). It must clear before the first Azure deploy and before the real-data import. |
+| SUITE-183 | Done after Sprint 0. Accepted advisories are in `docs/architecture.md`. The Azure conditions in `docs/environments.md` apply to the first deploy. |
+| SUITE-192 | `zbateson/mail-mime-parser` 3.x. It blocks email-to-case. |
+| SUITE-193 | Azure upload storage. |
 | SUITE-184 | Build hardening. |
 | SUITE-185 | Layout differences from the design system. |
 | SUITE-186 | Done after Sprint 0. `radioenum` keyboard focus. See "Since Sprint 0". |

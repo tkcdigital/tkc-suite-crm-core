@@ -107,6 +107,10 @@ Result of spike SUITE-9 S1 (2026-11-20).
     - `public/legacy/include/javascript/yui/build/base/base-min.css`
     - every `*.css` file under `public/legacy/custom/themes/suite8/css/` (recursive)
     - every file in `public/legacy/custom/themes/suite8/fonts/`
+    - `composer.lock` (SUITE-183)
+    - `public/legacy/suitecrm_version.php` (SUITE-183)
+  - Why `composer.lock` and `suitecrm_version.php` (SUITE-183, decision 5): core caches legacy JS for 1 year (`public/legacy/.htaccess:71`). Core builds `?v=` only from `js_custom_version` (`getVersionedPath()`, `utils.php:2934-2961`). Without these inputs, a browser keeps an old vendor script (for example TinyMCE) after a vendor update, or an old core script after an upstream release. A missing input stops the command with exit code 1.
+  - Upgrade re-check: at each upstream merge, check `getVersionedPath()` and the `.htaccess` JS expiry again.
   - Code: `extensions/tkc/backend/Config/LegacyAssetVersion.php` (pure logic) and `extensions/tkc/backend/Console/LegacyAssetVersionCommand.php`. The command prints only that key and the result.
   - Side effect: the value is global. It also versions the legacy JS, the sprites and `yui.css`.
   - The build runs the command in step 11b and checks the result in step 14. A browser asks for a new URL after each theme or font change. A hard reload is not needed.
@@ -208,7 +212,7 @@ Not tested: the Studio UI itself, the Edit view and Quick create files, and a br
 - `php bin/console tkc:config:apply [--dry-run]`: merges `scripts/config/config_override.template.php` (secret-free) into `public/legacy/config_override.php`.
 - `php bin/console tkc:mail:use-sink [--dry-run]`: sets the system outbound account to the mail sink. DEV only, idempotent (SUITE-45).
 - `php bin/console tkc:users:repair-number-separators [--dry-run]`: removes the user preferences `dec_sep` and `num_grp_sep` that equal the other effective separator (SUITE-179). Run it after `tkc:config:apply`. It writes through the legacy `UserPreference` bean. A signed-in user must sign out and in again (the session writes the old values back). Code in `extensions/tkc/backend/Users/` (`Console/RepairNumberSeparatorsCommand`, `NumberSeparatorPolicy`, `LegacyPreferenceStore`). Upgrade risk: it depends on the key names `dec_sep` and `num_grp_sep`, on the config keys `default_decimal_seperator` and `default_number_grouping_seperator`, and on the base64-serialized format of `user_preferences.contents`. Re-check at each upstream merge.
-- `php bin/console tkc:legacy:asset-version [--dry-run] [--target=<file>]`: sets `js_custom_version` in `public/legacy/config_override.php` to `tkc` and 12 hex characters of a sha256 hash over the legacy theme inputs (SUITE-181). It prints only that key and the result ("No change", "Would apply" or "Applied"). It exits with 1 when an input is missing or the file cannot be written. Run it after `tkc:config:apply` (build step 11b). Details in § Legacy theme.
+- `php bin/console tkc:legacy:asset-version [--dry-run] [--target=<file>]`: sets `js_custom_version` in `public/legacy/config_override.php` to `tkc` and 12 hex characters of a sha256 hash over the legacy theme inputs, `composer.lock` and `public/legacy/suitecrm_version.php` (SUITE-181, SUITE-183). It prints only that key and the result ("No change", "Would apply" or "Applied"). It exits with 1 when an input is missing or the file cannot be written. Run it after `tkc:config:apply` (build step 11b). Details in § Legacy theme.
 - Code in `extensions/tkc/backend/Console/` and `Config/`. Details in `scripts/config/README.md`.
 
 ## Core patches
@@ -218,16 +222,76 @@ Not tested: the Studio UI itself, the Edit view and Quick create files, and a br
 
 ## Overrides register
 This register lists every file that overrides a core file or a core parameter. Re-check every row at each upstream merge. Add a row in the same story that adds the override.
-Type values: viewdef full copy · core list override · core vardef override · D5 parameter delta · core theme rule override · Angular field override.
+Type values: viewdef full copy · core list override · core vardef override · D5 parameter delta · core theme rule override · Angular field override · dependency version (lock) · dependency resolution (package.json).
+- "Dependency version (lock)": `composer.lock` or `yarn.lock` holds a newer version than upstream. The constraint in `composer.json` or `package.json` does not change. This is not a core patch (SUITE-183, decision 1).
+- "Dependency resolution (package.json)": a `resolutions` entry in `package.json` forces a version. Use it only when a parent range blocks a lock-only fix. No row uses this type yet. A change to a constraint in `composer.json` or to a range in `package.json` is Level 5 and needs the architect.
 
 | File | Module | Type | Reason | Upstream source to diff | Check at merge |
 |---|---|---|---|---|---|
 | `extensions/tkc/app/src/theme/overrides/_radio.scss` (SUITE-186) | all (Angular) | core theme rule override | Core hides the radio inputs with `display: none`. A keyboard user cannot reach them. The override resets `display` and hides the inputs visually. It adds the focus ring on the label. | `core/app/shell/src/themes/suite8/css/components/_radio.scss:27-60` | The selector `.radioenum-input input[type='radio']` and the markup are the same. `scripts/theme/check_bundle.py` passes (check 3). |
 | `extensions/tkc/app/src/fields/radioenum/tkc-radioenum-edit.*` (SUITE-186) | all (Angular) | Angular field override | Core has no `role` and no accessible name on the radio group, no label for the empty option, and the DOM `name` is not set. Registered for `radioenum.edit` and `enum-radio.edit` (same core class). Three lines differ from the core template, each marked `TKC SUITE-186`: (1) `role="radiogroup" [attr.aria-label]="groupLabel \|\| null"` on `div.radioenum`; (2) `[attr.name]="field.name"` on the input (see the note below); (3) `{{ optionLabel(item) }}` in the label. The class extends the core class and has no own constructor. | `core/app/core/src/lib/fields/radioenum/templates/edit/radioenum.component.html` and `radioenum.component.ts` | Diff the core template and `.ts` (`getId`, `buildOptionsArray`). The keys in `core/app/core/src/lib/fields/base-fields.manifest.ts` are the same. The `FieldRegistry.register` signature is the same. `getAppString` and `getFieldLabel` of the language service exist. The `core` package is still a singleton in the extension webpack config. |
+| `extensions/tkc/config/tkc_tinymce.php` | Angular edit field (tinymce) | D5 parameter delta | Removes the TinyMCE `media` plugin from the Angular edit field. npm `tinymce` 7.9.3 has advisory GHSA-mf2p-h6hf-fcwm and no 7.x fix (SUITE-183). | `config/services/ui/ui.yaml` key `tinymce.edit.plugins` (line 21) | Check `ui.yaml` `tinymce.edit.plugins` and `core/app/core/src/lib/fields/tinymce/templates/edit/tinymce.component.ts:74-78`. The component merges the list with lodash merge, index by index. Keep 3 or more entries. The core `plugins` setting stays a list of strings. The delta treats spaces and commas as separators (security review F4, commit 736e0c496). If the setting became one string, the container build fails (fail closed). Remove the file when upstream ships a fixed npm TinyMCE. |
+| `composer.lock` | lock | dependency version (lock) | `lcobucci/clock` 3.5.0 (SUITE-175). Upstream has 3.0.0. `composer.json` keeps the PHP 8.3 platform. | `composer.lock` of the upstream tag | Keep 3.5.0 while the platform is PHP 8.3. |
+| `composer.lock` | lock | dependency version (lock) | `guzzlehttp/guzzle` 7.16.5 (upstream 7.12.1): 7 advisories (1 high, 6 medium). Title: noncanonical host bypass. | `composer.lock` of the upstream tag | Keep the TKC version or higher. Drop the row when upstream reaches it. |
+| `composer.lock` | lock | dependency version (lock) | `guzzlehttp/psr7` 2.13.5 (upstream 2.12.1): 1 medium advisory (host confusion). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `league/flysystem` 3.36.0 (upstream 3.31.0): 1 low advisory (path normalizer). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `mtdowling/jmespath.php` 2.10.0 (upstream 2.8.0): 1 critical advisory (`CompilerRuntime` code injection). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `phpseclib/phpseclib` 3.0.59 (upstream 3.0.54): 2 advisories (PBKDF iteration count, X25519 timing). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `smarty/smarty` v4.6.0 (upstream v4.5.6): 2 medium advisories (`{fetch}` SSRF, symlink traversal). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/config` v6.4.50 (upstream v6.4.32): 1 advisory (XXE in `XmlUtils::parse()`). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/expression-language` v6.4.48 (upstream v6.4.32): 1 advisory (unbounded nesting, CVE-2026-109449). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/filesystem` v6.4.50 (upstream v6.4.30): 1 advisory (path prefix before `://`). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/http-client` v6.4.50 (upstream v6.4.33): 2 advisories (`ScopingHttpClient`, `NoPrivateNetworkHttpClient`). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/http-foundation` v6.4.50 (upstream v6.4.41): 4 advisories (1 high, ReDoS CVE-2026-108082; CVE-2026-118514). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/http-kernel` v6.4.50 (upstream v6.4.33): 1 advisory (inline fragments and forwarded headers). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/mime` v6.4.49 (upstream v6.4.40): 1 medium advisory (header injection, CVE-2026-45070). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/routing` v6.4.50 (upstream v6.4.41): 1 advisory (host placeholders, CVE-2026-118516). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/security-http` v6.4.50 (upstream v6.4.41): 2 advisories (CVE-2026-118513; `checkPostAuth()` skipped). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/serializer` v6.4.50 (upstream v6.4.33): 3 advisories (`DataUriNormalizer`, `ObjectNormalizer`, CVE-2026-118515). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/validator` v6.4.50 (upstream v6.4.33): 1 advisory (`Ip` constraint modes). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `symfony/yaml` v6.4.50 (upstream v6.4.40): 2 advisories (1 high, CVE-2026-109413; parse time). | same | same |
+| `composer.lock` | lock | dependency version (lock) | `tinymce/tinymce` 8.10.2 (upstream 8.5.1): 1 high advisory (media plugin XSS). This copy serves the legacy UI. | same | same |
+| `composer.lock` | lock (grouped) | dependency version (lock) | 24 transitive packages that `composer update -W` raised with the rows above. List: `guzzlehttp/promises` 2.6.2; `league/flysystem-local` 3.35.3; `league/mime-type-detection` 1.17.0; `symfony/cache` v6.4.50; `symfony/cache-contracts` v3.8.1; `symfony/deprecation-contracts` v3.8.1; `symfony/error-handler` v6.4.49; `symfony/event-dispatcher` v6.4.44; `symfony/event-dispatcher-contracts` v3.8.1; `symfony/http-client-contracts` v3.8.1; `symfony/polyfill-intl-grapheme` v1.43.3; `symfony/polyfill-intl-idn` v1.43.0; `symfony/polyfill-intl-normalizer` v1.43.0; `symfony/polyfill-mbstring` v1.43.3; `symfony/polyfill-php83` v1.43.0; `symfony/process` v6.4.49; `symfony/property-access` v6.4.50; `symfony/property-info` v6.4.50; `symfony/security-core` v6.4.50; `symfony/service-contracts` v3.8.1; `symfony/string` v6.4.49; `symfony/translation-contracts` v3.8.1; `symfony/var-dumper` v6.4.49; `symfony/var-exporter` v6.4.49. | same | Keep the TKC version or higher. Drop a package when upstream reaches it. |
+| `yarn.lock` | lock | dependency version (lock) | npm `dompurify` 3.4.18 (upstream 3.4.11): advisories on the Angular runtime (see Accepted dependency advisories for the rest). Also: the `tinymce` 7.2.1 entry is merged into 7.9.3 (same command, `yarn up -R tinymce dompurify`). | `yarn.lock` of the upstream tag | Keep the TKC version or higher. Drop the row when upstream reaches it. |
 
 Note for line (2): the Angular `RadioControlValueAccessor` takes `[name]` as a directive input, so Angular never sets the DOM `name` attribute. The inputs of one group have no shared `name`, and the arrow keys do not move between them. `[attr.name]` sets the DOM attribute. This differs from the architect prescription, which assumed that `[name]` was enough (QA found it).
 
 The string `LBL_TKC_NOT_SET` ("Not set") is a new app string in `public/legacy/custom/Extension/application/Ext/Language/en_us.tkc_app_strings.php`. It is not an override. Do not reuse `LBL_NONE` or `LBL_EMPTY`.
+
+Upstream v8.10.2 is the base of these versions. The TKC changes in `composer.lock` are 43 updates, all inside the upstream constraints. `composer.json`, `package.json`, `.yarnrc.yml` and `symfony.lock` did not change.
+
+### Upstream merge procedure for lock files (SUITE-183, decision 2)
+1. Never hand-merge `composer.lock` or `yarn.lock`.
+2. On a conflict, take the upstream file: `git checkout --theirs composer.lock yarn.lock`.
+3. For each row above that upstream does not yet meet, run the re-resolve command again. Keep `lcobucci/clock` 3.5.0.
+4. Run `composer validate --no-check-publish`, `composer audit` and `yarn npm audit --all --recursive --environment production`. Compare the result with § Accepted dependency advisories.
+5. Delete each row that upstream now meets. Update the accepted table.
+
+### Dependency re-resolve commands (SUITE-183, decision 3)
+- Composer runs in the app container as `www-data`, with `COMPOSER_HOME=/tmp/composer`:
+  `composer update <packages> --with-all-dependencies --no-security-blocking`
+- Reason for `--no-security-blocking`: the root `composer.json` pins some vulnerable packages (see the table below). Without the flag, Composer refuses the update.
+- Reason for `www-data`: a run as root leaves root-owned files in the cache. The app then answers with HTTP 500.
+- Yarn runs on the host: `yarn up -R tinymce dompurify`. Then run `scripts/build.sh`.
+- Dependency work needs the architect when it changes a constraint in `composer.json` or a range in `package.json` (Level 5). Lock-only updates inside the constraints do not.
+
+### Accepted dependency advisories (SUITE-183)
+After SUITE-183, `composer audit` shows 4 advisories and 3 abandoned packages. `yarn npm audit` shows the rows below. The security-officer accepted each row at the SUITE-183 sign-off. "Server" means the code runs on the server. R means it ships to the browser. B means it runs only at build time.
+
+Accepted by: security-officer, SUITE-183 sign-off, 2026-11-21, with the conditions in each row, unless the row says "architect". The security-officer co-signs the architect rows.
+
+| Package | Version | Advisory | Severity | R/B | Reason | Mitigation / condition | Re-check trigger |
+|---|---|---|---|---|---|---|---|
+| `api-platform/core` | 3.4.17 | PKSA-8kfs-m8zw-ggzs, PKSA-3ncz-km6v-5vjr | medium | server | Only the `jsonld` and `multipart` formats are on (`config/packages/api_platform.yaml:4-6`). Record saves go through GraphQL with a custom processor. TKC has no `ApiResource`. The fix exists only in 4.x (a root pin change is Level 5). | TKC adds no `ApiResource` with a writable relation. No `jsonapi` or `jsonhal` format. Azure has `APP_ENV=prod` and `GRAPHQL_SHOW_DOCS` is not true. | Upstream moves `api-platform/core`. A TKC API resource (architect). |
+| `zbateson/mail-mime-parser` | 2.4.1 | PKSA-f3bq-hwxm-x4yf, PKSA-r8x8-972m-nrc1 | high | server | The legacy InboundEmail parses every fetched message (`InboundEmail.php:325,4162-4183`). The fix is 3.0.6 only. The root requires `^2.4` and `javanile/php-imap2` requires `^2.2`. | No inbound mailbox of any type (group, personal, bounce handling, email-to-case) is active in an environment with real data until SUITE-192 closes. Users can create personal mailboxes themselves. Bounce-handling mailboxes are also `inbound_email` rows. Check at the OSC real-data import gate (SUITE-156) and at each Azure deploy (SUITE-164): `inbound_email` has no row with `deleted=0` and `status='Active'` (aggregate count only), and the scheduler jobs `function::pollMonitoredInboxes`, `function::pollMonitoredInboxesForBouncedCampaignEmails` and `function::pollMonitoredInboxesAOP` are Inactive. | SUITE-192. Upstream moves to 3.x. |
+| `@angular/common`, `@angular/core`, `@angular/router` | 18.2.14 | 13 high and 5 moderate (XSS sanitizer, i18n, SSR, HttpTransferCache, XSRF, DoS) | high | R | No 18.x fix exists (first fix 19.2.26). The major upgrade is upstream work. TKC does not use SSR, hydration, transfer cache or i18n. | TKC code uses `HttpClient` with relative paths only. No `bypassSecurityTrust*`. No record data in SVG or MathML attribute bindings. No i18n attributes. No `trustHTML` field metadata. No `safeHtml` or `trustHtml` pipe in TKC templates. No field metadata `tinymce.edit.plugins` (it would merge `media` back in, `tinymce.component.ts:85-88`). Enforcement: the CI gate (SUITE-163) fails on these patterns. | Upstream Angular 19.2.26 or higher. A new advisory on a used feature. |
+| `tinymce` (npm) | 7.9.3 | GHSA-mf2p-h6hf-fcwm | high | R | No 7.x fix exists. It is not reachable today: no Angular screen loads `html.edit` (the EmailMarketing body is `squire`; OutboundEmailAccounts is legacy). | The D5 delta `extensions/tkc/config/tkc_tinymce.php` removes the `media` plugin (defence in depth). | Upstream moves npm `tinymce` to a fixed release. The first html or wysiwyg field without `displayType` `squire` on a `record:true` module (then run the browser check). |
+| `dompurify` (inside `monaco-editor`) | 3.2.7 | moderate and low | moderate | R | The version is exact-pinned inside the prebuilt monaco minified bundle. A resolution would not change the shipped code. | None. Accepted by the architect. | Upstream monaco upgrade. |
+| Build-time group B (50 packages, including `piscina`, `shell-quote`, `proxy-addr`, `websocket-driver`, `@angular/compiler`) | various | various | critical, high, moderate, low | B | These packages run only on the build host or in CI, with trusted input. They are never deployed. The server has no Node runtime. | `ng serve` and Karma bind to localhost only. Never run them on Azure or on a public CI agent. | The CI audit gate (SUITE-163). |
+| `behat/transliterator`, `doctrine/cache` | - | abandoned | - | server | No advisory. | None. Accepted by the architect. | Upstream merge. |
+| `league/flysystem-azure-blob-storage` | 3.31.0 | abandoned | - | server | Active only with `AZURE_BLOB_INSTANCES`. | The Azure deploy does not set `AZURE_BLOB_INSTANCES`. | SUITE-193. |
+
+Re-check this table at each upstream merge (see the procedure above). Delete a row when upstream no longer has the package at that version.
 
 ## Spike results S7–S11 (SUITE-50)
 The spike code lives only on the `spike/SUITE-5x-*` branches of the `tkc-spike2` worktree. It is never merged. The stories below build the real code. Each story adds its own row to the Overrides register. The planned rows are in those stories.
@@ -272,7 +336,8 @@ The spike code lives only on the `spike/SUITE-5x-*` branches of the `tkc-spike2`
 | S7 (SUITE-51) | The renewal reminder does not run for an Angular save. Core creates the reminder only when the request has `renewal_reminder_date`. | Keep `renewal_reminder_date` off the TKC contract layout. The import leaves it empty. A reminder needs a new story. |
 | S10 (SUITE-54) | Core `radioenum` hides its radio inputs (`_radio.scss:27`). A keyboard user cannot reach them. | Resolved by SUITE-186: a theme override and an Angular field override (see Overrides register). The legacy UI is not in scope. |
 | SUITE-176 | The Symfony `test` env does not boot. The core file `config/packages/test/framework.yaml` uses the removed option `storage_id`. | The contract test boots the `dev` env. Kernel-based PHPUnit tests cannot use the `test` env. |
-| SUITE-175 | Resolved with option B: `lcobucci/clock` is 3.5.0 (upstream has 3.0.0). `composer.json` keeps the PHP 8.3 platform. | Upstream-merge risk: at each merge, compare `lcobucci/clock` in `composer.lock` with upstream and keep 3.5.0 while the platform is PHP 8.3. |
+| SUITE-175 | Resolved with option B: `lcobucci/clock` is 3.5.0 (upstream has 3.0.0). `composer.json` keeps the PHP 8.3 platform. | Upstream-merge risk: the register row for `lcobucci/clock` lists the check (see Overrides register). Keep 3.5.0 while the platform is PHP 8.3. |
+| SUITE-183 | Dependency advisories are fixed in the lock files. Some advisories stay accepted (see § Accepted dependency advisories). Follow-ups: SUITE-192 (`zbateson/mail-mime-parser` 3.x, blocks email-to-case), SUITE-193 (Azure upload storage). | Azure conditions are in `docs/environments.md`. |
 | SUITE-190 | The font URLs in the legacy `@font-face` rules do not change with the font content. The `.htaccess` caches woff2 for 1 month. | A font file with new content must get a new file name until SUITE-190 is done. |
 | Bundle budget | The Angular build warns "initial bundle exceeded budget" (10.79 MB against 9 MiB). | Cause is core (`main` 4.88 MB, `polyfills` 4.86 MB), not TKC. No action. |
 
