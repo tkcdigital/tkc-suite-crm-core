@@ -96,7 +96,7 @@ The spike code stays on `spike/*` branches. It is never merged. The obsolete dev
 | SUITE-186 | Radio fields (`radioenum`) do not take keyboard focus. |
 | SUITE-180 | Resolved after Sprint 0. See "Since Sprint 0". |
 | Build size | The Angular initial bundle is over budget (10.78 MB against 9.44 MB). The cause is not checked. |
-| SUITE-183 | Resolved after Sprint 0 (after the security sign-off). See "Since Sprint 0". Accepted advisories stay open on conditions: `api-platform/core` (medium), `zbateson/mail-mime-parser` (high, no inbound mailbox with real data until SUITE-192), Angular 18 (`@angular/common`, `core`, `router`), npm `tinymce` 7.9.3, `dompurify` in `monaco-editor`, the 50 build-time packages and 3 abandoned packages. |
+| SUITE-183 | Resolved after Sprint 0. The security-officer approved it with conditions on 2026-11-21. The gate checks are in SUITE-156 (real-data import) and SUITE-164 (Azure deploy). The CI gate SUITE-163 enforces the Angular rules. See "Since Sprint 0". Accepted advisories stay open on conditions: `api-platform/core` (medium), `zbateson/mail-mime-parser` (high, no inbound mailbox with real data until SUITE-192), Angular 18 (`@angular/common`, `core`, `router`), npm `tinymce` 7.9.3, `dompurify` in `monaco-editor`, the 50 build-time packages and 3 abandoned packages. |
 | SUITE-192 | `zbateson/mail-mime-parser` 3.x. It blocks email-to-case. |
 | SUITE-193 | Azure upload storage (`AZURE_BLOB_INSTANCES`). |
 

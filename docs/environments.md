@@ -29,7 +29,10 @@ The security-officer accepted some dependency advisories on these conditions. Se
 - Set `APP_ENV=prod`.
 - Do not set `GRAPHQL_SHOW_DOCS` to true.
 - Do not set `AZURE_BLOB_INSTANCES` (SUITE-193 covers Azure upload storage).
-- Do not activate an inbound mailbox (group, personal or email-to-case) in an environment with real data, until SUITE-192 closes.
+- Do not activate an inbound mailbox of any type (group, personal, bounce handling, email-to-case) in an environment with real data, until SUITE-192 closes. Users can create personal mailboxes themselves. Bounce-handling mailboxes are also `inbound_email` rows.
+- Check at the OSC real-data import gate (SUITE-156) and at each Azure deploy (SUITE-164): `inbound_email` has no row with `deleted=0` and `status='Active'` (aggregate count only), and the scheduler jobs `function::pollMonitoredInboxes`, `function::pollMonitoredInboxesForBouncedCampaignEmails` and `function::pollMonitoredInboxesAOP` are Inactive.
+- The runtime image contains no Node runtime and no `node_modules` (build output only).
+- The web document root is `public/`, so `composer.lock` (an input of `tkc:legacy:asset-version`) is not served.
 - Run no dev server (`ng serve`, Karma) on Azure or on a public CI agent.
 - The runtime image must contain `composer.lock` and `public/legacy/suitecrm_version.php`. The command `tkc:legacy:asset-version` reads both.
 - The deploy runs `tkc:legacy:asset-version` after `scrm:copy-legacy-assets`.
