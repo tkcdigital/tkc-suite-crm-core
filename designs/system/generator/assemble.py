@@ -33,7 +33,9 @@ for (lab,fg,bg,mn),m in byl.items():
         return f'<td class="scope-{mode}" style="background:none"><span class="pair" style="color:var(--tkc-{fg});background:var(--tkc-{bg})">Aa</span> <span data-fg="--tkc-{fg}" data-bg="--tkc-{bg}" data-min="{mn}">{rt:.2f}:1</span> <span class="res {"pass" if ok else "fail"}">{"Pass" if ok else "Check"}</span></td>'
     c.append(f'<tr><td>{lab}<br><code>{fg}</code> on <code>{bg}</code></td><td>{mn}:1</td>{cell("light")}{cell("dark")}</tr>')
 c.append('</tbody></table></div>')
-tpl=tpl.replace('/*TOKENS*/',css).replace('<!--RAMPS-->',ramps).replace('<!--SEMANTIC-->',semantic).replace('<!--CONTRAST-->',"\n".join(c))
+import brand_options as bo
+bo_html,_=bo.section()
+tpl=tpl.replace('<!--BRANDOPTIONS-->',bo_html).replace('/*TOKENS*/',css).replace('<!--RAMPS-->',ramps).replace('<!--SEMANTIC-->',semantic).replace('<!--CONTRAST-->',"\n".join(c))
 open(b.OUT+'design-system.html','w').write(tpl)
 print(len(tpl))
 
