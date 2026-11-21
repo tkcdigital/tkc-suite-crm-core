@@ -121,7 +121,7 @@ $DC console tkc:repair --execute
 step 11 "tkc:config:apply"
 $DC console tkc:config:apply
 
-step 11b "tkc:legacy:asset-version (js_custom_version from the legacy theme content, SUITE-181)"
+step 11b "tkc:legacy:asset-version (js_custom_version from the legacy theme content, composer.lock and the SuiteCRM version; SUITE-181, SUITE-183)"
 $DC console tkc:legacy:asset-version
 
 step 12 "cache:clear (Symfony cache and the cached legacy theme CSS)"

@@ -16,6 +16,8 @@ class LegacyAssetVersionTest extends TestCase
         self::write($this->root, 'public/legacy/include/javascript/yui/build/base/base-min.css', 'yui');
         self::write($this->root, 'public/legacy/custom/themes/suite8/css/Dawn/style.css', 'custom');
         self::write($this->root, 'public/legacy/custom/themes/suite8/fonts/a.woff2', 'font');
+        self::write($this->root, 'composer.lock', '{"packages":[{"name":"tinymce/tinymce","version":"8.5.1"}]}');
+        self::write($this->root, 'public/legacy/suitecrm_version.php', "<?php \$suitecrm_version = '8.10.2';");
     }
 
     protected function tearDown(): void
@@ -75,6 +77,38 @@ class LegacyAssetVersionTest extends TestCase
     {
         unlink($this->root . '/public/legacy/include/javascript/yui/build/base/base-min.css');
         $this->expectException(\RuntimeException::class);
+        (new LegacyAssetVersion())->compute($this->root);
+    }
+
+    public function testVendorUpdateGivesNewVersion(): void
+    {
+        $sut = new LegacyAssetVersion();
+        $before = $sut->compute($this->root);
+        self::write($this->root, 'composer.lock', '{"packages":[{"name":"tinymce/tinymce","version":"8.10.2"}]}');
+        self::assertNotSame($before, $sut->compute($this->root));
+    }
+
+    public function testUpstreamReleaseGivesNewVersion(): void
+    {
+        $sut = new LegacyAssetVersion();
+        $before = $sut->compute($this->root);
+        self::write($this->root, 'public/legacy/suitecrm_version.php', "<?php \$suitecrm_version = '8.10.3';");
+        self::assertNotSame($before, $sut->compute($this->root));
+    }
+
+    public function testMissingComposerLockThrows(): void
+    {
+        unlink($this->root . '/composer.lock');
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Missing input: composer.lock');
+        (new LegacyAssetVersion())->compute($this->root);
+    }
+
+    public function testMissingSuitecrmVersionThrows(): void
+    {
+        unlink($this->root . '/public/legacy/suitecrm_version.php');
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Missing input: public/legacy/suitecrm_version.php');
         (new LegacyAssetVersion())->compute($this->root);
     }
 

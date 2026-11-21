@@ -5,12 +5,17 @@ namespace App\Extension\tkc\backend\Config;
 /**
  * SUITE-181: content hash of the legacy theme assets. The value feeds the core key js_custom_version,
  * so a browser asks for a new URL when the legacy CSS or the theme fonts change.
+ * SUITE-183: the hash also covers composer.lock (vendor assets such as TinyMCE) and suitecrm_version.php
+ * (core legacy JS after an upstream release). Legacy JS is cached for 1 year (.htaccess), and core builds
+ * "?v=" only from js_custom_version, so without these inputs a browser keeps an old vendor or core script.
  * Pure logic (no legacy bootstrap) so it can be unit tested.
  */
 class LegacyAssetVersion
 {
     private const CORE_CSS = 'public/legacy/themes/suite8/css/Dawn/style.css';
     private const YUI_CSS = 'public/legacy/include/javascript/yui/build/base/base-min.css';
+    private const COMPOSER_LOCK = 'composer.lock';
+    private const SUITECRM_VERSION = 'public/legacy/suitecrm_version.php';
     private const CUSTOM_CSS_DIR = 'public/legacy/custom/themes/suite8/css';
     private const CUSTOM_FONT_DIR = 'public/legacy/custom/themes/suite8/fonts';
 
@@ -23,7 +28,7 @@ class LegacyAssetVersion
         $projectDir = rtrim($projectDir, '/');
         $files = [];
 
-        foreach ([self::CORE_CSS, self::YUI_CSS] as $relative) {
+        foreach ([self::CORE_CSS, self::YUI_CSS, self::COMPOSER_LOCK, self::SUITECRM_VERSION] as $relative) {
             if (!is_file($projectDir . '/' . $relative)) {
                 throw new \RuntimeException('Missing input: ' . $relative);
             }
