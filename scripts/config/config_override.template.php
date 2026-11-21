@@ -5,6 +5,7 @@
  * Applied by: php bin/console tkc:config:apply [--dry-run]
  *
  * Values are $sugar_config keys. Nested arrays are merged key by key.
+ * js_custom_version is set by tkc:legacy:asset-version, never here.
  */
 return [
     // Currency

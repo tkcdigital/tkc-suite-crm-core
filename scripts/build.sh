@@ -115,6 +115,9 @@ $DC console tkc:repair --execute
 step 11 "tkc:config:apply"
 $DC console tkc:config:apply
 
+step 11b "tkc:legacy:asset-version (js_custom_version from the legacy theme content, SUITE-181)"
+$DC console tkc:legacy:asset-version
+
 step 12 "cache:clear (Symfony cache and the cached legacy theme CSS)"
 # A root run (for example composer install without -u www-data) leaves root-owned files in the cache volumes;
 # cache:clear as www-data then fails. Give the volumes back to www-data first (SUITE-44 fresh-install run).
@@ -139,12 +142,19 @@ code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$APP_URL" || true)
 echo "    HTTP ${code}"
 [ "$code" = "200" ]
 
-step 14 "Cached legacy CSS contains --tkc-theme-build"
+step 14 "Cached legacy CSS contains --tkc-theme-build and the legacy login page links Dawn/style.css?v="
 if [ "${legacy_css_ok}" -ne 1 ]; then
   echo "The cached legacy CSS ${legacy_css} has no TKC rules. Delete it and rebuild." >&2
   exit 1
 fi
 $DC exec -T -u www-data app grep -q -- '--tkc-theme-build' "$legacy_css"
+# The Angular login page has no legacy CSS link. The legacy login page needs no session and renders the theme CSS.
+legacy_link="$(curl -s --max-time 30 "${APP_URL}legacy/index.php?module=Users&action=Login" | grep -o 'Dawn/style\.css?v=[A-Za-z0-9_-]*' | head -n 1 || true)"
+if [ -z "$legacy_link" ]; then
+  echo "The legacy login page has no Dawn/style.css?v= link." >&2
+  exit 1
+fi
+echo "    legacy CSS link: ${legacy_link}"
 echo "    OK"
 
 trap - ERR
