@@ -25,7 +25,7 @@
 * the words "Supercharged by SuiteCRM".
 */
 -->
-<div class="radioenum" role="radiogroup" [attr.aria-label]="groupLabel"> <!-- TKC SUITE-186 -->
+<div class="radioenum" role="radiogroup" [attr.aria-label]="groupLabel || null"> <!-- TKC SUITE-186 -->
     <div *ngFor="let item of this.options;"
          [class.form-check-inline]="displayDirection === 'row'"
          class="form-check radioenum-input {{getId(item)}}">
