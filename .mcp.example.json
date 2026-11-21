@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "openbrain": {
+      "command": "docker",
+      "args": [
+        "compose",
+        "-f", "/path/to/openbrain/docker-compose.yml",
+        "exec", "-T",
+        "-e", "OPENBRAIN_PROJECT_ID=<project-id>",
+        "openbrain-mcp",
+        "node", "dist/index.js"
+      ]
+    }
+  }
+}

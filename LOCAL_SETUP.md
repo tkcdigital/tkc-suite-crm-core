@@ -143,6 +143,9 @@ Homebrew MySQL, `.env.local` with `DATABASE_URL` to 127.0.0.1:3306, `composer in
 is not supported. Stop the `php -S` server and the Homebrew MySQL (`brew services stop mysql`).
 Backups of the old host config are in `data/backup/host-setup-2026-11-20/` (gitignored, contain credentials).
 
+## Claude Code memory server (optional)
+Copy `.mcp.example.json` to `.mcp.json`. Set the path to your openbrain `docker-compose.yml` and set `OPENBRAIN_PROJECT_ID=SUITE`. Git ignores `.mcp.json` because it holds machine paths.
+
 ## Official docs
 [SuiteCRM 8 Installation Guide](https://docs.suitecrm.com/8.x/admin/installation-guide/) and
 [Compatibility Matrix](https://docs.suitecrm.com/8.x/admin/compatibility-matrix/).

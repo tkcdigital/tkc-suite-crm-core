@@ -104,3 +104,6 @@ PROJECT_SETUP.md
 __pycache__/
 *.pyc
 /coverage/
+
+# Local MCP config (machine paths, project id). Template: .mcp.example.json
+/.mcp.json
