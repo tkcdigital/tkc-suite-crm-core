@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branch `feature/SUITE-180-brand-colour`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`)
 
 ### Delivered
 
@@ -11,11 +11,18 @@
 |---|---|---|
 | Brand colour | The owner chose option A on 2026-11-21. The UI keeps the teal primary (hue 195). The new token `--tkc-color-brand-pink` (#e95295) and the semantic token `--tkc-logo` colour the logo on the login page and in the navbar. Options B and C are rejected. The design system is v0.2 and `tokens.json` has status APPROVED. | SUITE-180 |
 | Design-system generator | `designs/system/generator/assemble.py` writes the committed `tkc-ds.css` header. Generated files come only from the committed generator. | SUITE-188 |
+| Font | The app uses Roboto (variable, weights 400 to 700), the brand guide font. IBM Plex Sans is removed. IBM Plex Mono 400 stays. Both fonts are self-hosted. The app loads no external font. The Roboto files are 72528 bytes. The old Plex Sans files were 87844 bytes. The design system and the 7 mockups use Roboto. | SUITE-189 |
+| Legacy asset version | The legacy CSS URL now changes with the theme and font content. The new command `tkc:legacy:asset-version` sets `js_custom_version`. The build runs it in step 11b. A browser hard reload is not needed after a theme change. The value is global, so it also versions the legacy JS, sprites and `yui.css`. | SUITE-181 |
 
 ### What changes for admins and developers
+- The build has two new steps. Step 7b clears the cache so the console knows new `tkc:*` commands. Step 11b runs `tkc:legacy:asset-version`. Step 14 also checks that the legacy login page links `Dawn/style.css?v=`.
+- Never set `js_custom_version` by hand or in the config template. The build sets it.
+- On Azure, run `tkc:legacy:asset-version` after `tkc:config:apply`. Reload php-fpm when `opcache.validate_timestamps=0`. A CDN must use the query string in its cache key.
+- A font file with new content must get a new file name until SUITE-190 is done.
 - The logo colour comes from `--tkc-logo`, not from the primary colour. Use the token only for `color` or `fill` of `.logo`. Never use it for text, borders, focus rings, links or buttons.
 - The legacy UI gets the token but does not use it.
-- The brand guide `designs/TKC 2024 Brandguide 20240926.pptx` is a local reference. Git ignores it. It names the font Roboto. The font change is story SUITE-189. It is not done.
+- The brand guide `designs/TKC 2024 Brandguide 20240926.pptx` is a local reference. Git ignores it. It names the font Roboto. The font change is story SUITE-189. It is done (see "Delivered").
+- Follow-up SUITE-190: the font URLs do not change with the font content. It is not done.
 
 ## Sprint 0 — closed 2026-11-21
 
@@ -76,7 +83,7 @@ The spike code stays on `spike/*` branches. It is never merged. The obsolete dev
 | Issue | Limit |
 |---|---|
 | SUITE-176 | The Symfony `test` environment does not boot. A core config file uses a removed option. The contract test boots the `dev` environment instead. |
-| SUITE-181 | The legacy CSS URL version does not change with the CSS content. The build deletes the cached file as a workaround. |
+| SUITE-181 | Resolved after Sprint 0. See "Since Sprint 0". |
 | SUITE-182 | Login fields have no visible labels. The "Forgot password" link has no `href`, so the keyboard cannot reach it. These are core limits. |
 | SUITE-186 | Radio fields (`radioenum`) do not take keyboard focus. |
 | SUITE-180 | Resolved after Sprint 0. See "Since Sprint 0". |
@@ -90,7 +97,7 @@ The spike code stays on `spike/*` branches. It is never merged. The obsolete dev
 | SUITE-176 | Symfony `test` env does not boot (bug). |
 | SUITE-178 | Mailpit version. |
 | SUITE-180 | Done after Sprint 0. The owner approved the brand colour (option A). See "Since Sprint 0". |
-| SUITE-181 | Legacy CSS URL version does not change with content. |
+| SUITE-181 | Done after Sprint 0. The legacy CSS URL version follows the content. See "Since Sprint 0". |
 | SUITE-182 | Label association and keyboard access to "Forgot password". |
 | SUITE-183 | Dependency advisories (HIGH). It must clear before the first Azure deploy and before the real-data import. |
 | SUITE-184 | Build hardening. |

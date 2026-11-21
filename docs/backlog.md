@@ -63,7 +63,7 @@
 **Outcome:** Sprint 0 is closed. The base is built: build chain, mail sink, tests, metadata contract test, naming rules, design-token theme for both UIs, login page with the TKC Digital logo, and the five spikes S7 to S11. All spike results are go or partial, with owner decisions. Sprint 0 adds no data model and no import. Release notes: `docs/release-notes.md`. The planning tool holds the status of each issue.
 
 **Done in Sprint 0:** SUITE-44 to 50 (50 with spikes 51 to 55), 56 to 60, 175, 177 and 179.
-**Follow-ups (To Do):** SUITE-176, 178, 180 (done after Sprint 0), 181, 182, 183, 184, 185, 186 and 187.
+**Follow-ups (To Do):** SUITE-176, 178, 180 (done after Sprint 0), 181 (done after Sprint 0), 182, 183, 184, 185, 186 and 187.
 
 ### Sprint 1 starts with
 - SUITE-186 (`radioenum` keyboard focus). It comes before SUITE-103.
@@ -76,7 +76,9 @@
 ### After Sprint 0 (2026-11-21)
 - **Decision (SUITE-180, owner, option A):** the UI keeps the teal primary hue 195. The brand pink #e95295 (`--tkc-color-brand-pink`) colours only the logo through `--tkc-logo`. Never use it for text. Options B and C are rejected. Design system v0.2, `tokens.json` status APPROVED.
 - SUITE-188 (design-system generator writes the committed `tkc-ds.css` header) is done.
-- SUITE-189 (font change from IBM Plex to Roboto, from the brand guide) is planned. It is not done.
+- SUITE-189 (font change from IBM Plex to Roboto, from the brand guide) is done. Owner decision 2026-11-21. Roboto is a self-hosted variable font (400 to 700). IBM Plex Mono 400 stays.
+- SUITE-181 (legacy CSS URL version does not follow the content) is done. The command `tkc:legacy:asset-version` sets `js_custom_version` (build step 11b). No hard reload is needed after a theme change.
+- SUITE-190 (new): the font URLs do not change with the font content. Until it is done, a font file with new content must get a new file name.
 - The brand guide is a local reference in `designs/`. Git ignores it.
 
 ### Sprint 0 progress notes (2026-11-21)

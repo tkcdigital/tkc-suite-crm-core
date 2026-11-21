@@ -20,6 +20,20 @@
 - To change the logo: replace the file, run `docker/dc.sh console cache:clear`, and rebuild if needed.
 - Keep "Supercharged by SuiteCRM" visible.
 
+## Legacy asset version (SUITE-181)
+- The config key `js_custom_version` in `public/legacy/config_override.php` sets the `?v=` value of the legacy CSS, JS and sprite URLs.
+- The build sets it with `tkc:legacy:asset-version` (build step 11b). Never set it by hand. Never add it to `scripts/config/config_override.template.php`.
+- The value is `tkc` and 12 hex characters. It changes when the legacy theme CSS or a theme font changes.
+- No browser hard reload is needed after a theme change.
+- On an Azure environment, run `tkc:legacy:asset-version` after `tkc:config:apply`. Reload php-fpm when `opcache.validate_timestamps=0`. A CDN must use the query string in its cache key.
+- Details: `docs/architecture.md` § Legacy theme.
+
+## Fonts (SUITE-189)
+- The app uses Roboto (variable, weights 400 to 700) and IBM Plex Mono 400. Both are self-hosted in `public/legacy/custom/themes/suite8/fonts/`. The app loads no external font.
+- The font choice is not an Admin setting. It comes from git (`designs/system/tokens.json` and `scripts/theme/build_theme.py`). Do not set a font in Admin or Studio.
+- To replace a font file, give the new file a new file name (until SUITE-190). Then run `scripts/build.sh`.
+- Licences: `Roboto-OFL.txt` and `OFL.txt` in the same directory. Keep them with the fonts.
+
 ## User number separators (SUITE-179)
 - Run `tkc:config:apply` first. Then run `docker/dc.sh console tkc:users:repair-number-separators`. Use `--dry-run` to see the changes first.
 - Reason: `tkc:config:apply` sets the system decimal separator `,` and grouping separator `.`. A user preference `dec_sep` = `.` (the installer sets it for the admin user) then makes both separators the same. The user edit view refuses Save with the message "The decimal separator cannot use the same character as the thousands separator."

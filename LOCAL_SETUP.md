@@ -55,11 +55,14 @@ scripts/build.sh [--yes] [--skip-core] [--skip-frontend] [--dry-run-only]
 | 1-5 | `yarn install --immutable`, `yarn merge-angular-json`, `yarn build:core`, `yarn build:shell`, `yarn build:extension tkc` (host) |
 | 6 | Compile the core Dawn CSS with `pscss` (output is gitignored) |
 | 7 | `scrm:copy-legacy-assets` |
+| 7b | `chown` of `cache`, `logs` and `var`, then `cache:clear`, so the console knows new `tkc:*` commands (SUITE-181) |
 | 8 | `tkc:repair --dry-run`: shows the SQL |
 | 9 | Asks "Run tkc:repair --execute? [y/N]" (always, also when there is no SQL) |
-| 10-12 | `tkc:repair --execute`, `tkc:config:apply`, `cache:clear` (step 12 also rebuilds the cached legacy theme CSS) |
+| 10-11 | `tkc:repair --execute`, `tkc:config:apply` |
+| 11b | `tkc:legacy:asset-version`: sets `js_custom_version` from the legacy theme content (SUITE-181) |
+| 12 | `cache:clear` (also rebuilds the cached legacy theme CSS) |
 | 13 | Smoke test: `GET http://localhost:8081/` must give HTTP 200 (`APP_PORT` overrides the port) |
-| 14 | Fails when the cached legacy CSS has no `--tkc-theme-build` (SUITE-60) |
+| 14 | Fails when the cached legacy CSS has no `--tkc-theme-build` (SUITE-60) or when the legacy login page has no `Dawn/style.css?v=` link (SUITE-181) |
 
 Flags: `--yes` skips the confirmation (only for reviewed deploys: it runs SQL unread); `--skip-core` skips step 3;
 `--skip-frontend` skips steps 1-5; `--dry-run-only` stops after step 8.
@@ -114,7 +117,7 @@ Never use real OSC data in a test.
 The design tokens in `designs/system/tokens.json` feed both UIs. Hand-written legacy rules are in
 `extensions/tkc/legacy-theme/*.css` (`10-base.css`, `20-buttons.css`, `30-fields.css`). Use tokens only; no hex or `rgb()`.
 Do not edit `public/legacy/custom/themes/suite8/css/Dawn/style.css`. The generator writes it.
-`scripts/build.sh` does these steps for you (steps 0b, 12 and 14). Step 12 deletes the cached CSS, rebuilds it with one login-page request and fails the build when the cached file has no `--tkc-theme-build`. Reason: SugarTheme caches the CSS without a content check, so a request that reads an empty custom file caches CSS without the TKC rules.
+`scripts/build.sh` does these steps for you (steps 0b, 11b, 12 and 14). Step 11b sets `js_custom_version`, so the legacy CSS URL changes when the theme or a font changes. After a theme change, run the build. A browser hard reload is not needed. Step 12 deletes the cached CSS, rebuilds it with one login-page request and fails the build when the cached file has no `--tkc-theme-build`. Reason: SugarTheme caches the CSS without a content check, so a request that reads an empty custom file caches CSS without the TKC rules.
 
 1. Join the tokens and the partials into the legacy theme file:
    ```
@@ -129,7 +132,7 @@ Do not edit `public/legacy/custom/themes/suite8/css/Dawn/style.css`. The generat
    ```
    docker/dc.sh exec -T app rm -f public/legacy/cache/themes/suite8/css/Dawn/style.css
    ```
-4. Reload a legacy page (for example `/legacy/index.php?module=Administration&action=index`) with a hard refresh.
+4. Run `docker/dc.sh console tkc:legacy:asset-version`. It sets `js_custom_version`, so the browser asks for the new CSS URL. Then reload a legacy page (for example `/legacy/index.php?module=Administration&action=index`). A hard refresh is not needed.
 
 ## Angular build
 The build runs on the host, not in the container. It only needs Node and Yarn 4 (Corepack:
