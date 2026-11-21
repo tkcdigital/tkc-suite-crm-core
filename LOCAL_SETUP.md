@@ -31,7 +31,7 @@ Use `-d no` for demo data. The value `false` is NOT "no" and installs demo data.
 Do not run console commands as root (`exec app php ...` without `-u www-data`): root-owned cache files give HTTP 500.
 
 ## Second instance (spikes, X7)
-Use a separate git worktree with its own `docker/.env` (`docker/init.sh`). Add `COMPOSE_PROJECT_NAME=<name>`, `APP_PORT`, `DB_PORT` and `MAILPIT_UI_PORT` with free ports to that file; `docker/dc.sh` reads them. Use the same `APP_PORT` in the installer `-S` URL and for `scripts/build.sh` (the smoke test uses it). Example: `tkc-spike` on 8082 / 3308 / 8027.
+Use a separate git worktree with its own `docker/.env` (`docker/init.sh`). Add `COMPOSE_PROJECT_NAME=<name>`, `APP_PORT`, `DB_PORT` and `MAILPIT_UI_PORT` with free ports to that file; `docker/dc.sh` reads them. Use the same `APP_PORT` in the installer `-S` URL and for `scripts/build.sh` (the smoke test uses it). Example: `tkc-spike2` (worktree `../tkc-spike2`) on 8083 / 3309 / 8028.
 
 ## Daily use
 ```bash
