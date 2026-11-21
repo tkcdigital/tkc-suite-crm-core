@@ -45,7 +45,7 @@ _css=_s[_s.index('<style>')+7:_s.index('</style>')]
 _a=_css.find('/* ===== DOC CHROME ===== */'); _b=_css.find('/* ===== COMPONENT LIBRARY (.tkc-*) ===== */')
 if _a!=-1 and _b!=-1: _css=_css[:_a]+_css[_b:]
 _css=_css.replace('/* Live theming for doc scopes (documentation only) */','')  # doc-page marker, not part of the stylesheet
-HEADER=('/* TKC design system v0.1 — tokens + component classes (.tkc-*).\n'
+HEADER=('/* TKC design system v0.2 — tokens + component classes (.tkc-*).\n'
         '   Generated from design-system.html by generator/assemble.py; do not edit by hand.\n'
         '   Used by the screen mockups in designs/screens/<screen>/mockup.html. */\n')
 open(b.OUT+'tkc-ds.css','w').write(HEADER+_css)

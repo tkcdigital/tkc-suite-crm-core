@@ -22,16 +22,13 @@ def logo_svg(px, label=False):
     return (f'<svg {attrs} viewBox="0 0 1200 1200" width="{px}" height="{px}" fill="currentColor" class="bo-logo-svg">'
             + _logo_paths() + '</svg>')
 
-PINK_HEX = "#e95295"          # TKC Digital logo pink (SUITE-59)
+PINK_HEX = t.PINK_HEX         # TKC Digital logo pink (SUITE-59): one definition, in tokens_gen.py
+PINK_H = t.PINK_H
+PINK = t.PINK
 GUIDE_PINK_HEX = "#ea4d94"    # brand guide 2024 value, close to the logo
 GUIDE_GREY_HEX = "#737373"    # brand guide grey
-PINK_H = 356.5                # oklch hue of the logo pink
-PINK = (0.660, 0.195, PINK_H)  # the logo pink as oklch (round trip of #e95295)
 
 STEPS = t.STEPS
-# chroma profile for a pink ramp: stays vivid through the mid steps, calmer at the dark end
-CP = dict(zip(STEPS, [.018, .040, .080, .130, .170, .190, .190, .175, .140, .095, .060]))
-
 def ramp(hue, chroma):
     return {s: (t.L[s], chroma[s], hue) for s in STEPS}
 
@@ -53,47 +50,21 @@ def role_set(spec):
 def build_options():
     """Return list of dict(option) with light/dark role colour tuples."""
     teal = ramp(195, t.CB)
-    pink = ramp(PINK_H, CP)
     nA = neutral(195, .009)
-    nB = neutral(PINK_H, .009)
-    nC = neutral(0, 0)
     opts = []
 
     # --- Option A: teal UI primary + brand pink accent tokens (logo only)
     opts.append(dict(
-        key="a", name="A. Teal UI, pink only for the logo",
-        blurb="Keep the draft teal as the UI primary. Add the brand pink as logo and accent tokens (<code>--tkc-brand-pink</code>, <code>--tkc-logo</code>). Pink is never used for text or for buttons.",
+        key="a", name="Option A (approved): teal UI, pink only for the logo",
+        blurb="The UI keeps the teal primary (hue 195). The brand pink enters the tokens as the primitive <code>--tkc-color-brand-pink</code> (fixed hue) and the semantic <code>--tkc-logo</code>. Pink colours the logo only. It is never used for text, borders, focus rings or buttons.",
         light=dict(surface=nA[0], canvas=nA[50], text=nA[900], primary=teal[700], hover=teal[800], on=nA[0],
                    subtle_bg=teal[50], subtle_text=teal[800], link=teal[700], focus=teal[600],
                    nav_bg=teal[900], nav_text=nA[50], nav_ind=teal[300], logo=PINK),
         dark=dict(surface=nA[950], canvas=nA[975], text=nA[50], primary=teal[400], hover=teal[300], on=nA[990],
                   subtle_bg=teal[950], subtle_text=teal[200], link=teal[300], focus=teal[300],
                   nav_bg=nA[990], nav_text=nA[100], nav_ind=teal[400], logo=PINK),
-        tokens="<code>brand</code> ramp stays hue 195. New: <code>--tkc-brand-pink</code>, <code>--tkc-logo</code>. Both modes: logo token = pink."))
+        tokens="<code>brand</code> ramp stays hue 195. New: <code>--tkc-color-brand-pink</code> (<code>oklch(0.660 0.195 356.5)</code>, <code>#e95295</code>) and <code>--tkc-logo</code> (both modes refer to it)."))
 
-    # --- Option B: pink becomes the primary hue
-    opts.append(dict(
-        key="b", name="B. Pink is the primary hue",
-        blurb="Change <code>--tkc-brand-hue</code> to 356.5. The brand ramp, tinted neutrals, navbar, links and focus ring all turn pink or plum. Primary buttons are pink.",
-        light=dict(surface=nB[0], canvas=nB[50], text=nB[900], primary=pink[600], hover=pink[700], on=nB[0],
-                   subtle_bg=pink[50], subtle_text=pink[800], link=pink[700], focus=pink[600],
-                   nav_bg=pink[900], nav_text=nB[50], nav_ind=pink[300], logo=PINK),
-        dark=dict(surface=nB[950], canvas=nB[975], text=nB[50], primary=pink[400], hover=pink[300], on=nB[990],
-                  subtle_bg=pink[950], subtle_text=pink[200], link=pink[300], focus=pink[300],
-                  nav_bg=nB[990], nav_text=nB[100], nav_ind=pink[400], logo=PINK),
-        tokens="Only <code>--tkc-brand-hue</code> and the brand chroma profile change. Status red (hue 27) sits close to pink: danger and primary buttons need a non-colour cue (label, icon)."))
-
-    # --- Option C: brand-guide palette, pink + grey
-    opts.append(dict(
-        key="c", name="C. Brand guide: grey UI, pink accent",
-        blurb="Use the two brand-guide colours. Neutrals are pure grey (guide grey is #737373). Primary buttons are charcoal. Pink carries links, focus ring, selection tint and the logo. Pink is the accent, not the button colour.",
-        light=dict(surface=nC[0], canvas=nC[50], text=nC[900], primary=nC[800], hover=nC[900], on=nC[0],
-                   subtle_bg=pink[50], subtle_text=pink[800], link=pink[700], focus=pink[600],
-                   nav_bg=nC[900], nav_text=nC[50], nav_ind=pink[400], logo=PINK),
-        dark=dict(surface=nC[950], canvas=nC[975], text=nC[50], primary=nC[100], hover=nC[200], on=nC[950],
-                  subtle_bg=pink[950], subtle_text=pink[200], link=pink[300], focus=pink[300],
-                  nav_bg=nC[990], nav_text=nC[100], nav_ind=pink[400], logo=PINK),
-        tokens="Neutral ramp loses its brand tint (chroma 0). <code>primary-*</code> maps to neutral steps. <code>text-link-*</code>, <code>focus-ring</code>, <code>primary-subtle-*</code> and the navbar indicator map to a new pink ramp. These tokens are already separate in <code>tokens.json</code>; only their mapping changes."))
     return opts
 
 def pairs(r):
@@ -206,46 +177,22 @@ CSS = '''
 .bo-link:focus-visible{outline:var(--tkc-focus-ring-width) solid var(--bo-focus);outline-offset:var(--tkc-focus-ring-offset)}
 .bo-pill{background:var(--bo-subtle-bg);color:var(--bo-subtle-text);border-radius:var(--tkc-radius-pill);padding:var(--tkc-space-1) var(--tkc-space-3);font-size:var(--tkc-font-size-xs);font-weight:var(--tkc-font-weight-semibold)}
 .bo-verdict{font-size:var(--tkc-font-size-sm);color:var(--tkc-text-muted);margin:var(--tkc-space-2) 0 0}
-.bo-reco{border:1px solid var(--tkc-primary-subtle-border);background:var(--tkc-primary-subtle-bg);color:var(--tkc-primary-subtle-text);border-radius:var(--tkc-radius-lg);padding:var(--tkc-space-4);margin-top:var(--tkc-space-6);max-width:62rem}
-.bo-reco h4{margin:0 0 var(--tkc-space-2)}
-.bo-reco ul{margin:var(--tkc-space-2) 0 0;padding-left:1.25rem}
 @media (max-width:40rem){.bo-chips{grid-template-columns:repeat(2,minmax(0,1fr))}}
 '''
 
 def section():
     opts = build_options()
     parts = [f'<style id="bo-style">{CSS}</style>',
-             '<section class="sec" id="brand-options"><h2>Brand colour options (SUITE-180, proposal) <small>Three ways to bring the TKC Digital brand into the UI. Nothing here is applied: <code>tokens.json</code> is unchanged until the owner picks an option. Previews use local <code>--bo-*</code> variables scoped to this section.</small></h2>',
-             '<div class="alert-brand tkc-alert tkc-alert--info" role="note"><svg aria-hidden="true" class="i"><use href="#i-info"/></svg><div><b>Source of the brand colours</b>The logo pink is <code>#e95295</code> (oklch 0.66 0.195 356.5). The 2024 brand guide lists pink <code>#EA4D94</code> and grey <code>#737373</code> (with grey tints from 10% to 90%) and the typeface Roboto. The two pinks differ by less than 2 steps per channel. The logo file wins for the logo. The navbar and login previews use the real logo file (<code>company_logo.svg</code>, one colour, <code>currentColor</code>) in the logo pink.</div></div>',
-             '<h3 class="sub">Raw brand colours: why a darker step is needed</h3>',
-             '<p class="note">The brand pink and grey cannot be used as-is for text or button labels. This is true for every option.</p>',
-             raw_table(build_options()[0]["light"]["canvas"])]
+             '<section class="sec" id="brand-options"><h2>Brand colour (SUITE-180, approved: option A) <small>The UI keeps the teal primary. The brand pink is used for the logo only, through <code>--tkc-logo</code>. Options B and C rejected 2026-11-21 (commit e5f6f2d8a). Previews use local <code>--bo-*</code> variables scoped to this section.</small></h2>',
+             '<div class="alert-brand tkc-alert tkc-alert--info" role="note"><svg aria-hidden="true" class="i"><use href="#i-info"/></svg><div><b>Source of the brand colours</b>The logo pink is <code>#e95295</code> (oklch 0.66 0.195 356.5). The 2024 brand guide lists pink <code>#EA4D94</code> and grey <code>#737373</code> and the typeface Roboto. The logo file wins for the logo. The navbar and login previews use the real logo file (<code>company_logo.svg</code>, one colour, <code>currentColor</code>) in the logo pink.</div></div>',
+             '<h3 class="sub">Raw brand colours: why pink is for the logo only</h3>',
+             '<p class="note">The brand pink and grey cannot be used as-is for text or button labels.</p>',
+             raw_table(opts[0]["light"]["canvas"])]
     for o in opts:
         tbl = table(o)
         parts.append(f'<div class="bo-opt" id="bo-{o["key"]}"><h4>{o["name"]}</h4><p>{o["blurb"]}</p><p class="note"><b>Token impact.</b> {o["tokens"]}</p>')
         parts.append('<div class="bo-panes">' + pane(o, "light") + pane(o, "dark") + '</div>')
         parts.append(tbl)
         parts.append(f'<p class="bo-verdict">{"All pairs pass WCAG 2.2 AA." if o["fails"] == 0 else str(o["fails"]) + " pair(s) fail. See the rows marked Fail."}</p></div>')
-    parts.append(reco(opts))
     parts.append('</section>')
     return "\n".join(parts), opts
-
-def reco(opts):
-    rr = {o["key"]: o for o in opts}
-    def m(k, mode, label):
-        for lab, f, b, mn in pairs(rr[k][mode]):
-            if lab == label:
-                return ratio_of(f, b)
-    b_btn = m("b", "light", "Label on primary button")
-    c_link = m("c", "light", "Link text on surface")
-    c_btn = m("c", "light", "Label on primary button")
-    logo = m("c", "light", "Logo pink vs login surface (graphic 3:1)")
-    return f'''<div class="bo-reco" role="note"><h4>Recommendation: option C (brand guide: grey UI, pink accent)</h4>
-<ul>
-<li><b>It is the brand.</b> The guide has two colours, pink and grey. C is the only option that uses both as the guide does. A keeps a teal that is not in the brand. B uses pink for everything.</li>
-<li><b>No clash with status colours.</b> Pink (hue 356) sits next to danger red (hue 27). In B a pink Save button and a red Delete button look alike to many users. In C buttons are charcoal and pink marks links, focus and selection.</li>
-<li><b>Contrast margin.</b> All {sum(len(pairs(o[mode])) for o in opts for mode in ("light","dark"))} pairs pass in all three options. B has the thinnest margin: its white label on the pink button is only {b_btn:.2f}:1 (needs 4.5:1). C has {c_btn:.2f}:1 on the button and {c_link:.2f}:1 for pink links.</li>
-<li><b>Logo.</b> In every option the logo uses a new <code>--tkc-logo</code> token (the logo pink), not <code>primary-default</code>. Pink on white is {logo:.2f}:1. That passes the 3:1 graphic rule but not the text rule. Never set pink text on white.</li>
-<li><b>Cost.</b> C changes token mapping only: neutrals lose the teal tint, <code>primary-*</code> maps to neutral steps, links, focus ring and subtle colours map to a new pink ramp. No component change is needed. If the owner wants a more brand-forward look, B is the fallback.</li>
-<li><b>Open point.</b> The brand guide names Roboto. The draft system uses IBM Plex Sans. This is a separate decision and is not part of SUITE-180.</li>
-</ul></div>'''

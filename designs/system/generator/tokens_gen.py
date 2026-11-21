@@ -43,6 +43,11 @@ prim={}   # name -> (css value, hex)
 def add(name, l,c,hue_expr, hue_num):
     prim[name]=(f"oklch({l:.3f} {c:.3f} {hue_expr})", to_hex(oklch_to_rgb(l,c,hue_num)))
 for s in STEPS: add(f"color-brand-{s}",L[s],CB[s],"var(--tkc-brand-hue)",BRAND_HUE)
+# TKC Digital logo pink (SUITE-59, SUITE-180): fixed hue, does not follow --tkc-brand-hue. Graphic/logo use only, never text.
+PINK_HEX = "#e95295"          # sRGB of the logo file
+PINK_H = 356.5                # oklch hue of the logo pink
+PINK = (0.660, 0.195, PINK_H)  # the logo pink as oklch (round trip of #e95295)
+add("color-brand-pink",PINK[0],PINK[1],f"{PINK_H:g}",PINK_H)
 for s,l in NEUT.items(): add(f"color-neutral-{s}",l,0 if s==0 else 0.009,"var(--tkc-brand-hue)",BRAND_HUE)
 prim["color-neutral-0"]=("#ffffff","#ffffff")
 for n,h in HUES.items():
@@ -116,6 +121,8 @@ S("navbar-indicator","brand-300","brand-400")
 S("navbar-search-bg","brand-800","neutral-900")
 S("navbar-search-text","neutral-0","neutral-100")
 S("navbar-search-placeholder","brand-200","neutral-400")
+# logo (SUITE-180): colour of the .logo mark only; never text, borders, focus rings or buttons
+S("logo","brand-pink","brand-pink")
 # header actions
 S("header-action-bg","neutral-0","neutral-900")
 S("header-action-text","neutral-800","neutral-100")
@@ -171,6 +178,8 @@ pairs=[
 ("Focus ring vs surface (UI 3:1)","focus-ring","surface-default",3),
 ("Focus ring vs canvas (UI 3:1)","focus-ring","surface-canvas",3),
 ("Focus ring vs navbar (UI 3:1)","navbar-indicator","navbar-bg",3),
+("Logo vs navbar (graphic 3:1)","logo","navbar-bg",3),
+("Logo vs raised surface (graphic 3:1)","logo","surface-raised",3),
 ("Table header text on header","table-header-text","table-header-bg",4.5),
 ("Body text on row hover","text-default","table-row-hover",4.5),
 ("Body text on row selected","text-default","table-row-selected",4.5),
