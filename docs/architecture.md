@@ -27,7 +27,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
 From `docs/assessment/customization-feasibility.md` §9:
 - **D1** Extension `extensions/tkc/` scaffolded from `defaultExt` (key/remote `tkc`); `defaultExt` stays disabled.
 - **D2** TKC fields are extension vardefs on the **main table** — no Studio fields, no `_cstm`.
-- **D3** Naming: fields `<name>_c` (import key `osc_id_c`), lists `tkc_<name>_list`, labels `LBL_TKC_<NAME>`, modules `tkc_<Name>`, relationships `tkc_<lhs>_<rhs>`, files `tkc_<topic>.php`.
+- **D3** Naming (refined by A8, see `.claude/rules/suitecrm-customization.md` § Database): fields on core modules `tkc_<name>_c` (import key `osc_id_c`), lists `tkc_<name>_list`, labels `LBL_TKC_<NAME>`, modules `tkc_<Name>`, relationships `tkc_<lhs>_<rhs>`, files `tkc_<topic>.php`.
 - **D4** One versioned detailviewdefs per redesigned module (detail = edit = create; edit differences via `displayLogic` modes).
 - **D5** Symfony parameter changes as read-modify-write deltas in `extensions/tkc/config/*.php`.
 - **D6** One token generator → Angular theme entry + legacy Dawn override.
@@ -70,6 +70,14 @@ Not tested: the Studio UI itself, the Edit view and Quick create files, and a br
 | Patch | File | Reason | Issue | Re-check on upgrade |
 |---|---|---|---|---|
 | — | | | | |
+
+## Overrides register
+This register lists every file that overrides a core file or a core parameter. Re-check every row at each upstream merge. Add a row in the same story that adds the override.
+Type values: viewdef full copy · core list override · core vardef override · D5 parameter delta.
+
+| File | Module | Type | Reason | Upstream source to diff | Check at merge |
+|---|---|---|---|---|---|
+| — | | | | | |
 
 ## Environments
 Local: see `LOCAL_SETUP.md`. Azure: phase later — `docs/environments.md`.

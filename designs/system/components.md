@@ -174,7 +174,7 @@ One layout for detail, edit and create (decision D4 and S3). Edit differences co
 
 - **States.** Entry default; collapsed (long text, "Show more" ghost button, `aria-expanded`); draft (dashed outline + "Draft" pill); failed send (danger alert under the entry with Retry). Sort newest first by default, toggle in the thread header; filter chips by type (All, Customer, Agent, Notes).
 - **Tokens.** `thread-*`, `thread-meta-text`, `surface-default`, `border-default`, `text-*`, `radius-md`, `space-*`.
-- **Maps to.** A: `_record-thread.scss`, `_case-updates.scss`, `_squire-editor.scss`, `_uploaded-file.scss`, `_drafts.scss`, the Case Updates subpanel and `AOP_Case_Updates`. **Cost.** The entry-type and channel fields, the composer switch, quick-text buttons and CC/BCC are Angular work and backend fields (`entry_type_c`, `channel_c`, see `docs/osc-mapping/incident.md` §2.1). Restyling only the core update list (no new behaviour) is CSS only and keeps the type via the existing `internal` flag (agent vs note).
+- **Maps to.** A: `_record-thread.scss`, `_case-updates.scss`, `_squire-editor.scss`, `_uploaded-file.scss`, `_drafts.scss`, the Case Updates subpanel and `AOP_Case_Updates`. **Cost.** The entry-type and channel fields, the composer switch, quick-text buttons and CC/BCC are Angular work and backend fields (`tkc_entry_type_c`, `tkc_channel_c`, see `docs/osc-mapping/incident.md` §2.1). Restyling only the core update list (no new behaviour) is CSS only and keeps the type via the existing `internal` flag (agent vs note).
 
 ## 12. Empty states and loading
 
