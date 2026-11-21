@@ -88,6 +88,12 @@ mv "${css}.css.tmp" "${css}.css"
 step 7 "scrm:copy-legacy-assets"
 $DC console scrm:copy-legacy-assets
 
+step 7b "cache:clear (so the console knows new or changed tkc commands and services)"
+# The prod container cache lists the console commands. Without this clear, the first build that adds a tkc:* command
+# fails with "no commands defined" (found in SUITE-181). Step 12 clears again after the config and version change.
+$DC exec -T app chown -R www-data:www-data cache logs var
+$DC console cache:clear
+
 step 8 "tkc:repair --dry-run (review the SQL)"
 $DC console tkc:repair --dry-run
 if [ "$DRY_RUN_ONLY" -eq 1 ]; then
