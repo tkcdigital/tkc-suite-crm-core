@@ -25,7 +25,7 @@ See [`LOCAL_SETUP.md`](../LOCAL_SETUP.md) for the full command list (init, build
 ## Files
 | File | Purpose |
 |---|---|
-| `compose.yaml` (repo root) | services `app` and `db`, named volumes, `DATABASE_URL` (serverVersion 8.0.46) |
+| `compose.yaml` (repo root) | services `app`, `db` and `mailpit` (dev mail sink), named volumes, `DATABASE_URL` (serverVersion 8.0.46) |
 | `docker/php/Dockerfile`, `php.ini` | image; volume mount points owned by `www-data` |
 | `docker/mysql/my.cnf` | utf8mb4, strict mode |
 | `docker/init.sh` | creates `docker/.env` (random dev-only passwords) |
@@ -45,3 +45,13 @@ See [`LOCAL_SETUP.md`](../LOCAL_SETUP.md) for the full command list (init, build
 docker/dc.sh up -d | down | logs -f app | sh
 docker/dc.sh down -v      # also deletes the DB and container volumes (destructive)
 ```
+
+## Mail sink (Mailpit)
+- Service `mailpit` (`axllent/mailpit:v1.21`) catches all outgoing email. Web page: http://127.0.0.1:8025
+  (`MAILPIT_UI_PORT`). The page has no login, so it listens on 127.0.0.1 only.
+- SMTP port 1025 is not published. Only the `app` container reaches it (host name `mailpit`).
+- No volume: a restart deletes all held mail. Held mail can contain personal data.
+- Point SuiteCRM at the sink once per database: `docker/dc.sh console tkc:mail:use-sink [--dry-run]`.
+- The sink host name is one config value: env `TKC_MAIL_SINK_HOSTS` (default `mailpit`) -> parameter `tkc.mail.sink_hosts`.
+- Host ports: `APP_PORT` (8081), `DB_PORT` (3307), `MAILPIT_UI_PORT` (8025). Set them for a second instance with `-p <name>`.
+- This compose file and the command are for DEV only. They never go to Azure.
