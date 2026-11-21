@@ -23,6 +23,85 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - **Upgrade risk:** the index-1 replacement depends on the order of `styles` in `core/angular/base-angular.json`. Re-check at each upstream merge. The import path to core `style.scss` must also stay valid.
 - Option (b) (runtime stylesheet injection) was not tried because (a) works.
 
+### Theme generation (D6, SUITE-56)
+- `scripts/theme/build_theme.py` (Python standard library only) reads `designs/system/tokens.json`. It writes three files:
+  - `extensions/tkc/app/src/theme/_tkc-tokens.scss`
+  - `extensions/tkc/legacy-theme/00-tokens.generated.css`
+  - `public/legacy/custom/themes/suite8/css/Dawn/style.css` (the legacy token file plus the hand-written `extensions/tkc/legacy-theme/*.css`, joined in name order)
+- Never edit a generated file.
+- Light tokens are on `:root`. Dark tokens are only under `:root[data-theme="dark"]` (X3). The legacy output uses px (X4).
+- `build_theme.py --check` fails in these cases:
+  - A generated file differs from the generator output.
+  - A hand-written file has a colour literal (hex, `rgb()`, `rgba()`, `hsl()`, `hsla()`).
+  - A legacy file has `calc()` with ` + ` (X6).
+- The sentinel `--tkc-theme-build` holds a hash of `tokens.json`.
+- Fonts: IBM Plex Sans 400/500/600/700 and IBM Plex Mono 400 (Latin1, OFL licence; npm `@ibm/plex-sans` 2.0.0, `@ibm/plex-mono` 2.5.0). They are self-hosted in `public/legacy/custom/themes/suite8/fonts/` (X5). Both UIs use the URL path `/legacy/custom/themes/suite8/fonts/`.
+
+### Angular theme (SUITE-57, SUITE-58, SUITE-59)
+- The S1 entry `extensions/tkc/app/src/theme/tkc-theme.scss` (`styles[1]` of the shell build) loads, in this order: the core theme, the generated `_tkc-tokens.scss`, then `_tkc-overrides.scss`.
+- `_tkc-overrides.scss` is an index of the partials in `extensions/tkc/app/src/theme/overrides/`:
+  - SUITE-57: `_base`, `_navbar`, `_buttons`, `_fields`
+  - SUITE-58: `_tabs`, `_panels`, `_list`, `_subpanels`, `_alerts`, `_modals`
+  - SUITE-59: `_login`
+- Rules in a partial use core selectors and `var(--tkc-*)` only (X8). Use `!important` only against a core `!important`.
+- Root-absolute font URLs pass through the Angular builder.
+- `scripts/theme/check_bundle.py` (build step 4b) fails in these cases: the newest `public/dist/styles*.css` has no sentinel, or the TKC `.navbar` rule is not after the core rule.
+- Upgrade risks (re-check at each upstream merge):
+  - The `styles[1]` index.
+  - Core selectors that the SUITE-58 partials use: `.tabs-layout .tab-link`, `.light-table .list-view-table`, `.sub-panel`, `.panel-card`, `.alert-fixed`. The ng-bootstrap library supplies the modal classes.
+  - The core "Lato" rule (`abstracts/_typography.scss:30`).
+- Known: the build warns that the initial bundle is over budget (10.78 MB against 9.44 MB). The cause is not yet checked.
+
+### Legacy theme (SUITE-60)
+- `build_theme.py` writes `public/legacy/custom/themes/suite8/css/Dawn/style.css`. Nobody edits it by hand.
+- `SugarTheme::getCSSURL` adds this file after the core theme CSS. It minifies the file with cssmin and caches the result in `public/legacy/cache/themes/`. cssmin keeps custom properties, `oklch()`, `@media` and `unicode-range`.
+- Hand-written files style `body`, not `html` (core sets `html{font-size:10px}`). They use px and no `calc()` with `+`.
+- cssmin runs only when the cached `style.css` does not exist. `tkc:repair` clears only `pathCache.php`. Build step 12 therefore deletes the cached file (see `LOCAL_SETUP.md` § Theme).
+- No change outside `public/legacy/custom/`.
+
+### Login logo (SUITE-59)
+- The Angular logo (`scrm-logo-ui` uses `scrm-image image="company_logo"`, also in the navbar) comes from `public/legacy/custom/themes/suite8/images/company_logo.svg`. The file is a placeholder until the owner supplies the real logo.
+- SVG wins over PNG (`image_supported_types.yaml`). The custom suite8 path wins (`image_paths.yaml`).
+- The SVG uses `fill="currentColor"` because svg-icon inlines it. `_login.scss` sets the colour from tokens and overrides the core grey fill on `rect` and `text`.
+- After a logo change, run `console cache:clear` (theme-images cache).
+- No core patch. "Supercharged by SuiteCRM" stays in the core footer (AGPL section 7(b)).
+- Known core limits: the login form has no visible input labels. The "Forgot password" link has no `href`.
+
+## Build chain (SUITE-44)
+- `scripts/build.sh` is the single build entry point. It runs on the host and calls the app container through `docker/dc.sh`.
+- Steps: 0 preflight; 0b `build_theme.py --check`; 1-5 Angular on the host (`yarn install --immutable`, `merge-angular-json`, `build:core`, `build:shell`, `build:extension tkc`); 4b `check_bundle.py`; 6 compile the core Dawn CSS with `pscss`; 7 `scrm:copy-legacy-assets`; 8 `tkc:repair --dry-run`; 9 mandatory confirmation; 10 `tkc:repair --execute`; 11 `tkc:config:apply`; 12 `cache:clear` and delete the cached legacy theme CSS; 13 smoke test (HTTP 200).
+- Exit code 1: the first error, with the step name. Exit code 2: no confirmation is possible.
+- Flags: `--yes` (runs the repair SQL unread; reviewed deploys only), `--skip-core`, `--skip-frontend`, `--dry-run-only`.
+- `docker/dc.sh console` adds `-T` when stdin is not a TTY.
+- Re-check at each upstream merge: the script names in the root `package.json`, the command `scrm:copy-legacy-assets`, and the Dawn SCSS path `public/legacy/themes/suite8/css/Dawn/style.scss`.
+
+## Mail sink (dev, SUITE-45)
+- The dev Docker environment has a `mailpit` service (Mailpit v1.21). It catches all outgoing email.
+- The web UI listens on 127.0.0.1 only (`MAILPIT_UI_PORT`, default 8025) because it has no login. SMTP port 1025 is not published. There is no volume: a restart deletes the held mail.
+- The sink host names are one config value: env `TKC_MAIL_SINK_HOSTS` (default `mailpit`, comma-separated) gives the parameter `tkc.mail.sink_hosts` (`extensions/tkc/config/tkc_mail.yaml`).
+- `App\Extension\tkc\backend\Mail\MailSinkPolicy` has `isSinkHost()`, `filterNonSink()` and `findNonSinkOutboundAccounts()`. The import guard (SUITE-79) uses it to check all outbound accounts (system, system-override, user).
+- `tkc:mail:use-sink` sets the system outbound account to the sink. It is for DEV only and is idempotent.
+- The compose file and the command never go to Azure.
+- The compose host ports are parameters (`APP_PORT`, `DB_PORT`, `MAILPIT_UI_PORT`). A second instance can run with `-p <name>` (X7). See `docs/environments.md`.
+
+## Tests (SUITE-46)
+- `scripts/test.sh [--php] [--ng] [--theme]` runs the TKC tests.
+- PHP: PHPUnit 10 in the app container. Config `extensions/tkc/phpunit.xml.dist` has the suites `unit` and `contract`. The bootstrap `backend/Tests/bootstrap.php` loads only `vendor/autoload.php`, not `tests/bootstrap.php`.
+- NG: Karma with ChromeHeadless on the host (needs Google Chrome), project `tkc`. The spec build uses `extensions/tkc/app/webpack.config.spec.js`, because module federation breaks Karma. There is no `main` or `test.ts`: Angular 18 finds the specs through `include`.
+- THEME: `unittest` of `scripts/theme/tests`, then `check_bundle.py`. It fails when `public/dist` is not built.
+- Test directories are named `Tests`. The file `config/core_services.yaml` excludes `Tests` from `App\Extension\` autowiring.
+- `extensions/tkc/app/tsconfig.spec.json` sets its own `typeRoots`, because the `typeRoots` in the root `tsconfig.json` do not resolve. It is not a core override.
+- Known issue: SUITE-176 (see Known issues).
+
+## Metadata contract test (SUITE-47)
+- `extensions/tkc/backend/Tests/Contract/ModuleMetadataContractTest.php` checks the layouts of each module in `Tests/Contract/modules.php` against its vardefs and dropdown lists.
+- Rules R1 to R4 are in the pure class `Metadata/Contract/MetadataContractChecker`. The loader `Metadata/Contract/LegacyMetadataLoader` reads metadata only, custom layouts first.
+- The test boots `App\Kernel` in `dev`, because the `test` env does not boot (SUITE-176). It loads `.env` and `.env.local` into the process.
+- Precondition: `tkc:repair` has run.
+- Each module story adds its module to `modules.php`.
+- Core-layout violations go in `known-core-violations.php` with a reason. The list is empty now.
+- Upgrade risk: medium, on purpose.
+
 ## Approved decisions (2026-11-20)
 From `docs/assessment/customization-feasibility.md` §9:
 - **D1** Extension `extensions/tkc/` scaffolded from `defaultExt` (key/remote `tkc`); `defaultExt` stays disabled.
@@ -64,6 +143,7 @@ Not tested: the Studio UI itself, the Edit view and Quick create files, and a br
 ## Console commands (D10, D12)
 - `php bin/console tkc:repair [--dry-run|--execute] [--module=<Module>]`: Quick Repair and Rebuild from the CLI. Dry run is the default and shows the SQL.
 - `php bin/console tkc:config:apply [--dry-run]`: merges `scripts/config/config_override.template.php` (secret-free) into `public/legacy/config_override.php`.
+- `php bin/console tkc:mail:use-sink [--dry-run]`: sets the system outbound account to the mail sink. DEV only, idempotent (SUITE-45).
 - Code in `extensions/tkc/backend/Console/` and `Config/`. Details in `scripts/config/README.md`.
 
 ## Core patches
@@ -78,6 +158,12 @@ Type values: viewdef full copy · core list override · core vardef override · 
 | File | Module | Type | Reason | Upstream source to diff | Check at merge |
 |---|---|---|---|---|---|
 | — | | | | | |
+
+## Known issues
+| Issue | Description | Effect |
+|---|---|---|
+| SUITE-176 | The Symfony `test` env does not boot. The core file `config/packages/test/framework.yaml` uses the removed option `storage_id`. | The contract test boots the `dev` env. Kernel-based PHPUnit tests cannot use the `test` env. |
+| SUITE-175 | `composer.lock` is not decided. Blocked on the owner decision (A/B). | Open. |
 
 ## Environments
 Local: see `LOCAL_SETUP.md`. Azure: phase later — `docs/environments.md`.

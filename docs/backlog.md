@@ -59,6 +59,16 @@
 | Projects (`Support$Project`) | **Out of scope** | Not migrated; no Projects grid on Accounts/Cases. |
 | UI language | English (en_us) | — |
 
+## Sprint 0 progress (2026-11-21)
+- Implemented on branch `sprint/0`: SUITE-44 (build chain), 45 (mail sink), 46 (tests), 47 (metadata contract test, Accounts first), 48, 49, 56 (theme generator), 57 (Angular theme), 58 (Angular overrides), 59 (login logo), 60 (legacy theme).
+- Documents are synced (step 5). Details are in `docs/architecture.md`, `docs/admin-guide.md`, `docs/environments.md` and `LOCAL_SETUP.md`.
+- Gates still open:
+  - QA browser checks need a login.
+  - SUITE-175 (`composer.lock`): owner decision A/B.
+  - SUITE-176 (bug): the Symfony `test` env does not boot.
+  - The real logo comes from the owner. A placeholder is in place.
+- Spikes SUITE-51 to SUITE-55 are not started.
+
 ## Open questions
 - Base currency: EUR (fresh install) — confirm.
 - OSC environments to read from (test/reference site names) and who provides the read-only API user.

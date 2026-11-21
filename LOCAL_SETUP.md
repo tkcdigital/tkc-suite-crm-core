@@ -69,11 +69,12 @@ Exit codes: `0` success; `1` a step failed (the script prints `FAILED at step n:
 ## Mail sink
 All outgoing email goes to Mailpit. Nothing leaves the dev machine.
 1. `docker/dc.sh up -d` starts the `mailpit` container. The web page is http://127.0.0.1:8025.
+   If port 8025 is in use, set `MAILPIT_UI_PORT` (for example `MAILPIT_UI_PORT=8026`) before you start the containers. Then use that port in the URL.
 2. Point the SuiteCRM system outbound account at the sink (once per database, safe to repeat):
    `docker/dc.sh console tkc:mail:use-sink --dry-run`, then `docker/dc.sh console tkc:mail:use-sink`.
    A second run prints "No change".
 3. Test: Admin > Email Settings > send a test email to `test@example.com`. The message shows in Mailpit.
-4. API check: `curl -s http://127.0.0.1:8025/api/v1/messages`.
+4. API check: `curl -s http://127.0.0.1:8025/api/v1/messages` (use your `MAILPIT_UI_PORT` value).
 
 Rules: the SMTP port 1025 is not published to the host. Mailpit keeps no data after a restart.
 The sink host name is the env value `TKC_MAIL_SINK_HOSTS` (default `mailpit`, parameter `tkc.mail.sink_hosts`).
@@ -112,6 +113,7 @@ Never use real OSC data in a test.
 The design tokens in `designs/system/tokens.json` feed both UIs. Hand-written legacy rules are in
 `extensions/tkc/legacy-theme/*.css` (`10-base.css`, `20-buttons.css`, `30-fields.css`). Use tokens only; no hex or `rgb()`.
 Do not edit `public/legacy/custom/themes/suite8/css/Dawn/style.css`. The generator writes it.
+`scripts/build.sh` does these steps for you (steps 0b and 12).
 
 1. Join the tokens and the partials into the legacy theme file:
    ```

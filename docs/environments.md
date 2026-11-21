@@ -7,6 +7,18 @@
 | Local dev (Docker, only dev setup) | Compose: PHP 8.3 + Apache, MySQL 8.0.46 | http://localhost:8081 (DB 127.0.0.1:3307) | `LOCAL_SETUP.md`, `docker/README.md`, `docker/dc.sh up -d`; stop: `docker/dc.sh down`; reset: `docker/dc.sh down -v` then reinstall |
 | Azure (later phase) | resource group `TKC-SUITE-CRM-RG` | — | to be defined by the azure-engineer |
 
+## Local dev services and ports
+| Service | Host port | Parameter | Default |
+|---|---|---|---|
+| App (Apache) | `APP_PORT` | `APP_PORT` | 8081 |
+| MySQL (`db`) | `DB_PORT` | `DB_PORT` | 3307 |
+| Mailpit web UI (`mailpit`, SUITE-45) | `MAILPIT_UI_PORT` | `MAILPIT_UI_PORT` | 8025 |
+
+- Mailpit catches all outgoing email in dev. The web UI listens on 127.0.0.1 only. SMTP port 1025 is not published. Mailpit keeps no data after a restart. See `docs/architecture.md` § Mail sink.
+- If a default port is in use, set the parameter in the environment before `docker/dc.sh up -d`. Example: `MAILPIT_UI_PORT=8026`.
+- Second instance (X7): run a second compose project with `-p <name>` and different values for the three port parameters. Each project has its own database volume.
+- The compose file and `tkc:mail:use-sink` are for dev only. They never go to Azure.
+
 ## Azure access
 - Service principal: `tkc-suite-crm-manager-sp`, role **Contributor** on `TKC-SUITE-CRM-RG` only.
 - Credentials: Proton Pass vault `TKC-SUITE` (see `.claude/rules/secrets.md`); used only by the azure-engineer.
