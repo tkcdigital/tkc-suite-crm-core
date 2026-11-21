@@ -1,0 +1,30 @@
+/* SUITE-60 hand partial: base typography, colours, links, focus ring (legacy Dawn).
+   Tokens only. Style on body, not html (X4: core sets html font-size 10px). */
+
+body {
+  font-family: var(--tkc-font-family-sans);
+  font-size: var(--tkc-font-size-md);
+  line-height: var(--tkc-line-height-normal);
+  font-weight: var(--tkc-font-weight-regular);
+  color: var(--tkc-text-default);
+  background-color: var(--tkc-surface-canvas);
+}
+
+a {
+  color: var(--tkc-text-link-default);
+}
+
+a:hover,
+a:focus {
+  color: var(--tkc-text-link-hover);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
+  outline-offset: var(--tkc-focus-ring-offset);
+}

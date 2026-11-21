@@ -457,3 +457,140 @@
   src: url("/legacy/custom/themes/suite8/fonts/IBMPlexMono-Regular-Latin1.woff2") format("woff2");
   unicode-range: U+0020-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+FB01-FB02;
 }
+
+/* ==== 10-base.css ==== */
+/* SUITE-60 hand partial: base typography, colours, links, focus ring (legacy Dawn).
+   Tokens only. Style on body, not html (X4: core sets html font-size 10px). */
+
+body {
+  font-family: var(--tkc-font-family-sans);
+  font-size: var(--tkc-font-size-md);
+  line-height: var(--tkc-line-height-normal);
+  font-weight: var(--tkc-font-weight-regular);
+  color: var(--tkc-text-default);
+  background-color: var(--tkc-surface-canvas);
+}
+
+a {
+  color: var(--tkc-text-link-default);
+}
+
+a:hover,
+a:focus {
+  color: var(--tkc-text-link-hover);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
+  outline-offset: var(--tkc-focus-ring-offset);
+}
+
+/* ==== 20-buttons.css ==== */
+/* SUITE-60 hand partial: buttons (legacy Dawn). Tokens only. */
+
+.btn,
+input.button,
+input[type="button"],
+input[type="submit"],
+button.button {
+  font-family: var(--tkc-font-family-sans);
+  font-size: var(--tkc-font-size-md);
+  font-weight: var(--tkc-font-weight-medium);
+  border-radius: var(--tkc-radius-md);
+}
+
+.btn-primary,
+input.button.primary,
+input[type="submit"].button.primary {
+  background-color: var(--tkc-primary-default);
+  border-color: var(--tkc-primary-default);
+  color: var(--tkc-primary-on);
+}
+
+.btn-primary:hover,
+input.button.primary:hover {
+  background-color: var(--tkc-primary-hover);
+  border-color: var(--tkc-primary-hover);
+  color: var(--tkc-primary-on);
+}
+
+.btn-primary:active,
+input.button.primary:active {
+  background-color: var(--tkc-primary-active);
+  border-color: var(--tkc-primary-active);
+}
+
+.btn-default,
+input.button:not(.primary) {
+  background-color: var(--tkc-header-action-bg);
+  border: var(--tkc-border-width-thin) solid var(--tkc-header-action-border);
+  color: var(--tkc-header-action-text);
+}
+
+.btn-default:hover,
+input.button:not(.primary):hover {
+  background-color: var(--tkc-header-action-hover);
+  color: var(--tkc-header-action-text);
+}
+
+/* ==== 30-fields.css ==== */
+/* SUITE-60 hand partial: form fields (legacy Dawn, Admin forms). Tokens only. */
+
+.form-control,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+  font-family: var(--tkc-font-family-sans);
+  font-size: var(--tkc-font-size-md);
+  color: var(--tkc-field-text);
+  background-color: var(--tkc-field-bg-default);
+  border: var(--tkc-border-width-thin) solid var(--tkc-field-border-default);
+  border-radius: var(--tkc-radius-md);
+  box-shadow: none;
+}
+
+.form-control:hover,
+input[type="text"]:hover,
+input[type="password"]:hover,
+input[type="email"]:hover,
+input[type="number"]:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--tkc-field-border-hover);
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--tkc-field-border-focus);
+  box-shadow: none;
+}
+
+.form-control[disabled],
+.form-control[readonly],
+input[disabled],
+select[disabled],
+textarea[disabled] {
+  background-color: var(--tkc-field-bg-disabled);
+  color: var(--tkc-text-disabled);
+}
+
+::placeholder {
+  color: var(--tkc-text-placeholder);
+}
+
+label {
+  color: var(--tkc-field-label);
+}
