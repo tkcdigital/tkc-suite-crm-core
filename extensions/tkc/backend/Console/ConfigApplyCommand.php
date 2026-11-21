@@ -59,7 +59,8 @@ class ConfigApplyCommand extends Command
         }
 
         $content = $this->merger->render($this->merger->merge($current, $templateConfig));
-        $tmp = $target . '.tmp' . getmypid();
+        // The .php suffix makes Apache run a leftover temp file instead of serving the config as text (security F1).
+        $tmp = $target . '.tmp' . getmypid() . '.php';
         if (file_put_contents($tmp, $content) === false || !rename($tmp, $target)) {
             @unlink($tmp);
             $output->writeln('<error>Could not write ' . $target . '</error>');
