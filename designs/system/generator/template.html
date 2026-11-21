@@ -6,7 +6,7 @@
 <title>TKC Design System</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Roboto:wght@400..700&display=swap" rel="stylesheet">
 <style>
 /* ===== TOKENS (generated from tokens.json; do not edit by hand) ===== */
 /*TOKENS*/
@@ -463,7 +463,7 @@ main{max-width:var(--tkc-layout-content-max);margin:auto;padding:var(--tkc-space
 <!--BRANDOPTIONS-->
 
 
-<section class="sec" id="type"><h2>Typography <small>IBM Plex Sans (SIL OFL, self-hostable) with a system fallback. IBM Plex Mono for IDs and reference numbers. Tabular numbers everywhere in data.</small></h2>
+<section class="sec" id="type"><h2>Typography <small>Roboto (TKC brand font per the 2024 brand guide, variable 400-700, self-hosted in the app) with a system fallback. IBM Plex Mono for IDs and reference numbers. Tabular numbers everywhere in data.</small></h2>
 <div class="stage">
 <div class="type-row"><small>4xl · 36 / 1.2 · 700</small><span style="font-size:var(--tkc-font-size-4xl);font-weight:700;line-height:1.2">Case overview</span></div>
 <div class="type-row"><small>3xl · 28 / 1.2 · 700</small><span style="font-size:var(--tkc-font-size-3xl);font-weight:700;line-height:1.2">Section title</span></div>
@@ -477,7 +477,7 @@ main{max-width:var(--tkc-layout-content-max);margin:auto;padding:var(--tkc-space
 <div class="type-row"><small>mono · 13</small><span class="mono" style="font-size:var(--tkc-font-size-sm)">CS-260114-000231 · 0123456789</span></div>
 <div class="type-row"><small>tabular figures</small><span class="num" style="display:block;max-width:12rem">€ 1.234,50<br>€ 11.111,00<br>€ 999,95</span></div>
 </div>
-<p class="note">Fonts: <code>font-family-sans</code> = IBM Plex Sans, system-ui, Segoe UI, Roboto, Arial. Self-host the four WOFF2 files (400, 500, 600, 700) in the extension; the Google Fonts link on this page is for the style guide only. Base size is 14px (0.875rem). Minimum 12px. Never smaller than 11px, only for counters.</p>
+<p class="note">Fonts: <code>font-family-sans</code> = Roboto, system-ui, Segoe UI, Arial. The app self-hosts one variable Roboto WOFF2 per subset (latin, latin-ext; weights 400-700); mono stays IBM Plex Mono; the Google Fonts link on this page is for the style guide only. Base size is 14px (0.875rem). Minimum 12px. Never smaller than 11px, only for counters.</p>
 </section>
 
 <section class="sec" id="scales"><h2>Spacing, radius, border, shadow <small>4px base unit. Radii are small and consistent. Elevation is used sparingly (menus, modals, toasts).</small></h2>

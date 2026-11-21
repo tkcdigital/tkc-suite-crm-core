@@ -5,7 +5,7 @@ import os
 OUT=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..") + "/"
 
 # ---- non-colour primitives: name -> value (flat, css name = --tkc-<name>)
-FONT_SANS='"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+FONT_SANS='"Roboto", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif'
 FONT_MONO='"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
 nc = {
  "font-family-sans":FONT_SANS, "font-family-mono":FONT_MONO,
