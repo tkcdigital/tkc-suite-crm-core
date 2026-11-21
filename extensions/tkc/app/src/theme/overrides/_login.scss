@@ -1,1 +1,101 @@
-// Stub: owned by SUITE-59. Do not edit in SUITE-57.
+// Login page (SUITE-59). Core: .login-view, .login-form, .login-button (login.component.html).
+// The "Supercharged by SuiteCRM" notice sits in the core footer and stays visible (AGPL section 7(b)).
+.login-view {
+  background-color: var(--tkc-surface-canvas);
+  background-image: radial-gradient(circle at 15% 10%, var(--tkc-primary-subtle-bg), transparent 45%),
+    radial-gradient(circle at 85% 90%, var(--tkc-primary-subtle-border), transparent 40%);
+
+  .login-form {
+    padding: var(--tkc-space-8);
+    background-color: var(--tkc-surface-raised);
+    border: var(--tkc-border-width-thin) solid var(--tkc-border-default);
+    border-radius: var(--tkc-radius-xl);
+    box-shadow: var(--tkc-shadow-3);
+    font-family: var(--tkc-font-family-sans);
+    color: var(--tkc-text-default);
+  }
+
+  // Logo: the SVG uses currentColor.
+  .logo {
+    color: var(--tkc-primary-default);
+    display: inline-block;
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
+  .logo svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .logo svg rect {
+    fill: currentColor; // core sets a grey fill on svg shapes
+  }
+
+  .logo svg text {
+    fill: var(--tkc-primary-on);
+  }
+
+  input,
+  select {
+    min-height: var(--tkc-density-control-height);
+    color: var(--tkc-field-text);
+    background-color: var(--tkc-field-bg-default);
+    border: var(--tkc-border-width-thin) solid var(--tkc-field-border-default);
+    border-radius: var(--tkc-radius-md);
+    width: 100%;
+    margin-left: 0;
+  }
+
+  input:hover,
+  select:hover {
+    border-color: var(--tkc-field-border-hover);
+  }
+
+  input:focus,
+  select:focus {
+    border-color: var(--tkc-field-border-focus);
+  }
+
+  input::placeholder {
+    color: var(--tkc-text-placeholder);
+  }
+
+  .login-button {
+    width: 100%;
+    min-height: 2.75rem;
+    margin: var(--tkc-space-4) 0 0;
+    letter-spacing: var(--tkc-letter-spacing-normal);
+    border-radius: var(--tkc-radius-md);
+  }
+
+  .forgotten-password-link,
+  .back-link {
+    color: var(--tkc-text-link-default);
+  }
+
+  .forgotten-password-link:hover {
+    color: var(--tkc-text-link-hover);
+  }
+}
+
+// The navbar shows the same theme image: tile in the navbar text colour, text cut out in the navbar colour.
+.navbar .logo {
+  display: inline-block;
+  width: var(--tkc-size-icon-lg);
+  height: var(--tkc-size-icon-lg);
+  color: var(--tkc-navbar-text-default);
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  svg rect {
+    fill: currentColor;
+  }
+
+  svg text {
+    fill: var(--tkc-navbar-bg);
+  }
+}
