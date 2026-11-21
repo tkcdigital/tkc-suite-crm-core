@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-183-dependency-advisories`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`)
 
 ### Delivered
 
@@ -13,6 +13,7 @@
 | Design-system generator | `designs/system/generator/assemble.py` writes the committed `tkc-ds.css` header. Generated files come only from the committed generator. | SUITE-188 |
 | Font | The app uses Roboto (variable, weights 400 to 700), the brand guide font. IBM Plex Sans is removed. IBM Plex Mono 400 stays. Both fonts are self-hosted. The app loads no external font. The Roboto files are 72528 bytes. The old Plex Sans files were 87844 bytes. The design system and the 7 mockups use Roboto. | SUITE-189 |
 | Legacy asset version | The legacy CSS URL now changes with the theme and font content. The new command `tkc:legacy:asset-version` sets `js_custom_version`. The build runs it in step 11b. A browser hard reload is not needed after a theme change. The value is global, so it also versions the legacy JS, sprites and `yui.css`. | SUITE-181 |
+| Radio fields | In the Angular UI, a keyboard user can now reach radio fields (`radioenum`, `enum-radio`) with Tab. The arrow keys move between the options. The focused option shows a focus ring. Each radio group has an accessible name (`aria-label`; not yet checked with a screen reader). The empty option shows the label "Not set". The filter panel radios ("Direction") get the same behaviour. The legacy UI is not changed. | SUITE-186 |
 | Dependency fix | The lock files now hold fixed versions for the HIGH and critical advisories. Composer has 43 updates (19 packages with advisories, 24 transitive), all inside the upstream constraints. These include Symfony 6.4.50, Guzzle, Smarty, phpseclib, Flysystem, `jmespath.php` (critical) and TinyMCE 8.10.2 for the legacy UI. In `yarn.lock`, `dompurify` is 3.4.18 and the `tinymce` 7.2.1 entry is merged into 7.9.3. The Angular edit field no longer loads the TinyMCE `media` plugin. After a vendor update or an upstream release, the legacy asset URL changes, so browsers load new legacy JS. Some advisories stay accepted with conditions (see below). | SUITE-183 |
 
 ### What changes for admins and developers
@@ -31,6 +32,10 @@
 - The legacy UI gets the token but does not use it.
 - The brand guide `designs/TKC 2024 Brandguide 20240926.pptx` is a local reference. Git ignores it. It names the font Roboto. The font change is story SUITE-189. It is done (see "Delivered").
 - Follow-up SUITE-190: the font URLs do not change with the font content. It is not done.
+- SUITE-186 adds a thin Angular field override (`extensions/tkc/app/src/fields/radioenum/`) and a theme partial (`_radio.scss`). Both are in the Overrides register in `docs/architecture.md`. Check both at each upstream merge.
+- The build test `scripts/theme/check_bundle.py` has a new check: the last `.radioenum-input` radio rule must not set `display: none`.
+- New app string `LBL_TKC_NOT_SET` ("Not set"), in `public/legacy/custom/Extension/application/Ext/Language/en_us.tkc_app_strings.php`. Run Quick Repair and Rebuild (`tkc:repair`) so the string loads.
+- A list that feeds a Yes/No radio field must have the key `''` with an empty label as the first key (SUITE-63 AC 4). The component then shows "Not set".
 
 ## Sprint 0 — closed 2026-11-21
 
@@ -93,7 +98,7 @@ The spike code stays on `spike/*` branches. It is never merged. The obsolete dev
 | SUITE-176 | The Symfony `test` environment does not boot. A core config file uses a removed option. The contract test boots the `dev` environment instead. |
 | SUITE-181 | Resolved after Sprint 0. See "Since Sprint 0". |
 | SUITE-182 | Login fields have no visible labels. The "Forgot password" link has no `href`, so the keyboard cannot reach it. These are core limits. |
-| SUITE-186 | Radio fields (`radioenum`) do not take keyboard focus. |
+| SUITE-186 | Resolved after Sprint 0 for the Angular UI. See "Since Sprint 0". |
 | SUITE-180 | Resolved after Sprint 0. See "Since Sprint 0". |
 | Build size | The Angular initial bundle is over budget (10.78 MB against 9.44 MB). The cause is not checked. |
 | SUITE-183 | Resolved after Sprint 0. The security-officer approved it with conditions on 2026-11-21. The gate checks are in SUITE-156 (real-data import) and SUITE-164 (Azure deploy). The CI gate SUITE-163 enforces the Angular rules. See "Since Sprint 0". Accepted advisories stay open on conditions: `api-platform/core` (medium), `zbateson/mail-mime-parser` (high, no inbound mailbox with real data until SUITE-192), Angular 18 (`@angular/common`, `core`, `router`), npm `tinymce` 7.9.3, `dompurify` in `monaco-editor`, the 50 build-time packages and 3 abandoned packages. |
@@ -114,5 +119,5 @@ The spike code stays on `spike/*` branches. It is never merged. The obsolete dev
 | SUITE-193 | Azure upload storage. |
 | SUITE-184 | Build hardening. |
 | SUITE-185 | Layout differences from the design system. |
-| SUITE-186 | `radioenum` keyboard focus. It runs in Sprint 1, before SUITE-103. |
+| SUITE-186 | Done after Sprint 0. `radioenum` keyboard focus. See "Since Sprint 0". |
 | SUITE-187 | Open several records in tabs. Not scheduled. It needs an architect check and a mockup. |

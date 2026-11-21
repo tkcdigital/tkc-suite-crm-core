@@ -1,0 +1,23 @@
+// Radio inputs (SUITE-186). Core hides them with display: none, so the keyboard cannot reach them.
+// Visually hidden pattern: the inputs stay in the tab order and the accessibility tree.
+// The display reset is necessary: this rule has the same specificity as core _radio.scss:27 and wins by order.
+// check_bundle.py fails the build when the last rule for these inputs sets display: none.
+// Core: .radioenum-input (core _radio.scss). Focus ring on the label, tokens only.
+.radioenum-input input[type='radio'] {
+  display: inline-block;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.radioenum-input input[type='radio']:focus-visible + label {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
+  outline-offset: var(--tkc-focus-ring-offset);
+  border-radius: var(--tkc-radius-sm);
+}

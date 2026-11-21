@@ -66,7 +66,7 @@
 **Follow-ups (To Do):** SUITE-176, 178, 180 (done after Sprint 0), 181 (done after Sprint 0), 182, 183, 184, 185, 186 and 187.
 
 ### Sprint 1 starts with
-- SUITE-186 (`radioenum` keyboard focus). It comes before SUITE-103.
+- SUITE-186 (`radioenum` keyboard focus). It comes before SUITE-103. The build is done (theme partial `_radio.scss` and an Angular field override). See `docs/architecture.md` § Overrides register.
 - Sprint 1 goal (from `docs/plan/backlog-draft.md`): all TKC fields exist after Repair, the guarded import runs twice on synthetic data with the same counts, and gate A is open.
 - **Gate:** SUITE-183 (dependency advisories) is fixed in the lock files and passed the doc-sync gate and the security-officer sign-off with conditions (2026-11-21). The no-mailbox check is an AC on SUITE-156 and SUITE-164; the CI pattern check is an AC on SUITE-163. The accepted advisories and the Azure conditions apply to the first Azure deploy and to the real-data import (`docs/architecture.md` § Accepted dependency advisories, `docs/environments.md`).
 - SUITE-192 (`zbateson/mail-mime-parser` 3.x) blocks email-to-case. No inbound mailbox runs with real data until it closes.

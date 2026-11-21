@@ -13,6 +13,13 @@ See `.claude/rules/suitecrm-customization.md`. Summary: configuration → metada
 ## Extension layout
 `extensions/tkc/` — `app/` (Angular), `backend/` (Symfony), `config/`. Scaffolded from `defaultExt` (key and remote `tkc`, enabled). `defaultExt` stays disabled. Build output `extensions/tkc/public/` is gitignored; `php bin/console cache:clear` copies it to `public/extensions/tkc/`.
 
+Angular folders in `extensions/tkc/app/src/`:
+- `theme/`: the Angular theme (see Angular theme).
+- `fields/<type>/`: Angular field components that replace a core field component (SUITE-186). Each folder has the component (`.ts`, `.html`), a module and a spec.
+  - Today: `fields/radioenum/` (`TkcRadioEnumEditFieldComponent`).
+  - `extension.module.ts` imports the field module. Its constructor registers the component with `FieldRegistry.register('default', <type>, <mode>, <class>)`. The extension module and the core share one `FieldRegistry` singleton (the `core` package is shared in the extension webpack config). A `register()` call from the extension replaces the core entry.
+  - Register a replaced component only for the keys that need it (for example `radioenum.edit`). Add a row to the Overrides register in the same story.
+
 ### Theme mechanism (S1)
 Result of spike SUITE-9 S1 (2026-11-20).
 - **Works: option (a).** `extensions/tkc/app/angular.json` replaces the shell `styles` entry for the core theme (`core/app/shell/src/themes/suite8/css/style.scss`, array index 1) with `extensions/tkc/app/src/theme/tkc-theme.scss`. The `merge-angular-json` merge combines arrays by index, so a replaced entry keeps its position.
@@ -51,9 +58,21 @@ Result of spike SUITE-9 S1 (2026-11-20).
   - SUITE-57: `_base`, `_navbar`, `_buttons`, `_fields`
   - SUITE-58: `_tabs`, `_panels`, `_list`, `_subpanels`, `_alerts`, `_modals`
   - SUITE-59: `_login`
+  - SUITE-186: `_radio`
 - Rules in a partial use core selectors and `var(--tkc-*)` only (X8). Use `!important` only against a core `!important`.
 - Root-absolute font URLs pass through the Angular builder.
-- `scripts/theme/check_bundle.py` (build step 4b) fails in these cases: the newest `public/dist/styles*.css` has no sentinel, or the TKC `.navbar` rule is not after the core rule.
+- `scripts/theme/check_bundle.py` (build step 4b) fails in these cases:
+  - The newest `public/dist/styles*.css` has no sentinel.
+  - The TKC `.navbar` rule is not after the core rule.
+  - The last `.radioenum-input input[type='radio']` rule that sets `display` sets `display: none` (SUITE-186). It also fails when no such rule sets `display` (the core selector changed). The script reads back-to-back rules too (a regex fix in SUITE-186).
+- Radio inputs (SUITE-186):
+  - Core `_radio.scss:27` hides the radio inputs with `display: none`. A keyboard user cannot reach them.
+  - `_radio.scss` (TKC) sets the visually-hidden pattern on `.radioenum-input input[type='radio']`. The inputs stay in the tab order and in the accessibility tree.
+  - The rule has the same specificity as the core rule. It wins by order. It must reset `display: inline-block`, because the hidden pattern alone does not remove `display: none`. `check_bundle.py` checks this reset in the built bundle.
+  - The focus ring is on `input:focus-visible + label`. It uses the tokens `--tkc-focus-ring-width`, `--tkc-focus-ring`, `--tkc-focus-ring-offset` and `--tkc-radius-sm`.
+  - The Angular field override `fields/radioenum/` adds `role="radiogroup"`, an `aria-label` and the label "Not set" for the empty option (see Overrides register).
+  - Scope: the Angular UI only. The legacy UI shows native radios.
+  - The filter panel radios (for example "Direction" in the list filter) use the same edit component. They get the same behaviour.
 - Upgrade risks (re-check at each upstream merge):
   - The `styles[1]` index.
   - Core selectors that the SUITE-58 partials use: `.tabs-layout .tab-link`, `.light-table .list-view-table`, `.sub-panel`, `.panel-card`, `.alert-fixed`. The ng-bootstrap library supplies the modal classes.
@@ -68,6 +87,8 @@ Result of spike SUITE-9 S1 (2026-11-20).
     - `_buttons.scss`: `.settings-button` focus ring. Core removes the outline with `!important`.
     - `_base.scss`: `scroll-behavior: auto` in the reduced-motion rule. Core sets `smooth` on `html` and `body`.
   - z-index scale mismatch: the token scale (`--tkc-z-*`, 0-700) is below the core overlay scale (dropdown 1000, `.modal` 1050, core `.modal-backdrop` 1050 with `!important`, toast `.alert-fixed` 1510). The theme does not set the z-index of `.modal`, `.modal-backdrop` or `.alert-fixed`. They keep the core values. The modal tokens put the backdrop over the modal window. Re-check the core overlay z-index values at each upstream merge. The only TKC z-index is `.navbar` (`--tkc-z-navbar`, inside the core `.top-panel.fixed-top` at 1030).
+  - Radio inputs (SUITE-186): core `_radio.scss:27-60` (`core/app/shell/src/themes/suite8/css/components/_radio.scss`) and the selector `.radioenum-input input[type='radio']`. Core hides the inputs there with `display: none`. A change of that selector or of the markup (`.radioenum-input`, `input + label`) breaks `_radio.scss`. `check_bundle.py` fails when the selector is gone.
+  - Radio field override (SUITE-186): see the Overrides register row for `fields/radioenum/`.
   - Toast position: `.alert-fixed` is at the bottom right. On screens narrower than 47.9375rem it is at the top.
 - Known: the build warns that the initial bundle is over budget (10.79 MB against 9 MiB). QA found the cause is core: `main` is 4.88 MB and `polyfills` is 4.86 MB. It is not TKC code (see Known issues).
 
@@ -134,7 +155,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - `scripts/test.sh [--php] [--ng] [--theme]` runs the TKC tests.
 - PHP: PHPUnit 10 in the app container. Config `extensions/tkc/phpunit.xml.dist` has the suites `unit` and `contract`. The bootstrap `backend/Tests/bootstrap.php` loads only `vendor/autoload.php`, not `tests/bootstrap.php`.
 - NG: Karma with ChromeHeadless on the host (needs Google Chrome), project `tkc`. The spec build uses `extensions/tkc/app/webpack.config.spec.js`, because module federation breaks Karma. There is no `main` or `test.ts`: Angular 18 finds the specs through `include`.
-- THEME: `unittest` of `scripts/theme/tests`, then `check_bundle.py`. It fails when `public/dist` is not built.
+- THEME: `unittest` of `scripts/theme/tests`, then `check_bundle.py` (sentinel, `.navbar` order and, since SUITE-186, the radio `display` rule; see Angular theme). It fails when `public/dist` is not built.
 - Test directories are named `Tests`. The file `config/core_services.yaml` excludes `Tests` from `App\Extension\` autowiring.
 - `extensions/tkc/app/tsconfig.spec.json` sets its own `typeRoots`, because the `typeRoots` in the root `tsconfig.json` do not resolve. It is not a core override.
 - Known issue: SUITE-176 (see Known issues).
@@ -201,12 +222,14 @@ Not tested: the Studio UI itself, the Edit view and Quick create files, and a br
 
 ## Overrides register
 This register lists every file that overrides a core file or a core parameter. Re-check every row at each upstream merge. Add a row in the same story that adds the override.
-Type values: viewdef full copy · core list override · core vardef override · D5 parameter delta · dependency version (lock) · dependency resolution (package.json).
+Type values: viewdef full copy · core list override · core vardef override · D5 parameter delta · core theme rule override · Angular field override · dependency version (lock) · dependency resolution (package.json).
 - "Dependency version (lock)": `composer.lock` or `yarn.lock` holds a newer version than upstream. The constraint in `composer.json` or `package.json` does not change. This is not a core patch (SUITE-183, decision 1).
 - "Dependency resolution (package.json)": a `resolutions` entry in `package.json` forces a version. Use it only when a parent range blocks a lock-only fix. No row uses this type yet. A change to a constraint in `composer.json` or to a range in `package.json` is Level 5 and needs the architect.
 
 | File | Module | Type | Reason | Upstream source to diff | Check at merge |
 |---|---|---|---|---|---|
+| `extensions/tkc/app/src/theme/overrides/_radio.scss` (SUITE-186) | all (Angular) | core theme rule override | Core hides the radio inputs with `display: none`. A keyboard user cannot reach them. The override resets `display` and hides the inputs visually. It adds the focus ring on the label. | `core/app/shell/src/themes/suite8/css/components/_radio.scss:27-60` | The selector `.radioenum-input input[type='radio']` and the markup are the same. `scripts/theme/check_bundle.py` passes (check 3). |
+| `extensions/tkc/app/src/fields/radioenum/tkc-radioenum-edit.*` (SUITE-186) | all (Angular) | Angular field override | Core has no `role` and no accessible name on the radio group, no label for the empty option, and the DOM `name` is not set. Registered for `radioenum.edit` and `enum-radio.edit` (same core class). Three lines differ from the core template, each marked `TKC SUITE-186`: (1) `role="radiogroup" [attr.aria-label]="groupLabel \|\| null"` on `div.radioenum`; (2) `[attr.name]="field.name"` on the input (see the note below); (3) `{{ optionLabel(item) }}` in the label. The class extends the core class and has no own constructor. | `core/app/core/src/lib/fields/radioenum/templates/edit/radioenum.component.html` and `radioenum.component.ts` | Diff the core template and `.ts` (`getId`, `buildOptionsArray`). The keys in `core/app/core/src/lib/fields/base-fields.manifest.ts` are the same. The `FieldRegistry.register` signature is the same. `getAppString` and `getFieldLabel` of the language service exist. The `core` package is still a singleton in the extension webpack config. |
 | `extensions/tkc/config/tkc_tinymce.php` | Angular edit field (tinymce) | D5 parameter delta | Removes the TinyMCE `media` plugin from the Angular edit field. npm `tinymce` 7.9.3 has advisory GHSA-mf2p-h6hf-fcwm and no 7.x fix (SUITE-183). | `config/services/ui/ui.yaml` key `tinymce.edit.plugins` (line 21) | Check `ui.yaml` `tinymce.edit.plugins` and `core/app/core/src/lib/fields/tinymce/templates/edit/tinymce.component.ts:74-78`. The component merges the list with lodash merge, index by index. Keep 3 or more entries. The core `plugins` setting stays a list of strings. The delta treats spaces and commas as separators (security review F4, commit 736e0c496). If the setting became one string, the container build fails (fail closed). Remove the file when upstream ships a fixed npm TinyMCE. |
 | `composer.lock` | lock | dependency version (lock) | `lcobucci/clock` 3.5.0 (SUITE-175). Upstream has 3.0.0. `composer.json` keeps the PHP 8.3 platform. | `composer.lock` of the upstream tag | Keep 3.5.0 while the platform is PHP 8.3. |
 | `composer.lock` | lock | dependency version (lock) | `guzzlehttp/guzzle` 7.16.5 (upstream 7.12.1): 7 advisories (1 high, 6 medium). Title: noncanonical host bypass. | `composer.lock` of the upstream tag | Keep the TKC version or higher. Drop the row when upstream reaches it. |
@@ -230,6 +253,10 @@ Type values: viewdef full copy · core list override · core vardef override · 
 | `composer.lock` | lock | dependency version (lock) | `tinymce/tinymce` 8.10.2 (upstream 8.5.1): 1 high advisory (media plugin XSS). This copy serves the legacy UI. | same | same |
 | `composer.lock` | lock (grouped) | dependency version (lock) | 24 transitive packages that `composer update -W` raised with the rows above. List: `guzzlehttp/promises` 2.6.2; `league/flysystem-local` 3.35.3; `league/mime-type-detection` 1.17.0; `symfony/cache` v6.4.50; `symfony/cache-contracts` v3.8.1; `symfony/deprecation-contracts` v3.8.1; `symfony/error-handler` v6.4.49; `symfony/event-dispatcher` v6.4.44; `symfony/event-dispatcher-contracts` v3.8.1; `symfony/http-client-contracts` v3.8.1; `symfony/polyfill-intl-grapheme` v1.43.3; `symfony/polyfill-intl-idn` v1.43.0; `symfony/polyfill-intl-normalizer` v1.43.0; `symfony/polyfill-mbstring` v1.43.3; `symfony/polyfill-php83` v1.43.0; `symfony/process` v6.4.49; `symfony/property-access` v6.4.50; `symfony/property-info` v6.4.50; `symfony/security-core` v6.4.50; `symfony/service-contracts` v3.8.1; `symfony/string` v6.4.49; `symfony/translation-contracts` v3.8.1; `symfony/var-dumper` v6.4.49; `symfony/var-exporter` v6.4.49. | same | Keep the TKC version or higher. Drop a package when upstream reaches it. |
 | `yarn.lock` | lock | dependency version (lock) | npm `dompurify` 3.4.18 (upstream 3.4.11): advisories on the Angular runtime (see Accepted dependency advisories for the rest). Also: the `tinymce` 7.2.1 entry is merged into 7.9.3 (same command, `yarn up -R tinymce dompurify`). | `yarn.lock` of the upstream tag | Keep the TKC version or higher. Drop the row when upstream reaches it. |
+
+Note for line (2): the Angular `RadioControlValueAccessor` takes `[name]` as a directive input, so Angular never sets the DOM `name` attribute. The inputs of one group have no shared `name`, and the arrow keys do not move between them. `[attr.name]` sets the DOM attribute. This differs from the architect prescription, which assumed that `[name]` was enough (QA found it).
+
+The string `LBL_TKC_NOT_SET` ("Not set") is a new app string in `public/legacy/custom/Extension/application/Ext/Language/en_us.tkc_app_strings.php`. It is not an override. Do not reuse `LBL_NONE` or `LBL_EMPTY`.
 
 Upstream v8.10.2 is the base of these versions. The TKC changes in `composer.lock` are 43 updates, all inside the upstream constraints. `composer.json`, `package.json`, `.yarnrc.yml` and `symfony.lock` did not change.
 
@@ -272,7 +299,7 @@ The spike code lives only on the `spike/SUITE-5x-*` branches of the `tkc-spike2`
 **S10 — empty enum value and preset list filter (SUITE-54). Result: PARTIAL**
 - Q1 "not set" value on `radioenum`: PARTIAL. The mouse works. The keyboard fails: core hides the radio inputs (`core/app/shell/src/themes/suite8/css/components/_radio.scss:27`, `display: none`), so they cannot get focus.
 - Decision (S): keep the core `radioenum` (A3). A TKC theme override keeps the inputs focusable but not visible. The label gets a token `:focus-visible` state. The empty option shows the label "Not set". The M fallback (TKC Yes/No component) is not needed.
-- Changes: a new theme story before E5-S2 (SUITE-103).
+- Changes: a new theme story before E5-S2 (SUITE-103). Built in SUITE-186. The build also needed a thin Angular field override (see Overrides register).
 - Q2 default filter on open: PARTIAL. A metadata preset and a SavedSearch `quick_filter` do not work. The current-filter user preference works, per user. Enum filter negation does not work (only `=`). A positive list with the empty value works.
 - Decision (M, in E5-S5, SUITE-106): one idempotent seed creates a Contacts saved filter for each active user. The filter lists every key of `tkc_contact_type_list` except `spam`, plus the empty value. The seed reads the keys at run time. It sets the filter as current only when the user has none.
 - Accepted gaps: a new user gets the filter only after a re-seed. A new list key needs a re-seed. The contract test checks that the filter covers every key except `spam`. A user's own last filter replaces the default later.
@@ -307,7 +334,7 @@ The spike code lives only on the `spike/SUITE-5x-*` branches of the `tkc-spike2`
 | Issue | Description | Effect |
 |---|---|---|
 | S7 (SUITE-51) | The renewal reminder does not run for an Angular save. Core creates the reminder only when the request has `renewal_reminder_date`. | Keep `renewal_reminder_date` off the TKC contract layout. The import leaves it empty. A reminder needs a new story. |
-| S10 (SUITE-54) | Core `radioenum` hides its radio inputs (`_radio.scss:27`). A keyboard user cannot reach them. | Fix in a new theme story (S) before SUITE-103. Until then, the keyboard gap stays. |
+| S10 (SUITE-54) | Core `radioenum` hides its radio inputs (`_radio.scss:27`). A keyboard user cannot reach them. | Resolved by SUITE-186: a theme override and an Angular field override (see Overrides register). The legacy UI is not in scope. |
 | SUITE-176 | The Symfony `test` env does not boot. The core file `config/packages/test/framework.yaml` uses the removed option `storage_id`. | The contract test boots the `dev` env. Kernel-based PHPUnit tests cannot use the `test` env. |
 | SUITE-175 | Resolved with option B: `lcobucci/clock` is 3.5.0 (upstream has 3.0.0). `composer.json` keeps the PHP 8.3 platform. | Upstream-merge risk: the register row for `lcobucci/clock` lists the check (see Overrides register). Keep 3.5.0 while the platform is PHP 8.3. |
 | SUITE-183 | Dependency advisories are fixed in the lock files. Some advisories stay accepted (see § Accepted dependency advisories). Follow-ups: SUITE-192 (`zbateson/mail-mime-parser` 3.x, blocks email-to-case), SUITE-193 (Azure upload storage). | Azure conditions are in `docs/environments.md`. |
