@@ -38,7 +38,7 @@
   color: var(--tkc-field-text);
   background-color: var(--tkc-field-bg-default);
   border-color: var(--tkc-field-border-focus);
-  box-shadow: none; // bootstrap box-shadow ring replaced by the global :focus-visible outline
+  box-shadow: none; // bootstrap box-shadow ring replaced by the :focus-visible outline in _base.scss (.form-control:focus-visible)
 }
 
 .form-control:disabled,
