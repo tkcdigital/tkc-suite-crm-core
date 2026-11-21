@@ -78,9 +78,10 @@
   - S11 (SUITE-55): go with metadata logic on `probability` (SUITE-69). No hook.
   - Downstream stories SUITE-103, 106, 108, 110, 114, 126, 128, 129, 130, 137 and 144 are corrected. New story: SUITE-186 (Sprint 1, before SUITE-103).
   - SUITE-50 AC3 (the `docs/architecture.md` spike results) is open until the document-agent finishes it.
-- Decisions needed from the owner:
-  - SUITE-144: contract panels. Option A: one panel "Contract details" with cells shown by contract type (recommended). Option B: three panels with one empty header.
-  - SUITE-129: the thread is a block under the panels, not a Messages tab. The UX designer confirms this against the Cases mockup. If not, the PO raises an M story for a real tab.
+- Owner decisions on the spike results (2026-11-21):
+  - SUITE-144: Option A. One panel "Contract details" with support and licence cells shown by `contract_type`.
+  - SUITE-129: a real "Messages" tab as a custom Angular part (size M). The architect prescribes the extension point before the build. This replaces the `bottomWidgets` block.
+- New story SUITE-187 (Workspace: open several records in tabs). It sits under SUITE-43 (Enhancements, not scheduled), has no size and no sprint. It needs an architect feasibility check or spike and a ux-designer mockup first.
 - New follow-up issues: SUITE-182 (label association, accessibility), SUITE-183 (dependency advisories, high priority), SUITE-184 (build hardening).
 
 ## Open questions
