@@ -25,7 +25,7 @@ scripts/build.sh                     # Angular build, Dawn CSS, legacy assets, t
 docker/dc.sh console tkc:users:repair-number-separators --dry-run && docker/dc.sh console tkc:users:repair-number-separators   # SUITE-179: always after tkc:config:apply
 docker/dc.sh console tkc:mail:use-sink   # dev mail sink, once per new database (see Mail sink)
 ```
-The installer does not need `public/dist`. `scripts/build.sh` runs `tkc:config:apply` (step 11), so the separator repair comes after it.
+The installer does not need `public/dist`. `scripts/build.sh` asks before `tkc:repair --execute`; with no terminal (CI, an agent) run `scripts/build.sh --dry-run-only`, review the SQL, then `scripts/build.sh --yes --skip-frontend`. `scripts/build.sh` runs `tkc:config:apply` (step 11), so the separator repair comes after it.
 Use `-d no` for demo data. The value `false` is NOT "no" and installs demo data.
 `docker/dc.sh console <args>` runs `php bin/console <args>` as `www-data`, so cache files stay writable for Apache.
 Do not run console commands as root (`exec app php ...` without `-u www-data`): root-owned cache files give HTTP 500.
