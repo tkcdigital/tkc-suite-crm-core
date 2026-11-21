@@ -66,6 +66,13 @@ a.home-nav-link {
   outline-offset: calc(var(--tkc-focus-ring-width) * -1);
 }
 
+// The search input has "outline: 0" from core ".search-bar .input-group .search-bar-term:focus" (0,4,0), so the
+// wrapper carries the ring (SUITE-57). Same on-navbar indicator colour as the line above; inset so the navbar does not clip it.
+.navbar .search-bar .input-group:focus-within {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-navbar-indicator);
+  outline-offset: calc(var(--tkc-focus-ring-width) * -1);
+}
+
 .navbar .search-bar-term {
   background-color: var(--tkc-navbar-search-bg);
   color: var(--tkc-navbar-search-text);

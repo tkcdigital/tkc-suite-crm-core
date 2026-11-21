@@ -34,6 +34,7 @@ a.clickable:hover {
 .form-control:focus-visible,
 .custom-select:focus-visible,
 .nav-link:focus-visible,
+button.line-action-item:focus-visible, // list row action button: core adds no ring, the browser default shows (SUITE-57)
 a:focus-visible {
   outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
   outline-offset: var(--tkc-focus-ring-offset);

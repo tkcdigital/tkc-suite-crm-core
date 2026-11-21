@@ -74,3 +74,12 @@ table.list-view-table.striped-table.table {
     background-color: var(--tkc-header-action-hover);
   }
 }
+
+// Row links. Core ".list-view-table a" (0,1,1, _listview.scss:196) sets burnt-red. "table.list-view-table a" is (0,1,2).
+table.list-view-table a {
+  color: var(--tkc-text-link-default);
+
+  &:hover {
+    color: var(--tkc-text-link-hover);
+  }
+}
