@@ -71,7 +71,13 @@
   - SUITE-176 (bug): the Symfony `test` env does not boot.
   - SUITE-180 and SUITE-181.
 - Spikes SUITE-51 to SUITE-55 are not started.
+- New follow-up issues: SUITE-182 (label association, accessibility), SUITE-183 (dependency advisories, high priority), SUITE-184 (build hardening).
 
 ## Open questions
 - Base currency: EUR (fresh install) — confirm.
 - OSC environments to read from (test/reference site names) and who provides the read-only API user.
+- Design spec gaps found in SUITE-58 (ux-designer decides):
+  - Toast left bar: `components.md` §9 says 4 px. The token says 3 px.
+  - Body text size: the theme uses `--tkc-font-size-md`. The spec names `--tkc-density-font-size`.
+  - Bulk-action bar: core always shows it. `components.md` §6 says only when rows are selected.
+  - Toast on phones: the spec has no breakpoint. The theme puts the toast at the top below 47.9375rem.

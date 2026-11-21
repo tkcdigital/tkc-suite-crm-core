@@ -50,6 +50,16 @@ Result of spike SUITE-9 S1 (2026-11-20).
   - The `styles[1]` index.
   - Core selectors that the SUITE-58 partials use: `.tabs-layout .tab-link`, `.light-table .list-view-table`, `.sub-panel`, `.panel-card`, `.alert-fixed`. The ng-bootstrap library supplies the modal classes.
   - The core "Lato" rule (`abstracts/_typography.scss:30`).
+  - Core selectors that the other partials use: `.list-view-container`, `.list-view-hr-container`, `.record-view-hr-container`, `.small-font` (core sets `.85em`; TKC sets `--tkc-font-size-md`), `.table td` (core `.797rem`), `.saved-search-container` (core `layout/_saved-search.scss:27`), `.sub-panel-banner` (the "Relationships" banner, matched with `.card:has(> .sub-panel-banner)`), `.alert-fixed .message.shadow`, `.settings-button`.
+  - `.btn-outline-danger` is mapped to a primary outline button for the whole app (`_buttons.scss`). Core uses this class only as the accent of the filter panel and the record panel (`list-filter.component.ts:100`, `list-filter.store.ts:293`, `record-panel.component.ts:83`). Risk: if upstream uses it for a destructive action, that action looks like a primary button. Check this at each upstream merge.
+  - `!important` exceptions (X8: only against a core `!important`):
+    - `_alerts.scss`: `.alert-fixed .message.shadow` `box-shadow: none`. Bootstrap `.shadow` has `!important`.
+    - `_subpanels.scss`: `.card:has(> .sub-panel-banner)` border colour and `box-shadow: none`. Bootstrap `.border` and `.shadow-sm` have `!important`.
+    - `_panels.scss`: panel shadow. Core sets it with `!important`.
+    - `_navbar.scss`: active link colour. Core has `!important`.
+    - `_buttons.scss`: `.settings-button` focus ring. Core removes the outline with `!important`.
+    - `_base.scss`: `scroll-behavior: auto` in the reduced-motion rule. Core sets `smooth` on `html` and `body`.
+  - Toast position: `.alert-fixed` is at the bottom right. On screens narrower than 47.9375rem it is at the top.
 - Known: the build warns that the initial bundle is over budget (10.79 MB against 9 MiB). QA found the cause is core: `main` is 4.88 MB and `polyfills` is 4.86 MB. It is not TKC code (see Known issues).
 
 ### Legacy theme (SUITE-60)
