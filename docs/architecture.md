@@ -174,9 +174,48 @@ Type values: viewdef full copy · core list override · core vardef override · 
 |---|---|---|---|---|---|
 | — | | | | | |
 
+## Spike results S7–S11 (SUITE-50)
+The spike code lives only on the `spike/SUITE-5x-*` branches of the `tkc-spike2` worktree. It is never merged. The stories below build the real code. Each story adds its own row to the Overrides register. The planned rows are in those stories.
+
+**S10 — empty enum value and preset list filter (SUITE-54). Result: PARTIAL**
+- Q1 "not set" value on `radioenum`: PARTIAL. The mouse works. The keyboard fails: core hides the radio inputs (`core/app/shell/src/themes/suite8/css/components/_radio.scss:27`, `display: none`), so they cannot get focus.
+- Decision (S): keep the core `radioenum` (A3). A TKC theme override keeps the inputs focusable but not visible. The label gets a token `:focus-visible` state. The empty option shows the label "Not set". The M fallback (TKC Yes/No component) is not needed.
+- Changes: a new theme story before E5-S2 (SUITE-103).
+- Q2 default filter on open: PARTIAL. A metadata preset and a SavedSearch `quick_filter` do not work. The current-filter user preference works, per user. Enum filter negation does not work (only `=`). A positive list with the empty value works.
+- Decision (M, in E5-S5, SUITE-106): one idempotent seed creates a Contacts saved filter for each active user. The filter lists every key of `tkc_contact_type_list` except `spam`, plus the empty value. The seed reads the keys at run time. It sets the filter as current only when the user has none.
+- Accepted gaps: a new user gets the filter only after a re-seed. A new list key needs a re-seed. The contract test checks that the filter covers every key except `spam`. A user's own last filter replaces the default later.
+
+**S9 — record action and panel visibility (SUITE-53). Result: GO (Q1), NO-GO (Q2)**
+- Q1 action `displayLogic` on a field value: GO. It shows and hides by value in detail mode and updates after a save without a reload. `ActionAvailabilityChecker` (M) is not needed. It is proven only for a field on the same record. It is UI only: handlers still check ACL and state.
+- Q2 panel hides when all cells hide: NO-GO. Core uses only the panel-level `displayLogic` (`core/app/core/src/lib/views/record/components/record-container/record-container.component.ts:283-306`).
+- Decision (0): accept the empty header. Layout rule for E6, E8 and E11: no panel has only conditional cells. Mix them with always-shown cells, or accept the empty header on purpose. Panel-level `displayLogic` stays forbidden (S3).
+- Changes: SUITE-126 (the Cases spam actions depend on a related record; check this first), SUITE-108, SUITE-110.
+
+**S8 — record thread in a TKC layout (SUITE-52). Result: GO**
+- The thread item shows `tkc_entry_type_c` and `tkc_channel_c`. The create form edits both and the values persist. `dynamicClass` sets the class `tkc_entry_type_c-<key>`. `bottomWidgets` shows the thread at full width under the panels, and create works there.
+- Decision (L2): E9 builds the item and create layouts in metadata. The thread uses `bottomWidgets`.
+- Deviations: (1) The thread is a full-width block, not a "Messages" tab. A real tab needs custom Angular (M). UX confirms the block against the Cases mockup. (2) The create form cannot preset `staff`. A `before_save` rule on AOP_Case_Updates fills an empty entry type (`staff` for an agent, `customer` for an inbound email). It does nothing in import mode (E9-S1, SUITE-128). (3) Items are about 90% wide. E9-S3 (SUITE-130) fixes this in CSS from tokens.
+- Changes: SUITE-128, SUITE-129 (wording), SUITE-130.
+
+**S11 — probability follows the stage (SUITE-55). Result: GO (metadata logic)**
+- A vardef extension adds one `logic` entry for each stage on the core field `probability`: `updateValue`, `activeOnFields: {sales_stage: [<stage>]}`, `targetValue`. It works in edit and create. A manual overwrite persists. The `$dictionary` key must be the object name (`$dictionary['Opportunity']`).
+- Decision (L2, S): E3-S8 (SUITE-69) builds it. The hook fallback is dropped. The extension file adds only the `logic` key.
+- Facts: the logic runs only when the stage changes (`update-value.action.ts:121-123`). Opening a record never overwrites a stored value. Core `Opportunity::save()` fills an empty probability from `sales_probability_dom` (`Opportunity.php:363`). An import or API call without a probability is covered.
+- Accepted gap: a stage change outside the Angular edit or create view does not recompute an existing probability.
+- Check: the percentages exist twice. The contract test must check that each `sales_stage_dom` key has one entry with `targetValue` = `sales_probability_dom[stage]`.
+- Changes: SUITE-69, SUITE-137.
+
+**S7 — AOS_Contracts in Angular (SUITE-51). Result: GO**
+- A D5 delta sets `legacy.module_routing['contracts']['record'] = true`. Core has `record: false` (`config/services/module/module_routing.yaml:155-158`). The existing services glob loads the file. The Angular record works in detail, edit and create. Cell `displayLogic` on `contract_type` works. Save works. The Accounts Contracts subpanel opens the Angular record.
+- Decision (L2 + D5 delta): E11-S2 (SUITE-144) builds it. The production file is `extensions/tkc/config/tkc_contracts_routing.php`. The legacy fallback is not needed.
+- Not tested, assessed from core code: (1) Line items: Angular save sends no `group_*` keys (`AOS_Line_Item_Groups.php:54-59`). Existing items stay but are not shown. TKC contracts have none. (2) Renewal reminder: `createReminder()` and `createLink()` run only with `$_POST['renewal_reminder_date']` (`AOS_Contracts.php:65-91`). Angular does not send it. (3) The PDF and email-PDF actions are legacy and not shown. E11-S2 checks this in the browser. (4) List view: core already has `list: true`.
+- Accepted gaps: see the renewal reminder in Known issues. PDF actions are not shown.
+
 ## Known issues
 | Issue | Description | Effect |
 |---|---|---|
+| S7 (SUITE-51) | The renewal reminder does not run for an Angular save. Core creates the reminder only when the request has `renewal_reminder_date`. | Keep `renewal_reminder_date` off the TKC contract layout. The import leaves it empty. A reminder needs a new story. |
+| S10 (SUITE-54) | Core `radioenum` hides its radio inputs (`_radio.scss:27`). A keyboard user cannot reach them. | Fix in a new theme story (S) before SUITE-103. Until then, the keyboard gap stays. |
 | SUITE-176 | The Symfony `test` env does not boot. The core file `config/packages/test/framework.yaml` uses the removed option `storage_id`. | The contract test boots the `dev` env. Kernel-based PHPUnit tests cannot use the `test` env. |
 | SUITE-175 | Resolved with option B: `lcobucci/clock` is 3.5.0 (upstream has 3.0.0). `composer.json` keeps the PHP 8.3 platform. | Upstream-merge risk: at each merge, compare `lcobucci/clock` in `composer.lock` with upstream and keep 3.5.0 while the platform is PHP 8.3. |
 | SUITE-181 | The legacy CSS URL version does not change with the content. | After a theme deploy, browsers keep the old legacy CSS. Do a hard reload. |
