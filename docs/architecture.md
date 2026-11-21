@@ -59,6 +59,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
     - `_navbar.scss`: active link colour. Core has `!important`.
     - `_buttons.scss`: `.settings-button` focus ring. Core removes the outline with `!important`.
     - `_base.scss`: `scroll-behavior: auto` in the reduced-motion rule. Core sets `smooth` on `html` and `body`.
+  - z-index scale mismatch: the token scale (`--tkc-z-*`, 0-700) is below the core overlay scale (dropdown 1000, `.modal` 1050, core `.modal-backdrop` 1050 with `!important`, toast `.alert-fixed` 1510). The theme does not set the z-index of `.modal`, `.modal-backdrop` or `.alert-fixed`. They keep the core values. The modal tokens put the backdrop over the modal window. Re-check the core overlay z-index values at each upstream merge. The only TKC z-index is `.navbar` (`--tkc-z-navbar`, inside the core `.top-panel.fixed-top` at 1030).
   - Toast position: `.alert-fixed` is at the bottom right. On screens narrower than 47.9375rem it is at the top.
 - Known: the build warns that the initial bundle is over budget (10.79 MB against 9 MiB). QA found the cause is core: `main` is 4.88 MB and `polyfills` is 4.86 MB. It is not TKC code (see Known issues).
 
@@ -68,6 +69,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - Hand-written files style `body`, not `html` (core sets `html{font-size:10px}`). They use px and no `calc()` with `+`.
 - cssmin runs only when the cached `style.css` does not exist. `tkc:repair` clears only `pathCache.php`. Build step 12 therefore deletes the cached file and rebuilds it with one login-page request. Build step 14 fails when the cached file has no `--tkc-theme-build` sentinel (see `LOCAL_SETUP.md` § Theme).
 - `build_theme.py` writes its output atomically. `build_theme.py --check` rule X9 fails when a legacy hand file has whitespace before a pseudo-class (cssmin removes it, the rule then matches nothing).
+- `build_theme.py --check` rule X10 (`Z_OVERLAY_RE`) fails when a hand file sets `z-index` with an overlay token (`--tkc-z-dropdown`, `-drawer`, `-modal`, `-toast`, `-tooltip`). Local layers (`base`, `sticky`, `navbar`) are allowed. Reason: the token scale is below the core overlay scale (see Angular theme upgrade risks).
 - Known issue: SUITE-181 (see Known issues).
 - No change outside `public/legacy/custom/`.
 
