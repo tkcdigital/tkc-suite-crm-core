@@ -37,3 +37,31 @@
   background-color: var(--tkc-surface-sunken);
   border-top: var(--tkc-border-width-thin) solid var(--tkc-border-default);
 }
+
+// Column chooser (core layout/_columnchooser.scss): list and chips use tokens, not the core pink and lilac.
+.column-chooser-list {
+  background: var(--tkc-surface-sunken);
+  border-radius: var(--tkc-radius-md);
+}
+
+.column-chooser-item {
+  color: var(--tkc-text-default);
+  font-size: var(--tkc-font-size-sm);
+  border-radius: var(--tkc-radius-md);
+}
+
+.column-chooser-item.column-displayed {
+  background-color: var(--tkc-primary-subtle-bg);
+  border: var(--tkc-border-width-thin) solid var(--tkc-primary-subtle-border);
+  color: var(--tkc-primary-subtle-text);
+}
+
+.column-chooser-item.column-hidden {
+  background-color: var(--tkc-surface-default);
+  border: var(--tkc-border-width-thin) solid var(--tkc-border-default);
+  color: var(--tkc-text-muted);
+}
+
+.column-chooser-title {
+  color: var(--tkc-text-default);
+}

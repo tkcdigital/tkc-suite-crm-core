@@ -12,6 +12,7 @@
   // Same specificity, our file is imported later.
   .panel-card .card-header {
     border-top: none;
+    border-radius: 0; // the card clips the corners (overflow: hidden); core Bootstrap sets 3px
     color: var(--tkc-text-default);
     background-color: var(--tkc-surface-sunken);
     border-bottom: var(--tkc-border-width-thin) solid var(--tkc-border-default);
