@@ -40,3 +40,28 @@
   border-radius: var(--tkc-radius-md);
   box-shadow: var(--tkc-shadow-3);
 }
+
+// Inner message: Bootstrap ".shadow" (!important, 0 .5rem 1rem rgba(0,0,0,.15)) stacks on the wrapper shadow.
+.alert-fixed .message.shadow {
+  box-shadow: none !important;
+}
+
+// Placement (section 9): bottom right, top on phone. Core is top centre by CSS only (_message.scss:29, no JS):
+// position fixed, top 3.3em, left 0, margin-left calc(50% - 20rem) (calc(50% - 12rem) below $breakpoint-large).
+.alert-fixed {
+  top: auto;
+  right: var(--tkc-space-6);
+  bottom: var(--tkc-space-6);
+  left: auto;
+  margin-left: 0;
+  padding: 0;
+}
+
+@media (max-width: 47.9375rem) {
+  .alert-fixed {
+    top: var(--tkc-space-4);
+    right: var(--tkc-space-4);
+    bottom: auto;
+    left: var(--tkc-space-4);
+  }
+}

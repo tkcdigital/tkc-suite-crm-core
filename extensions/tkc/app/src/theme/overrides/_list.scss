@@ -83,3 +83,37 @@ table.list-view-table a {
     color: var(--tkc-text-link-hover);
   }
 }
+
+// Bulk bar (section 6: primary-subtle-*). Core ".list-view-tableactions" (0,1,0, _listview.scss:176) is $cool-blue;
+// text is $white on .bulk-action (_listview.scss:191), .table-action-button (_button.scss:283), .select-action-group
+// .dropdown-toggle::after (_listview.scss:322). Subpanel and light tables clear the background in core
+// (_minimal-table.scss:94, _light-table.scss:27); the :not keeps that.
+.list-view-tableactions:not(.minimal-table *, .light-table *) {
+  color: var(--tkc-primary-subtle-text);
+  background-color: var(--tkc-primary-subtle-bg);
+  border-bottom: var(--tkc-border-width-thin) solid var(--tkc-primary-subtle-border);
+
+  .bulk-action,
+  .bulk-action-group,
+  .select-action-group .dropdown-toggle::after,
+  .table-action-button {
+    color: var(--tkc-primary-subtle-text);
+  }
+
+  .table-action-button {
+    border-color: var(--tkc-primary-subtle-border);
+  }
+
+  .table-action-button:hover {
+    color: var(--tkc-primary-subtle-text);
+    background-color: var(--tkc-primary-subtle-border);
+  }
+}
+
+// Body text is 14 px (components.md section 0, --tkc-font-size-md). Core scales these containers by .85em.
+.list-view-container,
+.list-view-hr-container,
+.record-view-hr-container,
+.small-font {
+  font-size: var(--tkc-font-size-md);
+}
