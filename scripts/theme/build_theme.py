@@ -33,13 +33,20 @@ LATIN_RANGE = (
     "U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, "
     "U+2039-203A, U+2044, U+20AC, U+2122, U+2212, U+FB01-FB02"
 )
-# (family, weight, file). Latin subset of the official IBM Plex release (OFL).
+ROBOTO_LATIN_RANGE = (
+    "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,"
+    "U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD"
+)
+ROBOTO_LATIN_EXT_RANGE = (
+    "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,"
+    "U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF"
+)
+# (family, weight, file, unicode-range). Roboto: variable weight axis from npm
+# @fontsource-variable/roboto 5.3.0 (OFL). Plex Mono: Latin subset of the IBM Plex release (OFL).
 FONTS = [
-    ("IBM Plex Sans", 400, "IBMPlexSans-Regular-Latin1.woff2"),
-    ("IBM Plex Sans", 500, "IBMPlexSans-Medium-Latin1.woff2"),
-    ("IBM Plex Sans", 600, "IBMPlexSans-SemiBold-Latin1.woff2"),
-    ("IBM Plex Sans", 700, "IBMPlexSans-Bold-Latin1.woff2"),
-    ("IBM Plex Mono", 400, "IBMPlexMono-Regular-Latin1.woff2"),
+    ("Roboto", "400 700", "Roboto-Variable-latin-ext.woff2", ROBOTO_LATIN_EXT_RANGE),
+    ("Roboto", "400 700", "Roboto-Variable-latin.woff2", ROBOTO_LATIN_RANGE),
+    ("IBM Plex Mono", "400", "IBMPlexMono-Regular-Latin1.woff2", LATIN_RANGE),
 ]
 
 REF_RE = re.compile(r"\{([A-Za-z0-9_.\-]+)\}")
@@ -137,16 +144,16 @@ def _decls(items, indent):
 
 def _font_faces(font_url_base=FONT_URL_BASE):
     out = []
-    for family, weight, fname in FONTS:
+    for family, weight, fname, urange in FONTS:
         out.append(
             "@font-face {\n"
             '  font-family: "%s";\n'
             "  font-style: normal;\n"
-            "  font-weight: %d;\n"
+            "  font-weight: %s;\n"
             "  font-display: swap;\n"
             '  src: url("%s%s") format("woff2");\n'
             "  unicode-range: %s;\n"
-            "}\n" % (family, weight, font_url_base, fname, LATIN_RANGE)
+            "}\n" % (family, weight, font_url_base, fname, urange)
         )
     return "\n".join(out)
 

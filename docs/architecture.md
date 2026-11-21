@@ -36,7 +36,14 @@ Result of spike SUITE-9 S1 (2026-11-20).
   - A legacy file has `calc()` with ` + ` (X6).
 - The sentinel `--tkc-theme-build` holds a hash of `tokens.json`.
 - The design-system generator in `designs/system/generator/`: `build_tokens.py` writes `tokens.json` from `tokens_gen.py`; `assemble.py` writes `design-system.html` and `tkc-ds.css`. Since SUITE-188, `assemble.py` writes the committed `tkc-ds.css` header and removes a doc-only comment. Generated design-system files come only from the committed generator. Do not use a scratch copy of the generator.
-- Fonts: IBM Plex Sans 400/500/600/700 and IBM Plex Mono 400 (Latin1, OFL licence; npm `@ibm/plex-sans` 2.0.0, `@ibm/plex-mono` 2.5.0). They are self-hosted in `public/legacy/custom/themes/suite8/fonts/` (X5). Both UIs use the URL path `/legacy/custom/themes/suite8/fonts/`.
+- Fonts (SUITE-189, owner decision 2026-11-21, brand guide font): Roboto and IBM Plex Mono 400. Both are self-hosted in `public/legacy/custom/themes/suite8/fonts/` (X5). Both UIs use the URL path `/legacy/custom/themes/suite8/fonts/`. The app loads no external font.
+  - Roboto is a variable font (SIL OFL 1.1). Source: npm `@fontsource-variable/roboto` 5.3.0, integrity checked. The package is not in `package.json`.
+  - Files: `Roboto-Variable-latin.woff2`, `Roboto-Variable-latin-ext.woff2` and the licence `Roboto-OFL.txt`. The two files use the `unicode-range` values from the package. The files are 72528 bytes in total. The old IBM Plex Sans files were 87844 bytes. They are deleted.
+  - Each `@font-face` rule has `font-weight: 400 700`. The weight axis is real, so semibold (600) is a true weight.
+  - IBM Plex Mono 400 (Latin1 subset, `OFL.txt`) stays. Source: npm `@ibm/plex-mono` 2.5.0.
+  - The font stack is `"Roboto", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif`.
+  - The design system and the 7 mockups use Roboto. Their Google Fonts link is an exception for the style guide only.
+  - Rule: a font file with new content must get a new file name until SUITE-190 is done. Reason: the legacy `.htaccess` caches woff2 files for 1 month (see Legacy theme).
 
 ### Angular theme (SUITE-57, SUITE-58, SUITE-59)
 - The S1 entry `extensions/tkc/app/src/theme/tkc-theme.scss` (`styles[1]` of the shell build) loads, in this order: the core theme, the generated `_tkc-tokens.scss`, then `_tkc-overrides.scss`.
@@ -71,7 +78,19 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - cssmin runs only when the cached `style.css` does not exist. `tkc:repair` clears only `pathCache.php`. Build step 12 therefore deletes the cached file and rebuilds it with one login-page request. Build step 14 fails when the cached file has no `--tkc-theme-build` sentinel (see `LOCAL_SETUP.md` § Theme).
 - `build_theme.py` writes its output atomically. `build_theme.py --check` rule X9 fails when a legacy hand file has whitespace before a pseudo-class (cssmin removes it, the rule then matches nothing).
 - `build_theme.py --check` rule X10 (`Z_OVERLAY_RE`) fails when a hand file sets `z-index` with an overlay token (`--tkc-z-dropdown`, `-drawer`, `-modal`, `-toast`, `-tooltip`). Local layers (`base`, `sticky`, `navbar`) are allowed. Reason: the token scale is below the core overlay scale (see Angular theme upgrade risks).
-- Known issue: SUITE-181 (see Known issues).
+- Asset URL version (SUITE-181):
+  - Core `getVersionedPath` (`public/legacy/include/utils.php:2934-2961`) builds the `?v=` value from a hash of `js_version_key|js_custom_version|dev`. It does not hash the file content. Before SUITE-181 the URL of the legacy CSS did not change after a theme change.
+  - `public/legacy/.htaccess` (core, not changed) caches css and js for 1 year and woff2 for 1 month. A URL that does not change therefore kept the old file in the browser.
+  - The command `tkc:legacy:asset-version` sets `js_custom_version` in `public/legacy/config_override.php` (through `ConfigOverrideMerger`). The value is `tkc` and 12 hex characters of a sha256 hash. The hash covers these inputs, sorted by relative path, with each path and each content:
+    - core `public/legacy/themes/suite8/css/Dawn/style.css`
+    - `public/legacy/include/javascript/yui/build/base/base-min.css`
+    - every `*.css` file under `public/legacy/custom/themes/suite8/css/` (recursive)
+    - every file in `public/legacy/custom/themes/suite8/fonts/`
+  - Code: `extensions/tkc/backend/Config/LegacyAssetVersion.php` (pure logic) and `extensions/tkc/backend/Console/LegacyAssetVersionCommand.php`. The command prints only that key and the result.
+  - Side effect: the value is global. It also versions the legacy JS, the sprites and `yui.css`.
+  - The build runs the command in step 11b and checks the result in step 14. A browser asks for a new URL after each theme or font change. A hard reload is not needed.
+  - Azure deploy: run the command after `tkc:config:apply` in each environment. Reload php-fpm when `opcache.validate_timestamps=0`. A CDN must use the query string in its cache key.
+  - `tkc:config:apply` does not set `js_custom_version`. The template has a comment that says so.
 - No change outside `public/legacy/custom/`.
 
 ### Login logo (SUITE-59)
@@ -88,11 +107,15 @@ Result of spike SUITE-9 S1 (2026-11-20).
 
 ## Build chain (SUITE-44)
 - `scripts/build.sh` is the single build entry point. It runs on the host and calls the app container through `docker/dc.sh`.
-- Steps: 0 preflight; 0b `build_theme.py --check`; 1-5 Angular on the host (`yarn install --immutable`, `merge-angular-json`, `build:core`, `build:shell`, `build:extension tkc`); 4b `check_bundle.py`; 6 compile the core Dawn CSS with `pscss`; 7 `scrm:copy-legacy-assets`; 8 `tkc:repair --dry-run`; 9 mandatory confirmation; 10 `tkc:repair --execute`; 11 `tkc:config:apply`; 12 `cache:clear`, delete the cached legacy theme CSS and rebuild it; 13 smoke test (HTTP 200); 14 check that the cached legacy CSS has the `--tkc-theme-build` sentinel. The build has 14 steps.
+- Steps: 0 preflight; 0b `build_theme.py --check`; 1-5 Angular on the host (`yarn install --immutable`, `merge-angular-json`, `build:core`, `build:shell`, `build:extension tkc`); 4b `check_bundle.py`; 6 compile the core Dawn CSS with `pscss`; 7 `scrm:copy-legacy-assets`; 7b `chown` of `cache`, `logs` and `var` to `www-data`, then `cache:clear` (so the console knows new or changed `tkc:*` commands; the prod container cache lists the commands, and without this step the first build that adds a command fails with "no commands defined"); 8 `tkc:repair --dry-run`; 9 mandatory confirmation; 10 `tkc:repair --execute`; 11 `tkc:config:apply`; 11b `tkc:legacy:asset-version` (sets `js_custom_version`, SUITE-181; it runs before step 12); 12 `cache:clear`, delete the cached legacy theme CSS and rebuild it; 13 smoke test (HTTP 200); 14 check that the cached legacy CSS has the `--tkc-theme-build` sentinel and that the session-less legacy login page `legacy/index.php?module=Users&action=Login` links `Dawn/style.css?v=`. The build has 14 numbered steps and the sub-steps 0b, 4b, 7b and 11b.
 - Exit code 1: the first error, with the step name. Exit code 2: no confirmation is possible.
 - Flags: `--yes` (runs the repair SQL unread; reviewed deploys only), `--skip-core`, `--skip-frontend`, `--dry-run-only`.
 - `docker/dc.sh console` adds `-T` when stdin is not a TTY.
 - Re-check at each upstream merge: the script names in the root `package.json`, the command `scrm:copy-legacy-assets`, and the Dawn SCSS path `public/legacy/themes/suite8/css/Dawn/style.scss`.
+- Re-check for SUITE-181 at each upstream merge:
+  - `getVersionedPath` still uses `js_custom_version` (`public/legacy/include/utils.php:2953`).
+  - The inputs of `getCSSURL` (`SugarTheme.php:1022-1064`) are still the files that the hash covers.
+  - The `.htaccess` cache times for css, js and woff2.
 
 ## Mail sink (dev, SUITE-45)
 - The dev Docker environment has a `mailpit` service (Mailpit v1.21). The system outbound account sends to Mailpit. Personal SMTP accounts bypass the sink; the import guard (SUITE-79) checks all accounts.
@@ -164,6 +187,7 @@ Not tested: the Studio UI itself, the Edit view and Quick create files, and a br
 - `php bin/console tkc:config:apply [--dry-run]`: merges `scripts/config/config_override.template.php` (secret-free) into `public/legacy/config_override.php`.
 - `php bin/console tkc:mail:use-sink [--dry-run]`: sets the system outbound account to the mail sink. DEV only, idempotent (SUITE-45).
 - `php bin/console tkc:users:repair-number-separators [--dry-run]`: removes the user preferences `dec_sep` and `num_grp_sep` that equal the other effective separator (SUITE-179). Run it after `tkc:config:apply`. It writes through the legacy `UserPreference` bean. A signed-in user must sign out and in again (the session writes the old values back). Code in `extensions/tkc/backend/Users/` (`Console/RepairNumberSeparatorsCommand`, `NumberSeparatorPolicy`, `LegacyPreferenceStore`). Upgrade risk: it depends on the key names `dec_sep` and `num_grp_sep`, on the config keys `default_decimal_seperator` and `default_number_grouping_seperator`, and on the base64-serialized format of `user_preferences.contents`. Re-check at each upstream merge.
+- `php bin/console tkc:legacy:asset-version [--dry-run] [--target=<file>]`: sets `js_custom_version` in `public/legacy/config_override.php` to `tkc` and 12 hex characters of a sha256 hash over the legacy theme inputs (SUITE-181). It prints only that key and the result ("No change", "Would apply" or "Applied"). It exits with 1 when an input is missing or the file cannot be written. Run it after `tkc:config:apply` (build step 11b). Details in § Legacy theme.
 - Code in `extensions/tkc/backend/Console/` and `Config/`. Details in `scripts/config/README.md`.
 
 ## Core patches
@@ -223,7 +247,7 @@ The spike code lives only on the `spike/SUITE-5x-*` branches of the `tkc-spike2`
 | S10 (SUITE-54) | Core `radioenum` hides its radio inputs (`_radio.scss:27`). A keyboard user cannot reach them. | Fix in a new theme story (S) before SUITE-103. Until then, the keyboard gap stays. |
 | SUITE-176 | The Symfony `test` env does not boot. The core file `config/packages/test/framework.yaml` uses the removed option `storage_id`. | The contract test boots the `dev` env. Kernel-based PHPUnit tests cannot use the `test` env. |
 | SUITE-175 | Resolved with option B: `lcobucci/clock` is 3.5.0 (upstream has 3.0.0). `composer.json` keeps the PHP 8.3 platform. | Upstream-merge risk: at each merge, compare `lcobucci/clock` in `composer.lock` with upstream and keep 3.5.0 while the platform is PHP 8.3. |
-| SUITE-181 | The legacy CSS URL version does not change with the content. | After a theme deploy, browsers keep the old legacy CSS. Do a hard reload. |
+| SUITE-190 | The font URLs in the legacy `@font-face` rules do not change with the font content. The `.htaccess` caches woff2 for 1 month. | A font file with new content must get a new file name until SUITE-190 is done. |
 | Bundle budget | The Angular build warns "initial bundle exceeded budget" (10.79 MB against 9 MiB). | Cause is core (`main` 4.88 MB, `polyfills` 4.86 MB), not TKC. No action. |
 
 ## Environments
