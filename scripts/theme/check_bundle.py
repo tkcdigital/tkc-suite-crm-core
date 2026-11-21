@@ -3,7 +3,9 @@
 
 Checks public/dist/styles*.css (newest by mtime):
   1. it contains the sentinel custom property --tkc-theme-build;
-  2. a TKC .navbar rule that sets --tkc-navbar-bg comes after the last core .navbar rule.
+  2. a TKC .navbar rule that sets --tkc-navbar-bg comes after the last core .navbar rule;
+  3. the last rule for the radioenum inputs that sets display does not set display: none (SUITE-186:
+     core hides the radios, the TKC override must keep them in the tab order).
 Exit 0 ok, 1 on a failure. Run: python3 -I scripts/theme/check_bundle.py [dist-dir]
 """
 import re
@@ -13,6 +15,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SENTINEL = "--tkc-theme-build"
 TKC_NAVBAR = "--tkc-navbar-bg"
+RADIO = re.compile(r"\.radioenum-input input\[type=['\"]?radio['\"]?\]$")
+DISPLAY = re.compile(r"(?:^|;)\s*display\s*:\s*([^;!]+)")
 
 
 def fail(msg):
@@ -30,12 +34,15 @@ def main(argv):
     if SENTINEL not in css:
         return fail(f"{bundle.name} has no {SENTINEL}: the TKC theme is not in the bundle (S1 styles index?)")
     sent = css.index(SENTINEL)
-    # Rule blocks whose selector list holds exactly ".navbar".
+    # Rule blocks. The lookbehind does not consume the "}" of the rule before, so back-to-back rules all match.
     rules = []
-    for m in re.finditer(r"(^|\})\s*([^{}]*)\{([^{}]*)\}", css):
-        selectors = [s.strip() for s in m.group(2).split(",")]
+    radio_display = []
+    for m in re.finditer(r"(?:^|(?<=\}))\s*([^{}]*)\{([^{}]*)\}", css):
+        selectors = [s.strip() for s in m.group(1).split(",")]
         if ".navbar" in selectors:
-            rules.append((m.start(), m.group(3)))
+            rules.append((m.start(), m.group(2)))
+        if any(RADIO.search(sel) for sel in selectors):
+            radio_display += [d.strip() for d in DISPLAY.findall(m.group(2))]
     tkc = [pos for pos, body in rules if TKC_NAVBAR in body]
     core = [pos for pos, body in rules if TKC_NAVBAR not in body]
     if not tkc:
@@ -44,7 +51,12 @@ def main(argv):
         return fail(f"{bundle.name}: no core .navbar rule found (selector changed upstream?)")
     if max(core) > max(tkc):
         return fail(f"{bundle.name}: a core .navbar rule comes after the TKC one (cascade order)")
-    print(f"check_bundle: OK {bundle.name} (sentinel at {sent}, core .navbar x{len(core)} before TKC .navbar)")
+    if not radio_display:
+        return fail(f"{bundle.name}: no .radioenum-input radio rule sets display (selector changed upstream?)")
+    if radio_display[-1] == "none":
+        return fail(f"{bundle.name}: the last .radioenum-input radio rule sets display: none (keyboard cannot reach it)")
+    print(f"check_bundle: OK {bundle.name} (sentinel at {sent}, core .navbar x{len(core)} before TKC .navbar, "
+          f"radio display {radio_display[-1]})")
     return 0
 
 
