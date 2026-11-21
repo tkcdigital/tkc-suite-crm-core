@@ -28,3 +28,29 @@ textarea:focus-visible,
   outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
   outline-offset: var(--tkc-focus-ring-offset);
 }
+
+/* Core draws a second ring with box-shadow and sets "outline: 0" on focus (Dawn style.scss):
+   ":focus-visible" (0,1,0), ".form-control:focus" (0,2,0), and
+   ".edit-view-row .edit-view-row-item .edit-view-field input[type=text]:focus" (0,5,1, the highest).
+   This selector is (0,6,1): body (0,0,1), :is() takes its widest argument (0,1,0), and five repeated
+   :focus-visible add (0,5,0). It keeps our outline and clears the core box-shadow. */
+body :is(a, button, input, select, textarea, [tabindex], .form-control):focus-visible:focus-visible:focus-visible:focus-visible:focus-visible {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
+  outline-offset: var(--tkc-focus-ring-offset);
+  box-shadow: none;
+}
+
+/* Module title. Core: ".moduleTitle h2" (0,1,1) sets 1.8em (25.2px at 14px) and #777;
+   ".view-action-index .moduleTitle .module-title-text" (0,3,0) and ".view-module-Connectors .moduleTitle h2.module-title-text"
+   (0,3,1) set colour and size per view. "body[class]" adds (0,1,1): (0,2,2) for h2, (0,3,2) for h2.module-title-text. */
+body[class] .moduleTitle h2,
+body[class] .moduleTitle h2.module-title-text,
+body[class] .moduleTitle .module-title-text {
+  font-size: var(--tkc-font-size-2xl);
+  font-weight: var(--tkc-font-weight-semibold);
+  color: var(--tkc-text-default);
+}
+
+body[class] .moduleTitle h2 a {
+  color: var(--tkc-text-link-default);
+}

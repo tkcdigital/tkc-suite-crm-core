@@ -1,0 +1,12 @@
+/* SUITE-60 hand partial: table text size (legacy Dawn). Tokens only.
+   Core: "table { font-size: 13px }" (0,0,1) and "#lineItems table" (1,0,1) set 13px, and cells and links inherit it.
+   "body table" is (0,0,2) and beats the first rule; the header cells ".list tr th" keep core 13px (type scale "sm"). */
+
+body table,
+body table td {
+  font-size: var(--tkc-font-size-md);
+}
+
+body #lineItems table {
+  font-size: var(--tkc-font-size-md);
+}
