@@ -33,7 +33,9 @@ for (lab,fg,bg,mn),m in byl.items():
         return f'<td class="scope-{mode}" style="background:none"><span class="pair" style="color:var(--tkc-{fg});background:var(--tkc-{bg})">Aa</span> <span data-fg="--tkc-{fg}" data-bg="--tkc-{bg}" data-min="{mn}">{rt:.2f}:1</span> <span class="res {"pass" if ok else "fail"}">{"Pass" if ok else "Check"}</span></td>'
     c.append(f'<tr><td>{lab}<br><code>{fg}</code> on <code>{bg}</code></td><td>{mn}:1</td>{cell("light")}{cell("dark")}</tr>')
 c.append('</tbody></table></div>')
-tpl=tpl.replace('/*TOKENS*/',css).replace('<!--RAMPS-->',ramps).replace('<!--SEMANTIC-->',semantic).replace('<!--CONTRAST-->',"\n".join(c))
+import brand_options as bo
+bo_html,_=bo.section()
+tpl=tpl.replace('<!--BRANDOPTIONS-->',bo_html).replace('/*TOKENS*/',css).replace('<!--RAMPS-->',ramps).replace('<!--SEMANTIC-->',semantic).replace('<!--CONTRAST-->',"\n".join(c))
 open(b.OUT+'design-system.html','w').write(tpl)
 print(len(tpl))
 
@@ -42,4 +44,8 @@ _s=tpl
 _css=_s[_s.index('<style>')+7:_s.index('</style>')]
 _a=_css.find('/* ===== DOC CHROME ===== */'); _b=_css.find('/* ===== COMPONENT LIBRARY (.tkc-*) ===== */')
 if _a!=-1 and _b!=-1: _css=_css[:_a]+_css[_b:]
-open(b.OUT+'tkc-ds.css','w').write('/* TKC design system — tokens + component classes (.tkc-*). Generated; do not edit by hand. */\n'+_css)
+_css=_css.replace('/* Live theming for doc scopes (documentation only) */','')  # doc-page marker, not part of the stylesheet
+HEADER=('/* TKC design system v0.2 — tokens + component classes (.tkc-*).\n'
+        '   Generated from design-system.html by generator/assemble.py; do not edit by hand.\n'
+        '   Used by the screen mockups in designs/screens/<screen>/mockup.html. */\n')
+open(b.OUT+'tkc-ds.css','w').write(HEADER+_css)

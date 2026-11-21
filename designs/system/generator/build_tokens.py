@@ -38,7 +38,7 @@ density={"comfortable":{"control-height":"2.75rem","row-height":"3rem","cell-pad
 
 # ---------------- tokens.json
 tok={"$schema":"tkc-tokens/1","$description":"TKC design tokens. Each leaf has a 'value'; its CSS custom property is '--tkc-' + path joined by '-' (without the top-level group name), see css field. Colours: 'value' is the CSS colour (oklch with the brand hue variable), 'hex' is the resolved sRGB value at the default brand hue, used for contrast checks and for engines without oklch.",
- "$meta":{"cssPrefix":"--tkc-","brandHueToken":"--tkc-brand-hue","defaultBrandHue":t.BRAND_HUE,"themeSelector":{"light":":root","dark":":root[data-theme=\"dark\"] and @media (prefers-color-scheme: dark) :root:not([data-theme=\"light\"])"},"densitySelector":"[data-density=\"compact\"|\"comfortable\"] (default compact on pointer:fine, comfortable on pointer:coarse)","status":"DRAFT - brand hue is a proposal; TKC has no brand palette yet"}}
+ "$meta":{"cssPrefix":"--tkc-","brandHueToken":"--tkc-brand-hue","defaultBrandHue":t.BRAND_HUE,"themeSelector":{"light":":root","dark":":root[data-theme=\"dark\"]"},"densitySelector":"[data-density=\"compact\"|\"comfortable\"] (default compact on pointer:fine, comfortable on pointer:coarse)","status":"APPROVED (SUITE-180, 2026-11-21): primary hue 195; brand pink #e95295 for the logo only (--tkc-logo); never text"}}
 prim={}
 def put(d,path,val):
     for p in path[:-1]: d=d.setdefault(p,{})

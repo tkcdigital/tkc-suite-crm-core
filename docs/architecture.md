@@ -35,6 +35,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
   - A hand-written file has a colour literal (hex, `rgb()`, `rgba()`, `hsl()`, `hsla()`).
   - A legacy file has `calc()` with ` + ` (X6).
 - The sentinel `--tkc-theme-build` holds a hash of `tokens.json`.
+- The design-system generator in `designs/system/generator/`: `build_tokens.py` writes `tokens.json` from `tokens_gen.py`; `assemble.py` writes `design-system.html` and `tkc-ds.css`. Since SUITE-188, `assemble.py` writes the committed `tkc-ds.css` header and removes a doc-only comment. Generated design-system files come only from the committed generator. Do not use a scratch copy of the generator.
 - Fonts: IBM Plex Sans 400/500/600/700 and IBM Plex Mono 400 (Latin1, OFL licence; npm `@ibm/plex-sans` 2.0.0, `@ibm/plex-mono` 2.5.0). They are self-hosted in `public/legacy/custom/themes/suite8/fonts/` (X5). Both UIs use the URL path `/legacy/custom/themes/suite8/fonts/`.
 
 ### Angular theme (SUITE-57, SUITE-58, SUITE-59)
@@ -74,7 +75,11 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - No change outside `public/legacy/custom/`.
 
 ### Login logo (SUITE-59)
-- The Angular logo (`scrm-logo-ui` uses `scrm-image image="company_logo"`, also in the navbar) comes from `public/legacy/custom/themes/suite8/images/company_logo.svg`. The file is the TKC Digital logo in one colour. The brand pink is open in SUITE-180.
+- The Angular logo (`scrm-logo-ui` uses `scrm-image image="company_logo"`, also in the navbar) comes from `public/legacy/custom/themes/suite8/images/company_logo.svg`. The file is the TKC Digital logo in one colour.
+- Logo colour (SUITE-180, owner decision 2026-11-21, option A): the UI keeps the teal primary (hue 195). The primitive token `--tkc-color-brand-pink` is oklch(0.660 0.195 356.5), that is #e95295, with a fixed hue. The semantic token `--tkc-logo` is the brand pink in light and dark mode. `_login.scss` sets `color` on the login `.logo` and on `.navbar .logo` with `var(--tkc-logo)`. Before, it used `--tkc-primary-default` and `--tkc-navbar-text-default`.
+- Use rule: use `--tkc-logo` only for `color` or `fill` of `.logo`. Never use it for text, borders, focus rings, links or buttons. Pink text on a light surface has a contrast of 3.44:1 and fails WCAG AA.
+- Logo contrast (3:1 rule for graphics): navbar 3.33 light and 5.88 dark; login card 3.44 light and 4.52 dark.
+- The legacy UI has the token in its generated file. It does not use the token, because the legacy UI has no themed logo.
 - SVG wins over PNG (`image_supported_types.yaml`). The custom suite8 path wins (`image_paths.yaml`).
 - The SVG uses `fill="currentColor"` because svg-icon inlines it. `_login.scss` sets the colour from tokens and overrides the core grey fill on `rect` and `text`.
 - After a logo change, run `console cache:clear` (theme-images cache).

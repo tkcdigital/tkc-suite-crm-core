@@ -16,8 +16,9 @@
   }
 
   // Logo (TKC Digital): the SVG uses currentColor. The text is a cut-out in the circle.
+  // Logo colour = brand pink (SUITE-180), only on .logo; the primary colour stays for buttons and links.
   .logo {
-    color: var(--tkc-primary-default);
+    color: var(--tkc-logo);
     display: inline-block;
     width: var(--tkc-space-16); // no logo size token; nearest step of the scale
     height: var(--tkc-space-16);
@@ -79,12 +80,13 @@
   }
 }
 
-// The navbar shows the same theme image (TKC Digital logo) in the navbar text colour. The text is a cut-out.
+// The navbar shows the same theme image (TKC Digital logo) in the brand pink (SUITE-180, only on .logo;
+// the navbar text colour stays for the other navbar items). The text is a cut-out.
 .navbar .logo {
   display: inline-block;
   width: var(--tkc-size-icon-lg);
   height: var(--tkc-size-icon-lg);
-  color: var(--tkc-navbar-text-default);
+  color: var(--tkc-logo);
 
   svg {
     width: 100%;

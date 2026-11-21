@@ -1,6 +1,6 @@
 # TKC components
 
-Status: DRAFT v0.1 (SUITE-16). Source of the look: `design-system.html` (live, light/dark, all states).
+Status: v0.2 (SUITE-16, brand colour approved in SUITE-180). Source of the look: `design-system.html` (live, light/dark, all states).
 Tokens: `tokens.json`. Every component uses **semantic** tokens only (`--tkc-<group>-<name>`). No raw values.
 
 Legend: **A** = Angular shell theme (`core/app/shell/src/themes/suite8/css/…`, override in
@@ -46,13 +46,18 @@ Lowest text ratio in the whole set: 4.64 (light). Lowest UI ratio: 3.10 (light f
 ## 1. Navbar and global search
 
 - **Purpose.** Module navigation, global search, notifications, user menu.
-- **Anatomy.** Logo mark + name · module items (active item has a 3 px bottom indicator) · "More" overflow · search pill · bell with unread dot · avatar menu.
+- **Anatomy.** Logo mark + name (the logo uses `--tkc-logo`, the brand pink; see Logo colour rule below) · module items (active item has a 3 px bottom indicator) · "More" overflow · search pill · bell with unread dot · avatar menu.
 - **States.** Item: default, hover (`navbar-item-hover`), active/`aria-current` (`navbar-item-active` + `navbar-indicator`), focus (indicator-coloured ring, inset). Search: default, focus (indicator border), filled. Bell: dot shown when unread.
 - **Tokens.** `navbar-bg`, `navbar-text-default`, `navbar-text-muted`, `navbar-item-hover`, `navbar-item-active`, `navbar-indicator`, `navbar-search-bg`, `navbar-search-text`, `navbar-search-placeholder`, `layout-navbar-height`, `z-navbar`.
 - **Maps to.** A: `.navbar` and `app-navbar` (`_sidebar.scss` does not apply; navbar rules live in the shell theme's navbar partials; the `--tkc-navbar-bg` proof is in `docs/architecture.md` S1). L: `#toolbar`, `.navbar`, `#globalLinks` in Dawn (`style.css` navbar area).
 - **Phone.** Module list collapses into one menu button; search and bell stay. Touch targets 44 px.
 - **Dark.** Navbar becomes `neutral-990`, so it merges into the canvas; the 3 px indicator carries the brand.
 - **Notes.** Global search *results page* is legacy (`home: all false`): restyle through L only.
+
+### Logo colour rule (SUITE-180)
+- `--tkc-logo` (semantic, refers to `--tkc-color-brand-pink`, `#e95295`, `oklch(0.660 0.195 356.5)`, fixed hue) is set as `color`/`fill` of `.logo` only, in the navbar and on the login page.
+- Never use `--tkc-logo` or `--tkc-color-brand-pink` for text, borders, focus rings, links or buttons. Pink text on white is 3.44:1 and fails AA text contrast.
+- Contrast (3:1 graphic): logo on `navbar-bg` 3.33:1 light, 5.88:1 dark; logo on `surface-raised` 3.44:1 light, 4.52:1 dark.
 
 ## 2. Buttons
 
@@ -190,9 +195,9 @@ One layout for detail, edit and create (decision D4 and S3). Edit differences co
 
 ## 14. Login
 
-- **Anatomy.** Centred card (24 rem, `surface-raised`, `radius-xl`, `shadow-3`) on a canvas with two soft brand-tint radial gradients. Logo mark + name, "Sign in", User name, Password (show/hide `[custom]` optional), primary full-width Sign in (44 px), divider "or", SSO secondary button (only if SSO is enabled), "Forgot your password?" link.
+- **Anatomy.** Centred card (24 rem, `surface-raised`, `radius-xl`, `shadow-3`) on a canvas with two soft brand-tint radial gradients. TKC Digital logo (`--tkc-logo`) + name, "Sign in", User name, Password (show/hide `[custom]` optional), primary full-width Sign in (44 px), divider "or", SSO secondary button (only if SSO is enabled), "Forgot your password?" link.
 - **States.** Field errors inline; failed login = `tkc-alert--danger` above the form with `role="alert"`; locked/expired = warning alert. Inputs: `autocomplete="username"` and `current-password`, never block paste.
-- **Maps to.** A: login view (`app-initializer.ts:111-187`: login, 2FA, logged-out are Angular). Background and card via the TKC theme. Logo: TKC placeholder tile until a logo is supplied.
+- **Maps to.** A: login view (`app-initializer.ts:111-187`: login, 2FA, logged-out are Angular). Background and card via the TKC theme. Logo: the TKC Digital logo (SUITE-59), coloured with `--tkc-logo` (not `primary-default`). No placeholder tile.
 
 ## 15. Admin and other legacy pages (no new component)
 
