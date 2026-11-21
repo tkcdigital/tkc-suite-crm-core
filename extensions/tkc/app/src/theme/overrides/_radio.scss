@@ -1,0 +1,21 @@
+// Radio inputs (SUITE-186). Core hides them with display: none, so the keyboard cannot reach them.
+// Visually hidden pattern: the inputs stay in the tab order and the accessibility tree.
+// Core: .radioenum-input (core _radio.scss). Focus ring on the label, tokens only.
+.radioenum-input input[type='radio'] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  opacity: 0;
+}
+
+.radioenum-input input[type='radio']:focus-visible + label {
+  outline: var(--tkc-focus-ring-width) solid var(--tkc-focus-ring);
+  outline-offset: var(--tkc-focus-ring-offset);
+  border-radius: var(--tkc-radius-sm);
+}
