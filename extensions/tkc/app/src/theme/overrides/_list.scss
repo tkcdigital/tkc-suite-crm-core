@@ -123,3 +123,13 @@ table.list-view-table a {
 .small-font {
   font-size: var(--tkc-font-size-md);
 }
+
+// Filter panel (core layout/_saved-search.scss:27): core salmon background and coral radio borders.
+.saved-search-container {
+  background-color: var(--tkc-primary-subtle-bg);
+  border: var(--tkc-border-width-thin) solid var(--tkc-primary-subtle-border);
+
+  .radioenum-input label:before {
+    border-color: var(--tkc-border-strong);
+  }
+}

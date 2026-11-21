@@ -102,3 +102,34 @@ button:disabled {
   background-color: var(--tkc-danger-solid);
   border-color: var(--tkc-danger-solid);
 }
+
+// Core uses ".btn-outline-danger" only as the accent of the filter and record panels (list-filter.component.ts:100,
+// list-filter.store.ts:293 "Clear", record-panel.component.ts:83), not for destructive actions. Core colour: salmon red
+// (components/_button-danger.scss:31). It shows as a primary outline button.
+.btn-outline-danger {
+  color: var(--tkc-primary-default);
+  background-color: var(--tkc-surface-default);
+  border-color: var(--tkc-primary-default);
+}
+
+.btn-outline-danger:hover,
+.btn-outline-danger:not(:disabled):not(.disabled):active,
+.btn-outline-danger:not(:disabled):not(.disabled).active,
+.show > .btn-outline-danger.dropdown-toggle {
+  color: var(--tkc-primary-on);
+  background-color: var(--tkc-primary-default);
+  border-color: var(--tkc-primary-default);
+}
+
+.btn-outline-danger.disabled,
+.btn-outline-danger:disabled {
+  color: var(--tkc-primary-default);
+  background-color: transparent;
+}
+
+.btn-outline-danger:focus,
+.btn-outline-danger.focus,
+.btn-outline-danger:not(:disabled):not(.disabled):active:focus,
+.show > .btn-outline-danger.dropdown-toggle:focus {
+  box-shadow: none; // the global :focus-visible outline is the ring
+}
