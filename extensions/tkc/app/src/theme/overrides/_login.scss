@@ -19,8 +19,8 @@
   .logo {
     color: var(--tkc-primary-default);
     display: inline-block;
-    width: 4.5rem;
-    height: 4.5rem;
+    width: var(--tkc-space-16); // no logo size token; nearest step of the scale
+    height: var(--tkc-space-16);
   }
 
   .logo svg {
@@ -63,7 +63,7 @@
 
   .login-button {
     width: 100%;
-    min-height: 2.75rem;
+    min-height: var(--tkc-size-touch-min);
     margin: var(--tkc-space-4) 0 0;
     letter-spacing: var(--tkc-letter-spacing-normal);
     border-radius: var(--tkc-radius-md);

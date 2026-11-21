@@ -58,7 +58,7 @@
 
 // Core ".sub-panel-banner.accordion .card .card-header" (0,4,0, _subpanel.scss:366): white, 2.1em, bold link.
 .sub-panel-banner.accordion .card .card-header {
-  min-height: 2.75rem;
+  min-height: var(--tkc-size-touch-min);
   padding: var(--tkc-space-2) var(--tkc-density-panel-pad);
   color: var(--tkc-text-default);
   background: var(--tkc-surface-sunken);

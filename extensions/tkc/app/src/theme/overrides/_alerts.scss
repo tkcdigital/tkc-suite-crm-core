@@ -57,6 +57,7 @@
   padding: 0;
 }
 
+// Exception: CSS custom properties do not work in media queries, so the phone breakpoint is a literal (spec has none).
 @media (max-width: 47.9375rem) {
   .alert-fixed {
     top: var(--tkc-space-4);
