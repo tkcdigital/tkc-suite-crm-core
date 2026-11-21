@@ -15,6 +15,7 @@ Only the Python standard library is used. tokens.json is the input contract.
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -243,6 +244,9 @@ def render_all(root, dark_auto=False):
 HEX_RE = re.compile(r"(?<![\w&])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(?![\w-])")
 FUNC_RE = re.compile(r"\b(?:rgba?|hsla?)\s*\(", re.IGNORECASE)
 CALC_PLUS_RE = re.compile(r"calc\([^;{}]*\s\+\s", re.IGNORECASE)
+# X9: whitespace, then ":" in a selector (descendant combinator + pseudo, "body :is("). Legacy cssmin strips the space.
+# A comma before the space is fine ("a, :hover" is not a descendant pattern).
+SPACE_PSEUDO_RE = re.compile(r"[^\s,]\s+:")
 
 
 def _strip_comments(text, line_comments):
@@ -259,6 +263,9 @@ def lint_text(text, legacy, scss):
     for match in re.finditer(r"[^;{}]*([;{}]|$)", clean):
         chunk, term = match.group(0), match.group(1)
         start = match.start()
+        if term == "{" and legacy and not chunk.strip().startswith("@") and SPACE_PSEUDO_RE.search(chunk.strip()):
+            line = clean.count("\n", 0, start + len(chunk) - len(chunk.lstrip())) + 1
+            problems.append("line %d: selector with whitespace before ':' (X9)" % line)
         if term == "{" or not chunk.strip():
             continue  # selector or at-rule prelude: not a declaration
         line = clean.count("\n", 0, start + len(chunk) - len(chunk.lstrip())) + 1
@@ -308,8 +315,12 @@ def write_outputs(root, outputs):
     for rel, text in outputs.items():
         path = Path(root) / rel
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w", encoding="utf-8", newline="\n") as fh:
+        # Atomic: legacy SugarTheme caches the CSS forever, and a request that reads a truncated file
+        # would cache CSS without the TKC rules (SUITE-60). Write a temp file, then replace.
+        tmp = path.with_name(path.name + ".tmp")
+        with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
             fh.write(text)
+        os.replace(tmp, path)
 
 
 def differing(root, outputs):

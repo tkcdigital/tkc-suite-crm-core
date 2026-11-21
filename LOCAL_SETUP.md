@@ -114,7 +114,7 @@ Never use real OSC data in a test.
 The design tokens in `designs/system/tokens.json` feed both UIs. Hand-written legacy rules are in
 `extensions/tkc/legacy-theme/*.css` (`10-base.css`, `20-buttons.css`, `30-fields.css`). Use tokens only; no hex or `rgb()`.
 Do not edit `public/legacy/custom/themes/suite8/css/Dawn/style.css`. The generator writes it.
-`scripts/build.sh` does these steps for you (steps 0b and 12).
+`scripts/build.sh` does these steps for you (steps 0b, 12 and 14). Step 12 deletes the cached CSS, rebuilds it with one login-page request and fails the build when the cached file has no `--tkc-theme-build`. Reason: SugarTheme caches the CSS without a content check, so a request that reads an empty custom file caches CSS without the TKC rules.
 
 1. Join the tokens and the partials into the legacy theme file:
    ```
@@ -125,7 +125,7 @@ Do not edit `public/legacy/custom/themes/suite8/css/Dawn/style.css`. The generat
    ```
    docker/dc.sh console tkc:repair --dry-run
    ```
-3. Delete the old cached CSS file. The legacy minifier runs only when this file does not exist; an existing file is overwritten without minification:
+3. Delete the old cached CSS file. The legacy minifier runs only when this file does not exist; an existing file is overwritten without minification. Then open `/legacy/index.php?module=Users&action=Login` once and check that the cached file contains `--tkc-theme-build`:
    ```
    docker/dc.sh exec -T app rm -f public/legacy/cache/themes/suite8/css/Dawn/style.css
    ```

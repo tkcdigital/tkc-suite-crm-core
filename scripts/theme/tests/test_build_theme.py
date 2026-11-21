@@ -172,6 +172,21 @@ class TestLint(unittest.TestCase):
         self.assertEqual(bt.lint_text("/* #fff */ a { margin: 0; }", True, False), [])
         self.assertEqual(bt.lint_text("// #fff\na { margin: 0; }", False, True), [])
 
+    def test_space_before_pseudo_legacy_only(self):
+        for sel in ("body :is(a, b):focus-visible", ".a :hover", ".a\n  :not(.b)", "a, b :first-child"):
+            css = sel + " { color: var(--x); }"
+            self.assertEqual(len(bt.lint_text(css, True, False)), 1, sel)
+            self.assertEqual(bt.lint_text(css, False, True), [], sel)
+
+    def test_space_before_pseudo_no_false_positive(self):
+        css = (
+            "a:hover, a:focus-visible:focus-visible, *:is(a, b) { color: var(--x); }\n"
+            "a, :hover { color: var(--x); }\n"
+            "@media (min-width: 600px) { .a { color: var(--x); } }\n"
+            ".b { margin: 0 auto; transition: color 1s; }\n"
+        )
+        self.assertEqual(bt.lint_text(css, True, False), [])
+
     def test_calc_plus_legacy_only(self):
         css = "a { width: calc(100% + 4px); }"
         self.assertTrue(bt.lint_text(css, legacy=True, scss=False))

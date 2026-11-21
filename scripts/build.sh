@@ -26,7 +26,7 @@ for arg in "$@"; do
   esac
 done
 
-TOTAL=13
+TOTAL=14
 STEP_NO=0
 STEP_NAME="start"
 APP_URL="http://localhost:${APP_PORT:-8081}/"
@@ -117,13 +117,32 @@ $DC console tkc:config:apply
 
 step 12 "cache:clear (Symfony cache and the cached legacy theme CSS)"
 $DC console cache:clear
-# SugarTheme minifies the custom Dawn CSS only when no cached copy exists (SUITE-60).
-$DC exec -T -u www-data app rm -f public/legacy/cache/themes/suite8/css/Dawn/style.css
+# SugarTheme caches the Dawn CSS forever and never checks its content (SUITE-60). A request that reads the custom
+# file while it is empty or missing writes a copy without the TKC rules. So: delete the copy, let one session-less
+# request to the login page rebuild it, and check the sentinel. Retry once, then fail the build.
+legacy_css=public/legacy/cache/themes/suite8/css/Dawn/style.css
+legacy_css_ok=0
+for attempt in 1 2; do
+  $DC exec -T -u www-data app rm -f "$legacy_css"
+  curl -s -o /dev/null --max-time 60 "${APP_URL}legacy/index.php?module=Users&action=Login" || true
+  if $DC exec -T -u www-data app grep -q -- '--tkc-theme-build' "$legacy_css"; then
+    legacy_css_ok=1; break
+  fi
+  echo "    cached legacy CSS has no --tkc-theme-build (attempt ${attempt})" >&2
+done
 
 step 13 "Smoke test ${APP_URL}"
 code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$APP_URL" || true)"
 echo "    HTTP ${code}"
 [ "$code" = "200" ]
+
+step 14 "Cached legacy CSS contains --tkc-theme-build"
+if [ "${legacy_css_ok}" -ne 1 ]; then
+  echo "The cached legacy CSS ${legacy_css} has no TKC rules. Delete it and rebuild." >&2
+  exit 1
+fi
+$DC exec -T -u www-data app grep -q -- '--tkc-theme-build' "$legacy_css"
+echo "    OK"
 
 trap - ERR
 echo "Build chain finished."
