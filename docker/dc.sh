@@ -6,7 +6,10 @@
 # Console and shell run as www-data, so cache/log files stay writable for Apache.
 cd "$(dirname "$0")/.." || exit 1
 case "${1:-}" in
-  console) shift; exec docker compose --env-file docker/.env exec -u www-data app php bin/console "$@" ;;
+  console) shift
+           tflag=""; [ -t 0 ] || tflag="-T"   # no TTY (script, CI, pipe): docker compose exec needs -T
+           # shellcheck disable=SC2086
+           exec docker compose --env-file docker/.env exec $tflag -u www-data app php bin/console "$@" ;;
   sh)      exec docker compose --env-file docker/.env exec -u www-data app bash ;;
   *)       exec docker compose --env-file docker/.env "$@" ;;
 esac
