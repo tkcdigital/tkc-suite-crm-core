@@ -34,7 +34,7 @@ final class TinymceDeltaTest extends TestCase
 
         self::assertCount(3, $plugins);
         foreach ($plugins as $entry) {
-            self::assertNotContains('media', preg_split('/\s+/', $entry));
+            self::assertNotContains('media', preg_split('/[\s,]+/', $entry));
         }
         self::assertSame('insertdatetime table paste code help wordcount', $plugins[2]);
         self::assertSame($core['tinymce']['edit']['plugins'][0], $plugins[0]);
@@ -49,6 +49,18 @@ final class TinymceDeltaTest extends TestCase
         $ui = $this->applyDelta(['tinymce' => ['edit' => ['plugins' => ['link media table']]]]);
 
         self::assertSame(['link table', '', ''], $ui['tinymce']['edit']['plugins']);
+    }
+
+    public function testCommaSeparatedEntriesLoseMedia(): void
+    {
+        $ui = $this->applyDelta(['tinymce' => ['edit' => ['plugins' => ['link,media,table', 'media', 'media,b']]]]);
+
+        foreach ($ui['tinymce']['edit']['plugins'] as $entry) {
+            self::assertNotContains('media', preg_split('/[\s,]+/', $entry));
+        }
+        self::assertSame('link,table', $ui['tinymce']['edit']['plugins'][0]);
+        self::assertSame('', $ui['tinymce']['edit']['plugins'][1]);
+        self::assertSame('b', $ui['tinymce']['edit']['plugins'][2]);
     }
 
     public function testPluginNamesThatContainMediaAreKept(): void
