@@ -82,7 +82,51 @@ Fallback: set the SMTP server in Admin > Email Settings by hand (host `mailpit`,
 
 ## Tests
 
+One command runs all TKC tests: `scripts/test.sh` (or `--php`, `--ng`, `--theme`). It exits non-zero if any part fails.
+
+| Part | Where it runs | Command behind it |
+|---|---|---|
+| PHP (PHPUnit 10) | app container, as `www-data` | `docker/dc.sh exec -T -u www-data app vendor/bin/phpunit -c extensions/tkc/phpunit.xml.dist` |
+| NG (Karma, Jasmine) | host | `yarn ng test tkc --watch=false --browsers=ChromeHeadless` |
+| THEME (unittest + bundle check) | host | `python3 -I -m unittest discover scripts/theme/tests`, then `python3 -I scripts/theme/check_bundle.py` |
+
+Prerequisites:
+- PHP part: `docker/dc.sh up -d` must run. The container needs the composer dev dependencies.
+- NG part: `yarn install` and `yarn merge-angular-json` have run, and Google Chrome is installed (ChromeHeadless).
+  Set `CHROME_BIN` if Chrome is not in the default place.
+- THEME part: Python 3 only. `check_bundle.py` checks the newest `public/dist/styles*.css` (sentinel present, TKC `.navbar` rule after core's). It exits 1 if `public/dist` is not built: run `scripts/build.sh` first.
+
+Where the tests live:
+- PHP unit tests: `extensions/tkc/backend/Tests/Unit/` (suite `unit`). Fixtures: `backend/Tests/Fixtures/` (synthetic data only).
+- PHP contract tests: `extensions/tkc/backend/Tests/Contract/` (suite `contract`, SUITE-47).
+- Angular specs: `extensions/tkc/app/src/**/*.spec.ts`. Karma config: `extensions/tkc/app/karma.conf.js`.
+- Theme tests: `scripts/theme/tests/`.
+
+Run one PHP suite or test: add the PHPUnit option to the command, for example
+`docker/dc.sh exec -T -u www-data app vendor/bin/phpunit -c extensions/tkc/phpunit.xml.dist --testsuite unit --filter MailSinkPolicy`.
+Coverage of the Angular tests goes to `coverage/tkc`.
+Test directories are named `Tests` because the service config excludes `Tests` from autowiring.
+Never use real OSC data in a test.
+
 ## Theme
+The design tokens in `designs/system/tokens.json` feed both UIs. Hand-written legacy rules are in
+`extensions/tkc/legacy-theme/*.css` (`10-base.css`, `20-buttons.css`, `30-fields.css`). Use tokens only; no hex or `rgb()`.
+Do not edit `public/legacy/custom/themes/suite8/css/Dawn/style.css`. The generator writes it.
+
+1. Join the tokens and the partials into the legacy theme file:
+   ```
+   python3 -I scripts/theme/build_theme.py
+   python3 -I scripts/theme/build_theme.py --check   # must print "--check OK"
+   ```
+2. Clear the legacy theme cache. This command does not change the database:
+   ```
+   docker/dc.sh console tkc:repair --dry-run
+   ```
+3. Delete the old cached CSS file. The legacy minifier runs only when this file does not exist; an existing file is overwritten without minification:
+   ```
+   docker/dc.sh exec -T app rm -f public/legacy/cache/themes/suite8/css/Dawn/style.css
+   ```
+4. Reload a legacy page (for example `/legacy/index.php?module=Administration&action=index`) with a hard refresh.
 
 ## Angular build
 The build runs on the host, not in the container. It only needs Node and Yarn 4 (Corepack:

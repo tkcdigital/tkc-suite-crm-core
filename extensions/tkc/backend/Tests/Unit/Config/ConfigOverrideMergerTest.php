@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\unit\tkc;
+namespace App\Extension\tkc\backend\Tests\Unit\Config;
 
 use App\Extension\tkc\backend\Config\ConfigOverrideMerger;
 use PHPUnit\Framework\TestCase;
@@ -56,5 +56,13 @@ class ConfigOverrideMergerTest extends TestCase
     public function testMissingOverrideFileIsEmpty(): void
     {
         $this->assertSame([], $this->merger->parseOverrideFile($this->dir . '/none.php'));
+    }
+
+    public function testParsesSyntheticFixtureAndMergeIsIdempotent(): void
+    {
+        $fixture = dirname(__DIR__, 2) . '/Fixtures/config_override_sample.php';
+        $current = $this->merger->parseOverrideFile($fixture);
+        $this->assertSame(['tkc_sample' => ['flag' => true, 'name' => 'synthetic']], $current);
+        $this->assertSame([], $this->merger->diff($current, $current));
     }
 }

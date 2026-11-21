@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="../../vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="backend/Tests/bootstrap.php"
+         cacheDirectory="../../var/cache/phpunit-tkc"
+         colors="true"
+         failOnWarning="true">
+    <php>
+        <env name="KERNEL_CLASS" value="App\Kernel"/>
+        <env name="APP_ENV" value="test"/>
+    </php>
+    <testsuites>
+        <testsuite name="unit">
+            <directory>backend/Tests/Unit</directory>
+        </testsuite>
+        <testsuite name="contract">
+            <directory>backend/Tests/Contract</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
