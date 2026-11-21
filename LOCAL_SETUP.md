@@ -26,6 +26,7 @@ docker/dc.sh console scrm:copy-legacy-assets
 docker/dc.sh exec -T app vendor/bin/pscss --style=compressed \
   public/legacy/themes/suite8/css/Dawn/style.scss > public/legacy/themes/suite8/css/Dawn/style.css
 docker/dc.sh console tkc:config:apply --dry-run && docker/dc.sh console tkc:config:apply
+docker/dc.sh console tkc:users:repair-number-separators --dry-run && docker/dc.sh console tkc:users:repair-number-separators   # SUITE-179: always after tkc:config:apply
 docker/dc.sh console tkc:repair --dry-run     # review the SQL; run without --dry-run only after review
 docker/dc.sh console cache:clear
 ```

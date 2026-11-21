@@ -19,3 +19,10 @@
 - Do not use the logo upload in Admin. It does not replace the theme image.
 - To change the logo: replace the file, run `docker/dc.sh console cache:clear`, and rebuild if needed.
 - Keep "Supercharged by SuiteCRM" visible.
+
+## User number separators (SUITE-179)
+- Run `tkc:config:apply` first. Then run `docker/dc.sh console tkc:users:repair-number-separators`. Use `--dry-run` to see the changes first.
+- Reason: `tkc:config:apply` sets the system decimal separator `,` and grouping separator `.`. A user preference `dec_sep` = `.` (the installer sets it for the admin user) then makes both separators the same. The user edit view refuses Save with the message "The decimal separator cannot use the same character as the thousands separator."
+- The command checks each user that is not deleted, in all statuses. It removes only the user separator keys that cause the conflict. The user then uses the system default. It does not change other users or other preferences.
+- The output shows user IDs and key names only. The command skips a user whose preferences do not decode and reports it.
+- A signed-in user sees the change after the next sign-in. A second run changes nothing.
