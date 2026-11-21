@@ -70,7 +70,17 @@
   - SUITE-179 AC3: the owner signs out and in, then saves a password change.
   - SUITE-176 (bug): the Symfony `test` env does not boot.
   - SUITE-180 and SUITE-181.
-- Spikes SUITE-51 to SUITE-55 are not started.
+- Spikes SUITE-51 to SUITE-55 are done (2026-11-21). Spike code stays on `spike/*` branches and is never merged. Results:
+  - S7 (SUITE-51): go. AOS_Contracts renders in Angular with a D5 delta. Renewal reminder is not supported, so the layout leaves the field off.
+  - S8 (SUITE-52): go. Thread fields, `dynamicClass` and `bottomWidgets` work. The thread is a full-width block, not a tab.
+  - S9 (SUITE-53): action `displayLogic` on a field value works (go). A panel does not hide when all cells hide (no-go, accept the empty header).
+  - S10 (SUITE-54): partial. Keyboard access needs an S theme fix (SUITE-186). The default list filter is a saved filter seeded per user (SUITE-106).
+  - S11 (SUITE-55): go with metadata logic on `probability` (SUITE-69). No hook.
+  - Downstream stories SUITE-103, 106, 108, 110, 114, 126, 128, 129, 130, 137 and 144 are corrected. New story: SUITE-186 (Sprint 1, before SUITE-103).
+  - SUITE-50 AC3 (the `docs/architecture.md` spike results) is open until the document-agent finishes it.
+- Decisions needed from the owner:
+  - SUITE-144: contract panels. Option A: one panel "Contract details" with cells shown by contract type (recommended). Option B: three panels with one empty header.
+  - SUITE-129: the thread is a block under the panels, not a Messages tab. The UX designer confirms this against the Cases mockup. If not, the PO raises an M story for a real tab.
 - New follow-up issues: SUITE-182 (label association, accessibility), SUITE-183 (dependency advisories, high priority), SUITE-184 (build hardening).
 
 ## Open questions
