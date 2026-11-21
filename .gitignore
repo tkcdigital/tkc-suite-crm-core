@@ -107,3 +107,6 @@ __pycache__/
 
 # Local MCP config (machine paths, project id). Template: .mcp.example.json
 /.mcp.json
+
+# Brand guide (marketing source, 35 MB): local reference only, not in git
+/designs/*Brandguide*.pptx
