@@ -109,4 +109,4 @@ __pycache__/
 /.mcp.json
 
 # Brand guide (marketing source, 35 MB): local reference only, not in git
-/designs/*Brandguide*.pptx
+/designs/**/*.pptx

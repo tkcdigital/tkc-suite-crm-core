@@ -1,8 +1,8 @@
-"""SUITE-180: brand colour options section for design-system.html (proposal only).
+"""SUITE-180: the "Brand colour (approved: option A)" section of design-system.html.
 
-Builds the HTML for the "Brand colour options" section. Colours are oklch tuples, the same
-way tokens_gen.py defines the production ramps; hex is computed for the contrast checks.
-Nothing here feeds tokens.json. The preview variables (--bo-*) are scoped to the section.
+Builds the HTML for the brand colour record: the raw brand colours, the approved option A
+panes and their contrast table. The brand pink itself is defined once in tokens_gen.py (PINK*).
+This module does not feed tokens.json. The preview variables (--bo-*) are scoped to the section.
 """
 import os, re
 import tokens_gen as t
