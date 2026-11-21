@@ -68,7 +68,9 @@
 ### Sprint 1 starts with
 - SUITE-186 (`radioenum` keyboard focus). It comes before SUITE-103.
 - Sprint 1 goal (from `docs/plan/backlog-draft.md`): all TKC fields exist after Repair, the guarded import runs twice on synthetic data with the same counts, and gate A is open.
-- **Gate:** SUITE-183 (dependency advisories, HIGH) must clear before the first Azure deploy and before the real-data import.
+- **Gate:** SUITE-183 (dependency advisories) is fixed in the lock files and passed the doc-sync gate (2026-11-21). The security-officer sign-off is the last step. The accepted advisories and the Azure conditions apply to the first Azure deploy and to the real-data import (`docs/architecture.md` § Accepted dependency advisories, `docs/environments.md`).
+- SUITE-192 (`zbateson/mail-mime-parser` 3.x) blocks email-to-case. No inbound mailbox runs with real data until it closes.
+- SUITE-193 (Azure upload storage) must close before the Azure deploy uses `AZURE_BLOB_INSTANCES`. SUITE-163 has two new acceptance criteria (CI audit gate, pinned Composer).
 - SUITE-176 (Symfony `test` env) is open. Plan it early, because the contract test boots the `dev` env as a workaround.
 - SUITE-187 (several records in tabs) is not scheduled. It needs an architect check and a ux-designer mockup first.
 - SUITE-129 needs an architect prescription for the "Messages" tab extension point before the build.

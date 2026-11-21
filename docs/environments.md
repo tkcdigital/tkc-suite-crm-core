@@ -23,3 +23,13 @@
 - Service principal: `tkc-suite-crm-manager-sp`, role **Contributor** on `TKC-SUITE-CRM-RG` only.
 - Credentials: Proton Pass vault `TKC-SUITE` (see `.claude/rules/secrets.md`); used only by the azure-engineer.
 - Every deployment to a shared environment needs the user's approval and the security-officer gate.
+
+## Azure conditions (SUITE-183)
+The security-officer accepted some dependency advisories on these conditions. See `docs/architecture.md` § Accepted dependency advisories. Each Azure environment must meet all of them.
+- Set `APP_ENV=prod`.
+- Do not set `GRAPHQL_SHOW_DOCS` to true.
+- Do not set `AZURE_BLOB_INSTANCES` (SUITE-193 covers Azure upload storage).
+- Do not activate an inbound mailbox (group, personal or email-to-case) in an environment with real data, until SUITE-192 closes.
+- Run no dev server (`ng serve`, Karma) on Azure or on a public CI agent.
+- The runtime image must contain `composer.lock` and `public/legacy/suitecrm_version.php`. The command `tkc:legacy:asset-version` reads both.
+- The deploy runs `tkc:legacy:asset-version` after `scrm:copy-legacy-assets`.

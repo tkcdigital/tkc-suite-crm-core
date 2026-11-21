@@ -59,7 +59,7 @@ scripts/build.sh [--yes] [--skip-core] [--skip-frontend] [--dry-run-only]
 | 8 | `tkc:repair --dry-run`: shows the SQL |
 | 9 | Asks "Run tkc:repair --execute? [y/N]" (always, also when there is no SQL) |
 | 10-11 | `tkc:repair --execute`, `tkc:config:apply` |
-| 11b | `tkc:legacy:asset-version`: sets `js_custom_version` from the legacy theme content (SUITE-181) |
+| 11b | `tkc:legacy:asset-version`: sets `js_custom_version` from the legacy theme content, `composer.lock` and the SuiteCRM version (SUITE-181, SUITE-183) |
 | 12 | `cache:clear` (also rebuilds the cached legacy theme CSS) |
 | 13 | Smoke test: `GET http://localhost:8081/` must give HTTP 200 (`APP_PORT` overrides the port) |
 | 14 | Fails when the cached legacy CSS has no `--tkc-theme-build` (SUITE-60) or when the legacy login page has no `Dawn/style.css?v=` link (SUITE-181) |
@@ -133,6 +133,21 @@ Do not edit `public/legacy/custom/themes/suite8/css/Dawn/style.css`. The generat
    docker/dc.sh exec -T app rm -f public/legacy/cache/themes/suite8/css/Dawn/style.css
    ```
 4. Run `docker/dc.sh console tkc:legacy:asset-version`. It sets `js_custom_version`, so the browser asks for the new CSS URL. Then reload a legacy page (for example `/legacy/index.php?module=Administration&action=index`). A hard refresh is not needed.
+
+The legacy asset URL also changes after a vendor update (`composer.lock`) and after an upstream release (`public/legacy/suitecrm_version.php`). Run the build after both.
+
+## Dependency updates
+Use this procedure for a security update of a locked package (SUITE-183). A change to a constraint in `composer.json` or `package.json` needs the architect.
+1. Update the Composer packages in the app container as `www-data`:
+   ```
+   docker/dc.sh exec -u www-data -e COMPOSER_HOME=/tmp/composer app composer update <packages> --with-all-dependencies --no-security-blocking
+   ```
+   Use `www-data`. A root run leaves root-owned cache files and the app answers with HTTP 500.
+   Use `--no-security-blocking`. Without it, Composer refuses the root-pinned vulnerable packages.
+2. Update the npm packages on the host: `yarn up -R tinymce dompurify`.
+3. Run `scripts/build.sh`.
+4. Run `composer audit` and `yarn npm audit --all --recursive --environment production`. Compare the result with `docs/architecture.md` § Accepted dependency advisories.
+5. Add or update the row in `docs/architecture.md` § Overrides register.
 
 ## Angular build
 The build runs on the host, not in the container. It only needs Node and Yarn 4 (Corepack:
