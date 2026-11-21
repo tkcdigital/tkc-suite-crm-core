@@ -66,7 +66,7 @@
 **Follow-ups (To Do):** SUITE-176, 178, 180 (done after Sprint 0), 181 (done after Sprint 0), 182, 183, 184, 185, 186 and 187.
 
 ### Sprint 1 starts with
-- SUITE-186 (`radioenum` keyboard focus). It comes before SUITE-103.
+- SUITE-186 (`radioenum` keyboard focus). It comes before SUITE-103. The build is done (theme partial `_radio.scss` and an Angular field override). See `docs/architecture.md` § Overrides register.
 - Sprint 1 goal (from `docs/plan/backlog-draft.md`): all TKC fields exist after Repair, the guarded import runs twice on synthetic data with the same counts, and gate A is open.
 - **Gate:** SUITE-183 (dependency advisories, HIGH) must clear before the first Azure deploy and before the real-data import.
 - SUITE-176 (Symfony `test` env) is open. Plan it early, because the contract test boots the `dev` env as a workaround.
