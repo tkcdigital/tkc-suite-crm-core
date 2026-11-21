@@ -1,1 +1,70 @@
-// Stub: owned by SUITE-58. Do not edit in SUITE-57.
+// List view (components.md section 6). Owned by SUITE-58. Core: .light-table, .list-view-table (_light-table.scss).
+// Scoped by container so subpanel tables keep their own rules.
+.light-table {
+  .list-view-table {
+    color: var(--tkc-text-default);
+    background-color: var(--tkc-table-row-default);
+
+    thead,
+    .primary-table-header,
+    th {
+      color: var(--tkc-table-header-text);
+      background-color: var(--tkc-table-header-bg);
+      font-size: var(--tkc-font-size-sm);
+      font-weight: var(--tkc-font-weight-semibold);
+    }
+
+    td,
+    th {
+      border-color: var(--tkc-table-row-border);
+    }
+
+    tbody tr,
+    tr:nth-child(even) {
+      background-color: var(--tkc-table-row-default);
+    }
+
+    tbody tr {
+      height: var(--tkc-density-row-height);
+      transition: background-color var(--tkc-duration-fast) var(--tkc-easing-standard);
+    }
+
+    tbody tr:hover {
+      background-color: var(--tkc-table-row-hover);
+    }
+
+    // Keyboard users: the row that holds focus gets the same fill, plus the global ring on the focused element.
+    tbody tr:focus-within {
+      background-color: var(--tkc-table-row-hover);
+      box-shadow: inset var(--tkc-border-width-thick) 0 0 var(--tkc-primary-default);
+    }
+
+    tbody tr.selected,
+    tbody tr.table-active {
+      background-color: var(--tkc-table-row-selected);
+    }
+  }
+
+  .sort-icon {
+    fill: var(--tkc-text-link-default);
+  }
+
+  .bulk-action {
+    color: var(--tkc-primary-subtle-text);
+  }
+
+  .pagination-button {
+    color: var(--tkc-header-action-text);
+    background-color: var(--tkc-header-action-bg);
+    border: var(--tkc-border-width-thin) solid var(--tkc-field-border-default);
+    border-radius: var(--tkc-radius-md);
+
+    .pagination-icons {
+      fill: var(--tkc-header-action-text);
+    }
+  }
+
+  .pagination-button:hover {
+    background-color: var(--tkc-header-action-hover);
+  }
+}

@@ -1,1 +1,46 @@
-// Stub: owned by SUITE-58. Do not edit in SUITE-57.
+// Subpanels (components.md section 7). Owned by SUITE-58. Core: .sub-panel (_subpanel.scss).
+.sub-panel {
+  div.card {
+    background-color: var(--tkc-surface-default);
+    border: var(--tkc-border-width-thin) solid var(--tkc-border-default);
+    border-radius: var(--tkc-radius-lg);
+    overflow: hidden;
+  }
+
+  .panel-card .card-header {
+    color: var(--tkc-text-default);
+    background-color: var(--tkc-surface-sunken);
+    border-bottom: var(--tkc-border-width-thin) solid var(--tkc-border-default);
+    font-weight: var(--tkc-font-weight-semibold);
+  }
+
+  .subpanel-icon svg {
+    fill: var(--tkc-text-muted);
+    stroke: var(--tkc-text-muted);
+  }
+
+  .list-view-table {
+    tbody tr:hover,
+    tbody tr:focus-within {
+      background-color: var(--tkc-table-row-hover);
+    }
+  }
+
+  .panel-buttons button.button-group-button.btn-outline-light.active {
+    color: var(--tkc-primary-on);
+    background-color: var(--tkc-primary-default);
+    border-color: var(--tkc-primary-default);
+
+    svg {
+      fill: var(--tkc-primary-on);
+    }
+  }
+}
+
+.sub-panel-banner {
+  color: var(--tkc-text-default);
+}
+
+.sub-panel-banner-button:hover {
+  background-color: var(--tkc-primary-subtle-bg);
+}

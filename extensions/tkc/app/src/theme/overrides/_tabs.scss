@@ -1,1 +1,46 @@
-// Stub: owned by SUITE-58. Do not edit in SUITE-57.
+// Tabs (components.md section 5). Owned by SUITE-58. Core: .tabs-layout, .nav-tabs, .tab-link (_tabs.scss).
+.tabs-layout {
+  .tab-content {
+    background-color: var(--tkc-surface-default);
+  }
+
+  .nav-tabs {
+    background-color: var(--tkc-surface-default);
+    border-bottom: var(--tkc-border-width-thin) solid var(--tkc-border-default);
+    overflow-x: auto;
+  }
+
+  .nav-tabs .tab {
+    padding-right: 0;
+  }
+
+  .nav-tabs .tab-link {
+    color: var(--tkc-text-muted);
+    background-color: transparent;
+    border: none;
+    border-bottom: var(--tkc-border-width-thick) solid transparent;
+    border-radius: 0;
+    margin: 0;
+    font-size: var(--tkc-font-size-md);
+    font-weight: var(--tkc-font-weight-medium);
+    letter-spacing: var(--tkc-letter-spacing-normal);
+    text-transform: none;
+    transition: background-color var(--tkc-duration-fast) var(--tkc-easing-standard);
+  }
+
+  .nav-tabs .tab-link:hover {
+    color: var(--tkc-text-default);
+    background-color: var(--tkc-surface-sunken);
+  }
+
+  .nav-tabs .tab-link:focus-visible {
+    outline-offset: calc(-1 * var(--tkc-focus-ring-width)); // inset ring
+  }
+
+  .nav-tabs .tab-link.active,
+  .nav-tabs .tab-link.active:hover {
+    color: var(--tkc-text-link-default);
+    background-color: transparent;
+    border-bottom-color: var(--tkc-primary-default);
+  }
+}

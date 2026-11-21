@@ -1,1 +1,42 @@
-// Stub: owned by SUITE-58. Do not edit in SUITE-57.
+// Alerts and toasts (components.md section 9). Owned by SUITE-58. Core: .alert, .message-container, .alert-fixed (_message.scss).
+.alert {
+  border: var(--tkc-border-width-thin) solid var(--tkc-border-default);
+  border-left-width: var(--tkc-border-width-thick);
+  border-radius: var(--tkc-radius-md);
+  font-size: var(--tkc-font-size-md);
+}
+
+.alert-success {
+  color: var(--tkc-success-subtle-text);
+  background-color: var(--tkc-success-subtle-bg);
+  border-color: var(--tkc-success-subtle-border);
+  border-left-color: var(--tkc-success-solid);
+}
+
+.alert-info {
+  color: var(--tkc-info-subtle-text);
+  background-color: var(--tkc-info-subtle-bg);
+  border-color: var(--tkc-info-subtle-border);
+  border-left-color: var(--tkc-info-solid);
+}
+
+.alert-warning {
+  color: var(--tkc-warning-subtle-text);
+  background-color: var(--tkc-warning-subtle-bg);
+  border-color: var(--tkc-warning-subtle-border);
+  border-left-color: var(--tkc-warning-solid);
+}
+
+.alert-danger {
+  color: var(--tkc-danger-subtle-text);
+  background-color: var(--tkc-danger-subtle-bg);
+  border-color: var(--tkc-danger-subtle-border);
+  border-left-color: var(--tkc-danger-solid);
+}
+
+// Toast: the fixed message from the message service.
+.alert-fixed {
+  z-index: var(--tkc-z-toast);
+  border-radius: var(--tkc-radius-md);
+  box-shadow: var(--tkc-shadow-3);
+}
