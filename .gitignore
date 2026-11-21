@@ -99,3 +99,8 @@ PROJECT_SETUP.md
 # Docker dev environment (secrets and container state stay local)
 /docker/.env
 /docker/state/
+
+# Python bytecode and test coverage output (SUITE-177)
+__pycache__/
+*.pyc
+/coverage/

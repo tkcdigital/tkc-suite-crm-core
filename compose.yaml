@@ -20,6 +20,7 @@ services:
       APP_ENV: prod
       # Hosts that count as the mail sink (read by tkc.mail.sink_hosts and the SUITE-79 import guard).
       TKC_MAIL_SINK_HOSTS: mailpit
+      TKC_DEV_MAIL_SINK: "1"
     volumes:
       - .:/var/www/html
       # Named volumes keep generated/volatile paths off the slow macOS bind mount.

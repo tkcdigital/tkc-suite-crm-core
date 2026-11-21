@@ -24,8 +24,8 @@ run() { # name, command...
 [ $php -eq 1 ] && run PHP docker/dc.sh exec -T -u www-data app vendor/bin/phpunit -c extensions/tkc/phpunit.xml.dist
 [ $ng -eq 1 ] && run NG yarn ng test tkc --watch=false --browsers=ChromeHeadless
 theme_tests() {
-  python3 -I -m unittest discover scripts/theme/tests || return 1
-  python3 -I scripts/theme/check_bundle.py   # fails if public/dist is not built (SUITE-57)
+  python3 -I -B -m unittest discover scripts/theme/tests || return 1
+  python3 -I -B scripts/theme/check_bundle.py   # fails if public/dist is not built (SUITE-57)
 }
 [ $theme -eq 1 ] && run THEME theme_tests
 

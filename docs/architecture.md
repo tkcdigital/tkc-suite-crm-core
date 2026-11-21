@@ -76,12 +76,12 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - Re-check at each upstream merge: the script names in the root `package.json`, the command `scrm:copy-legacy-assets`, and the Dawn SCSS path `public/legacy/themes/suite8/css/Dawn/style.scss`.
 
 ## Mail sink (dev, SUITE-45)
-- The dev Docker environment has a `mailpit` service (Mailpit v1.21). It catches all outgoing email.
+- The dev Docker environment has a `mailpit` service (Mailpit v1.21). The system outbound account sends to Mailpit. Personal SMTP accounts bypass the sink; the import guard (SUITE-79) checks all accounts.
 - The web UI listens on 127.0.0.1 only (`MAILPIT_UI_PORT`, default 8025) because it has no login. SMTP port 1025 is not published. There is no volume: a restart deletes the held mail.
 - The sink host names are one config value: env `TKC_MAIL_SINK_HOSTS` (default `mailpit`, comma-separated) gives the parameter `tkc.mail.sink_hosts` (`extensions/tkc/config/tkc_mail.yaml`).
 - `App\Extension\tkc\backend\Mail\MailSinkPolicy` has `isSinkHost()`, `filterNonSink()` and `findNonSinkOutboundAccounts()`. The import guard (SUITE-79) uses it to check all outbound accounts (system, system-override, user).
 - `tkc:mail:use-sink` sets the system outbound account to the sink. It is for DEV only and is idempotent.
-- The compose file and the command never go to Azure.
+- The compose file is for dev only and never goes to Azure. The command `tkc:mail:use-sink` ships with the code, but it runs only where `TKC_DEV_MAIL_SINK=1` (set only in the dev `compose.yaml`).
 - The compose host ports are parameters (`APP_PORT`, `DB_PORT`, `MAILPIT_UI_PORT`). A second instance can run with `-p <name>` (X7). See `docs/environments.md`.
 
 ## Tests (SUITE-46)

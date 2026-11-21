@@ -67,7 +67,7 @@ Exit codes: `0` success; `1` a step failed (the script prints `FAILED at step n:
 `docker/dc.sh console` adds `-T` by itself when stdin is not a TTY, so the script also works in CI.
 
 ## Mail sink
-All outgoing email goes to Mailpit. Nothing leaves the dev machine.
+The system outbound account sends to Mailpit. Personal SMTP accounts bypass the sink; the import guard (SUITE-79) checks all accounts.
 1. `docker/dc.sh up -d` starts the `mailpit` container. The web page is http://127.0.0.1:8025.
    If port 8025 is in use, set `MAILPIT_UI_PORT` (for example `MAILPIT_UI_PORT=8026`) before you start the containers. Then use that port in the URL.
 2. Point the SuiteCRM system outbound account at the sink (once per database, safe to repeat):

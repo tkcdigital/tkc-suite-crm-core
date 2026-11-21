@@ -57,7 +57,7 @@ test -f public/legacy/config.php || { echo "public/legacy/config.php missing: ru
 running="$($DC ps --status running --services 2>/dev/null || true)"
 echo "$running" | grep -qx app || { echo "app container is not running: docker/dc.sh up -d" >&2; false; }
 step 0b "Theme files match tokens.json (build_theme.py --check)"
-python3 -I scripts/theme/build_theme.py --check
+python3 -I -B scripts/theme/build_theme.py --check
 
 if [ "$SKIP_FRONTEND" -eq 1 ]; then
   for n in 1 2 3 4 5; do step "$n" "Angular build step $n"; skipped "--skip-frontend"; done
@@ -74,7 +74,7 @@ else
   step 4 "yarn build:shell"
   yarn build:shell
   step 4b "TKC theme is in the shell bundle (check_bundle.py)"
-  python3 -I scripts/theme/check_bundle.py
+  python3 -I -B scripts/theme/check_bundle.py
 
   step 5 "yarn build:extension tkc"
   yarn build:extension tkc

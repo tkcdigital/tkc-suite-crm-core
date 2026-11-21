@@ -14,10 +14,10 @@
 | MySQL (`db`) | `DB_PORT` | `DB_PORT` | 3307 |
 | Mailpit web UI (`mailpit`, SUITE-45) | `MAILPIT_UI_PORT` | `MAILPIT_UI_PORT` | 8025 |
 
-- Mailpit catches all outgoing email in dev. The web UI listens on 127.0.0.1 only. SMTP port 1025 is not published. Mailpit keeps no data after a restart. See `docs/architecture.md` § Mail sink.
+- The system outbound account sends to Mailpit. Personal SMTP accounts bypass the sink; the import guard (SUITE-79) checks all accounts. The web UI listens on 127.0.0.1 only. SMTP port 1025 is not published. Mailpit keeps no data after a restart. See `docs/architecture.md` § Mail sink.
 - If a default port is in use, set the parameter in the environment before `docker/dc.sh up -d`. Example: `MAILPIT_UI_PORT=8026`.
 - Second instance (X7): run a second compose project with `-p <name>` and different values for the three port parameters. Each project has its own database volume.
-- The compose file and `tkc:mail:use-sink` are for dev only. They never go to Azure.
+- The compose file is for dev only and never goes to Azure. The command `tkc:mail:use-sink` ships with the code, but it runs only where `TKC_DEV_MAIL_SINK=1` (set only in the dev `compose.yaml`).
 
 ## Azure access
 - Service principal: `tkc-suite-crm-manager-sp`, role **Contributor** on `TKC-SUITE-CRM-RG` only.

@@ -12,7 +12,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * DEV ONLY (SUITE-45). Points the system outbound email account at the Mailpit sink.
- * Never run against a shared or Azure environment.
+ * The command ships with the code to every environment, so it refuses to run unless
+ * the env variable TKC_DEV_MAIL_SINK is "1" (set only in the dev compose.yaml, SUITE-177).
  */
 #[AsCommand(
     name: 'tkc:mail:use-sink',
@@ -23,6 +24,8 @@ class MailUseSinkCommand extends Command
     private const PORT = 1025;
     private const FROM_ADDR = 'crm@example.com';
     private const FROM_NAME = 'TKC CRM (dev)';
+    public const GUARD_ENV = 'TKC_DEV_MAIL_SINK';
+    private const MASKED_FIELDS = ['mail_smtppass', 'mail_smtpuser', 'smtp_from_addr'];
 
     public function __construct(
         private readonly DefaultLegacyHandler $legacyHandler,
@@ -36,8 +39,21 @@ class MailUseSinkCommand extends Command
         $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Show the diff, change nothing');
     }
 
+    public static function guardAllows(string|false|null $guardValue): bool
+    {
+        return $guardValue === '1';
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        if (!self::guardAllows(getenv(self::GUARD_ENV))) {
+            $output->writeln(sprintf(
+                '<error>Refused: tkc:mail:use-sink runs only where %s=1 (the dev Docker environment).</error>',
+                self::GUARD_ENV
+            ));
+            return Command::FAILURE;
+        }
+
         $dryRun = (bool)$input->getOption('dry-run');
         $wanted = [
             'mail_sendtype' => 'SMTP',
@@ -139,6 +155,10 @@ class MailUseSinkCommand extends Command
 
     private function show(string $field, string $value): string
     {
-        return $field === 'mail_smtppass' ? ($value === '' ? "''" : '(hidden)') : "'" . $value . "'";
+        if (in_array($field, self::MASKED_FIELDS, true) && $value !== self::FROM_ADDR) {
+            return $value === '' ? "''" : '(set)';
+        }
+
+        return "'" . $value . "'";
     }
 }

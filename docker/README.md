@@ -47,11 +47,11 @@ docker/dc.sh down -v      # also deletes the DB and container volumes (destructi
 ```
 
 ## Mail sink (Mailpit)
-- Service `mailpit` (`axllent/mailpit:v1.21`) catches all outgoing email. Web page: http://127.0.0.1:8025
+- Service `mailpit` (`axllent/mailpit:v1.21`) catches the mail of the system outbound account. Web page: http://127.0.0.1:8025
   (`MAILPIT_UI_PORT`). The page has no login, so it listens on 127.0.0.1 only.
 - SMTP port 1025 is not published. Only the `app` container reaches it (host name `mailpit`).
 - No volume: a restart deletes all held mail. Held mail can contain personal data.
 - Point SuiteCRM at the sink once per database: `docker/dc.sh console tkc:mail:use-sink [--dry-run]`.
 - The sink host name is one config value: env `TKC_MAIL_SINK_HOSTS` (default `mailpit`) -> parameter `tkc.mail.sink_hosts`.
 - Host ports: `APP_PORT` (8081), `DB_PORT` (3307), `MAILPIT_UI_PORT` (8025). Set them for a second instance with `-p <name>`.
-- This compose file and the command are for DEV only. They never go to Azure.
+- The compose file is for dev only and never goes to Azure. The command `tkc:mail:use-sink` ships with the code, but it runs only where `TKC_DEV_MAIL_SINK=1` (set only in the dev `compose.yaml`). The system outbound account sends to Mailpit. Personal SMTP accounts bypass the sink; the import guard (SUITE-79) checks all accounts.
