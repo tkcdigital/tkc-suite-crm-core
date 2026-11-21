@@ -1,50 +1,56 @@
 // List view (components.md section 6). Owned by SUITE-58. Core: .light-table, .list-view-table (_light-table.scss).
-// Scoped by container so subpanel tables keep their own rules.
-.light-table {
-  .list-view-table {
-    color: var(--tkc-text-default);
-    background-color: var(--tkc-table-row-default);
+// The main list table has no .light-table ancestor (table-body.component.html:34), and subpanel tables sit in
+// .minimal-table / .sub-panel, so the table rules are not scoped by container.
+// Core rows: ".striped-table tbody tr:nth-of-type(odd)" (0,2,2, _listview.scss:97), ".light-table table.list-view-table
+// tr:nth-child(even)" (0,3,2) and ".minimal-table table.table tbody tr:nth-child(odd)" (0,3,3). The selector below
+// ("table.list-view-table.striped-table.table", 3 classes + 1 element) lets state rules reach (0,4,3).
+table.list-view-table.striped-table.table {
+  color: var(--tkc-text-default);
+  background-color: var(--tkc-table-row-default);
 
-    thead,
-    .primary-table-header,
-    th {
-      color: var(--tkc-table-header-text);
-      background-color: var(--tkc-table-header-bg);
-      font-size: var(--tkc-font-size-sm);
-      font-weight: var(--tkc-font-weight-semibold);
-    }
-
-    td,
-    th {
-      border-color: var(--tkc-table-row-border);
-    }
-
-    tbody tr,
-    tr:nth-child(even) {
-      background-color: var(--tkc-table-row-default);
-    }
-
-    tbody tr {
-      height: var(--tkc-density-row-height);
-      transition: background-color var(--tkc-duration-fast) var(--tkc-easing-standard);
-    }
-
-    tbody tr:hover {
-      background-color: var(--tkc-table-row-hover);
-    }
-
-    // Keyboard users: the row that holds focus gets the same fill, plus the global ring on the focused element.
-    tbody tr:focus-within {
-      background-color: var(--tkc-table-row-hover);
-      box-shadow: inset var(--tkc-border-width-thick) 0 0 var(--tkc-primary-default);
-    }
-
-    tbody tr.selected,
-    tbody tr.table-active {
-      background-color: var(--tkc-table-row-selected);
-    }
+  thead,
+  .primary-table-header,
+  th {
+    color: var(--tkc-table-header-text);
+    background-color: var(--tkc-table-header-bg);
+    font-size: var(--tkc-font-size-sm);
+    font-weight: var(--tkc-font-weight-semibold);
   }
 
+  td,
+  th {
+    border-color: var(--tkc-table-row-border);
+  }
+
+  tbody tr,
+  tbody tr:nth-child(even),
+  tbody tr:nth-child(odd),
+  tbody tr:nth-of-type(odd) {
+    background-color: var(--tkc-table-row-default);
+  }
+
+  tbody tr {
+    height: var(--tkc-density-row-height);
+    transition: background-color var(--tkc-duration-fast) var(--tkc-easing-standard);
+  }
+
+  tbody tr:hover {
+    background-color: var(--tkc-table-row-hover);
+  }
+
+  // Keyboard users: the row that holds focus gets the same fill, plus the global ring on the focused element.
+  tbody tr:focus-within {
+    background-color: var(--tkc-table-row-hover);
+    box-shadow: inset var(--tkc-border-width-thick) 0 0 var(--tkc-primary-default);
+  }
+
+  tbody tr.selected,
+  tbody tr.table-active {
+    background-color: var(--tkc-table-row-selected);
+  }
+}
+
+.light-table {
   .sort-icon {
     fill: var(--tkc-text-link-default);
   }
