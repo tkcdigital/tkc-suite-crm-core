@@ -116,6 +116,9 @@ step 11 "tkc:config:apply"
 $DC console tkc:config:apply
 
 step 12 "cache:clear (Symfony cache and the cached legacy theme CSS)"
+# A root run (for example composer install without -u www-data) leaves root-owned files in the cache volumes;
+# cache:clear as www-data then fails. Give the volumes back to www-data first (SUITE-44 fresh-install run).
+$DC exec -T app chown -R www-data:www-data cache logs var
 $DC console cache:clear
 # SugarTheme caches the Dawn CSS forever and never checks its content (SUITE-60). A request that reads the custom
 # file while it is empty or missing writes a copy without the TKC rules. So: delete the copy, let one session-less

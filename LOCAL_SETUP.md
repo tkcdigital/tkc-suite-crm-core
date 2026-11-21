@@ -16,23 +16,22 @@ Docker Desktop. For the Angular build on the host: Node.js with Corepack (Yarn 4
 ```bash
 docker/init.sh                       # creates docker/.env with random dev-only passwords
 docker/dc.sh up -d --build
-docker/dc.sh exec app composer install        # only if vendor/ is missing
-yarn install && yarn merge-angular-json && yarn build    # host; fills public/dist (Step "Angular build")
+docker/dc.sh exec -T -u www-data app composer install   # only if vendor/ is missing; as www-data (root-owned cache breaks cache:clear)
 set -a; . docker/.env; set +a
 docker/dc.sh exec -T -u www-data app php bin/console suitecrm:app:install -n \
   -U "$DB_USER" -P "$DB_PASSWORD" -H db -Z 3306 -N "$DB_NAME" \
-  -u "$SITE_ADMIN_USER" -p "$SITE_ADMIN_PASSWORD" -S http://localhost:8081/ -d no -W true
-docker/dc.sh console scrm:copy-legacy-assets
-docker/dc.sh exec -T app vendor/bin/pscss --style=compressed \
-  public/legacy/themes/suite8/css/Dawn/style.scss > public/legacy/themes/suite8/css/Dawn/style.css
-docker/dc.sh console tkc:config:apply --dry-run && docker/dc.sh console tkc:config:apply
+  -u "$SITE_ADMIN_USER" -p "$SITE_ADMIN_PASSWORD" -S "http://localhost:${APP_PORT:-8081}/" -d no -W true
+scripts/build.sh                     # Angular build, Dawn CSS, legacy assets, tkc:repair (review the SQL), config, cache, smoke test
 docker/dc.sh console tkc:users:repair-number-separators --dry-run && docker/dc.sh console tkc:users:repair-number-separators   # SUITE-179: always after tkc:config:apply
-docker/dc.sh console tkc:repair --dry-run     # review the SQL; run without --dry-run only after review
-docker/dc.sh console cache:clear
+docker/dc.sh console tkc:mail:use-sink   # dev mail sink, once per new database (see Mail sink)
 ```
+The installer does not need `public/dist`. `scripts/build.sh` runs `tkc:config:apply` (step 11), so the separator repair comes after it.
 Use `-d no` for demo data. The value `false` is NOT "no" and installs demo data.
 `docker/dc.sh console <args>` runs `php bin/console <args>` as `www-data`, so cache files stay writable for Apache.
 Do not run console commands as root (`exec app php ...` without `-u www-data`): root-owned cache files give HTTP 500.
+
+## Second instance (spikes, X7)
+Use a separate git worktree with its own `docker/.env` (`docker/init.sh`). Add `COMPOSE_PROJECT_NAME=<name>`, `APP_PORT`, `DB_PORT` and `MAILPIT_UI_PORT` with free ports to that file; `docker/dc.sh` reads them. Use the same `APP_PORT` in the installer `-S` URL and for `scripts/build.sh` (the smoke test uses it). Example: `tkc-spike` on 8082 / 3308 / 8027.
 
 ## Daily use
 ```bash
