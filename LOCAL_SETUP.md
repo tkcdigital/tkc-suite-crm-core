@@ -58,8 +58,9 @@ scripts/build.sh [--yes] [--skip-core] [--skip-frontend] [--dry-run-only]
 | 7 | `scrm:copy-legacy-assets` |
 | 8 | `tkc:repair --dry-run`: shows the SQL |
 | 9 | Asks "Run tkc:repair --execute? [y/N]" (always, also when there is no SQL) |
-| 10-12 | `tkc:repair --execute`, `tkc:config:apply`, `cache:clear` |
+| 10-12 | `tkc:repair --execute`, `tkc:config:apply`, `cache:clear` (step 12 also rebuilds the cached legacy theme CSS) |
 | 13 | Smoke test: `GET http://localhost:8081/` must give HTTP 200 (`APP_PORT` overrides the port) |
+| 14 | Fails when the cached legacy CSS has no `--tkc-theme-build` (SUITE-60) |
 
 Flags: `--yes` skips the confirmation (only for reviewed deploys: it runs SQL unread); `--skip-core` skips step 3;
 `--skip-frontend` skips steps 1-5; `--dry-run-only` stops after step 8.

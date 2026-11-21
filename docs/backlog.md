@@ -62,11 +62,14 @@
 ## Sprint 0 progress (2026-11-21)
 - Implemented on branch `sprint/0`: SUITE-44 (build chain), 45 (mail sink), 46 (tests), 47 (metadata contract test, Accounts first), 48, 49, 56 (theme generator), 57 (Angular theme), 58 (Angular overrides), 59 (login logo), 60 (legacy theme).
 - Documents are synced (step 5). Details are in `docs/architecture.md`, `docs/admin-guide.md`, `docs/environments.md` and `LOCAL_SETUP.md`.
+- Also implemented: SUITE-175 (`lcobucci/clock` 3.5.0, owner chose option B: keep the PHP 8.3 platform), SUITE-179 (command `tkc:users:repair-number-separators`), the TKC Digital logo for SUITE-59.
+- QA browser checks ran on 2026-11-21. The fixes for the QA findings are in SUITE-57, 58 and 60.
+- New issues: SUITE-179 (bug: user separators), SUITE-180 (brand pink for the logo), SUITE-181 (legacy CSS URL version does not change with content).
 - Gates still open:
-  - QA browser checks need a login.
-  - SUITE-175 (`composer.lock`): owner decision A/B.
+  - PO verification and security sign-off for SUITE-44, 45, 57 to 60, 175 and 179.
+  - SUITE-179 AC3: the owner signs out and in, then saves a password change.
   - SUITE-176 (bug): the Symfony `test` env does not boot.
-  - The real logo comes from the owner. A placeholder is in place.
+  - SUITE-180 and SUITE-181.
 - Spikes SUITE-51 to SUITE-55 are not started.
 
 ## Open questions

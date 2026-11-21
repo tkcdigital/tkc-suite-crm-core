@@ -50,17 +50,19 @@ Result of spike SUITE-9 S1 (2026-11-20).
   - The `styles[1]` index.
   - Core selectors that the SUITE-58 partials use: `.tabs-layout .tab-link`, `.light-table .list-view-table`, `.sub-panel`, `.panel-card`, `.alert-fixed`. The ng-bootstrap library supplies the modal classes.
   - The core "Lato" rule (`abstracts/_typography.scss:30`).
-- Known: the build warns that the initial bundle is over budget (10.78 MB against 9.44 MB). The cause is not yet checked.
+- Known: the build warns that the initial bundle is over budget (10.79 MB against 9 MiB). QA found the cause is core: `main` is 4.88 MB and `polyfills` is 4.86 MB. It is not TKC code (see Known issues).
 
 ### Legacy theme (SUITE-60)
 - `build_theme.py` writes `public/legacy/custom/themes/suite8/css/Dawn/style.css`. Nobody edits it by hand.
 - `SugarTheme::getCSSURL` adds this file after the core theme CSS. It minifies the file with cssmin and caches the result in `public/legacy/cache/themes/`. cssmin keeps custom properties, `oklch()`, `@media` and `unicode-range`.
 - Hand-written files style `body`, not `html` (core sets `html{font-size:10px}`). They use px and no `calc()` with `+`.
-- cssmin runs only when the cached `style.css` does not exist. `tkc:repair` clears only `pathCache.php`. Build step 12 therefore deletes the cached file (see `LOCAL_SETUP.md` § Theme).
+- cssmin runs only when the cached `style.css` does not exist. `tkc:repair` clears only `pathCache.php`. Build step 12 therefore deletes the cached file and rebuilds it with one login-page request. Build step 14 fails when the cached file has no `--tkc-theme-build` sentinel (see `LOCAL_SETUP.md` § Theme).
+- `build_theme.py` writes its output atomically. `build_theme.py --check` rule X9 fails when a legacy hand file has whitespace before a pseudo-class (cssmin removes it, the rule then matches nothing).
+- Known issue: SUITE-181 (see Known issues).
 - No change outside `public/legacy/custom/`.
 
 ### Login logo (SUITE-59)
-- The Angular logo (`scrm-logo-ui` uses `scrm-image image="company_logo"`, also in the navbar) comes from `public/legacy/custom/themes/suite8/images/company_logo.svg`. The file is a placeholder until the owner supplies the real logo.
+- The Angular logo (`scrm-logo-ui` uses `scrm-image image="company_logo"`, also in the navbar) comes from `public/legacy/custom/themes/suite8/images/company_logo.svg`. The file is the TKC Digital logo in one colour. The brand pink is open in SUITE-180.
 - SVG wins over PNG (`image_supported_types.yaml`). The custom suite8 path wins (`image_paths.yaml`).
 - The SVG uses `fill="currentColor"` because svg-icon inlines it. `_login.scss` sets the colour from tokens and overrides the core grey fill on `rect` and `text`.
 - After a logo change, run `console cache:clear` (theme-images cache).
@@ -69,7 +71,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
 
 ## Build chain (SUITE-44)
 - `scripts/build.sh` is the single build entry point. It runs on the host and calls the app container through `docker/dc.sh`.
-- Steps: 0 preflight; 0b `build_theme.py --check`; 1-5 Angular on the host (`yarn install --immutable`, `merge-angular-json`, `build:core`, `build:shell`, `build:extension tkc`); 4b `check_bundle.py`; 6 compile the core Dawn CSS with `pscss`; 7 `scrm:copy-legacy-assets`; 8 `tkc:repair --dry-run`; 9 mandatory confirmation; 10 `tkc:repair --execute`; 11 `tkc:config:apply`; 12 `cache:clear` and delete the cached legacy theme CSS; 13 smoke test (HTTP 200).
+- Steps: 0 preflight; 0b `build_theme.py --check`; 1-5 Angular on the host (`yarn install --immutable`, `merge-angular-json`, `build:core`, `build:shell`, `build:extension tkc`); 4b `check_bundle.py`; 6 compile the core Dawn CSS with `pscss`; 7 `scrm:copy-legacy-assets`; 8 `tkc:repair --dry-run`; 9 mandatory confirmation; 10 `tkc:repair --execute`; 11 `tkc:config:apply`; 12 `cache:clear`, delete the cached legacy theme CSS and rebuild it; 13 smoke test (HTTP 200); 14 check that the cached legacy CSS has the `--tkc-theme-build` sentinel. The build has 14 steps.
 - Exit code 1: the first error, with the step name. Exit code 2: no confirmation is possible.
 - Flags: `--yes` (runs the repair SQL unread; reviewed deploys only), `--skip-core`, `--skip-frontend`, `--dry-run-only`.
 - `docker/dc.sh console` adds `-T` when stdin is not a TTY.
@@ -144,6 +146,7 @@ Not tested: the Studio UI itself, the Edit view and Quick create files, and a br
 - `php bin/console tkc:repair [--dry-run|--execute] [--module=<Module>]`: Quick Repair and Rebuild from the CLI. Dry run is the default and shows the SQL.
 - `php bin/console tkc:config:apply [--dry-run]`: merges `scripts/config/config_override.template.php` (secret-free) into `public/legacy/config_override.php`.
 - `php bin/console tkc:mail:use-sink [--dry-run]`: sets the system outbound account to the mail sink. DEV only, idempotent (SUITE-45).
+- `php bin/console tkc:users:repair-number-separators [--dry-run]`: removes the user preferences `dec_sep` and `num_grp_sep` that equal the other effective separator (SUITE-179). Run it after `tkc:config:apply`. It writes through the legacy `UserPreference` bean. A signed-in user must sign out and in again (the session writes the old values back). Code in `extensions/tkc/backend/Users/` (`Console/RepairNumberSeparatorsCommand`, `NumberSeparatorPolicy`, `LegacyPreferenceStore`). Upgrade risk: it depends on the key names `dec_sep` and `num_grp_sep`, on the config keys `default_decimal_seperator` and `default_number_grouping_seperator`, and on the base64-serialized format of `user_preferences.contents`. Re-check at each upstream merge.
 - Code in `extensions/tkc/backend/Console/` and `Config/`. Details in `scripts/config/README.md`.
 
 ## Core patches
@@ -163,7 +166,9 @@ Type values: viewdef full copy · core list override · core vardef override · 
 | Issue | Description | Effect |
 |---|---|---|
 | SUITE-176 | The Symfony `test` env does not boot. The core file `config/packages/test/framework.yaml` uses the removed option `storage_id`. | The contract test boots the `dev` env. Kernel-based PHPUnit tests cannot use the `test` env. |
-| SUITE-175 | `composer.lock` is not decided. Blocked on the owner decision (A/B). | Open. |
+| SUITE-175 | Resolved with option B: `lcobucci/clock` is 3.5.0 (upstream has 3.0.0). `composer.json` keeps the PHP 8.3 platform. | Upstream-merge risk: at each merge, compare `lcobucci/clock` in `composer.lock` with upstream and keep 3.5.0 while the platform is PHP 8.3. |
+| SUITE-181 | The legacy CSS URL version does not change with the content. | After a theme deploy, browsers keep the old legacy CSS. Do a hard reload. |
+| Bundle budget | The Angular build warns "initial bundle exceeded budget" (10.79 MB against 9 MiB). | Cause is core (`main` 4.88 MB, `polyfills` 4.86 MB), not TKC. No action. |
 
 ## Environments
 Local: see `LOCAL_SETUP.md`. Azure: phase later — `docs/environments.md`.

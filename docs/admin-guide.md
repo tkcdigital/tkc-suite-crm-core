@@ -15,7 +15,7 @@
 - Do not run the command on a shared or Azure environment.
 
 ## Logo (login page and navbar, SUITE-59)
-- The logo comes from git: `public/legacy/custom/themes/suite8/images/company_logo.svg`. The file is a placeholder until the owner supplies the real logo.
+- The logo comes from git: `public/legacy/custom/themes/suite8/images/company_logo.svg`. The file is the TKC Digital logo in one colour (`currentColor`). The theme tokens set the colour. The brand pink is open in SUITE-180.
 - Do not use the logo upload in Admin. It does not replace the theme image.
 - To change the logo: replace the file, run `docker/dc.sh console cache:clear`, and rebuild if needed.
 - Keep "Supercharged by SuiteCRM" visible.
@@ -25,4 +25,4 @@
 - Reason: `tkc:config:apply` sets the system decimal separator `,` and grouping separator `.`. A user preference `dec_sep` = `.` (the installer sets it for the admin user) then makes both separators the same. The user edit view refuses Save with the message "The decimal separator cannot use the same character as the thousands separator."
 - The command checks each user that is not deleted, in all statuses. It removes only the user separator keys that cause the conflict. The user then uses the system default. It does not change other users or other preferences.
 - The output shows user IDs and key names only. The command skips a user whose preferences do not decode and reports it.
-- A signed-in user sees the change after the next sign-in. A second run changes nothing.
+- A signed-in user must sign out and sign in again. The session holds the old preferences and writes them back to the database. A second run changes nothing.
