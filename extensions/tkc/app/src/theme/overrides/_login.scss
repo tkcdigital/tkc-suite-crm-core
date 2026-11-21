@@ -15,7 +15,7 @@
     color: var(--tkc-text-default);
   }
 
-  // Logo: the SVG uses currentColor.
+  // Logo (TKC Digital): the SVG uses currentColor. The text is a cut-out in the circle.
   .logo {
     color: var(--tkc-primary-default);
     display: inline-block;
@@ -28,23 +28,23 @@
     height: 100%;
   }
 
-  .logo svg rect {
-    fill: currentColor; // core sets a grey fill on svg shapes
+  // Core: .login-form svg path { fill: grey } (0,1,2). This selector is (0,3,1) and wins at any rule order.
+  .login-form .logo svg path {
+    fill: currentColor;
   }
 
-  .logo svg text {
-    fill: var(--tkc-primary-on);
-  }
-
-  input,
-  select {
+  // Core: .login-form input { width: 24em; margin: .3em } in a media query (0,1,1).
+  // This selector is (0,2,1), so the input stays inside the card at any rule order.
+  .login-form input,
+  .login-form select {
+    box-sizing: border-box;
     min-height: var(--tkc-density-control-height);
     color: var(--tkc-field-text);
     background-color: var(--tkc-field-bg-default);
     border: var(--tkc-border-width-thin) solid var(--tkc-field-border-default);
     border-radius: var(--tkc-radius-md);
     width: 100%;
-    margin-left: 0;
+    margin: var(--tkc-space-1) 0;
   }
 
   input:hover,
@@ -79,7 +79,7 @@
   }
 }
 
-// The navbar shows the same theme image: tile in the navbar text colour, text cut out in the navbar colour.
+// The navbar shows the same theme image (TKC Digital logo) in the navbar text colour. The text is a cut-out.
 .navbar .logo {
   display: inline-block;
   width: var(--tkc-size-icon-lg);
@@ -91,11 +91,7 @@
     height: 100%;
   }
 
-  svg rect {
+  svg path {
     fill: currentColor;
-  }
-
-  svg text {
-    fill: var(--tkc-navbar-bg);
   }
 }
