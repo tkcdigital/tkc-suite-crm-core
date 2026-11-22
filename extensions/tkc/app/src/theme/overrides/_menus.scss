@@ -1,0 +1,26 @@
+// Menu (components.md section 3). SUITE-194: Actions menu items (record header, record modal, list "More").
+// Core puts button classes (settings-button, action-button) on collapsed items; _buttons.scss excludes them.
+// Core selectors from core components/_dropdown.scss (497-525, 614-640). Tokens only, no z-index (X10).
+.button-group-dropdown .dropdown-menu,
+.dropdown-button-secondary .dropdown-menu {
+  background-color: var(--tkc-header-action-menu-bg);
+  border: var(--tkc-border-width-thin) solid var(--tkc-header-action-border);
+  border-radius: var(--tkc-radius-md);
+  box-shadow: var(--tkc-shadow-3);
+}
+
+.button-group-dropdown .dropdown-menu a.dropdown-item,
+.dropdown-button-secondary .dropdown-menu a.dropdown-item {
+  color: var(--tkc-header-action-text);
+  fill: var(--tkc-header-action-text);
+  background-color: transparent;
+  min-height: var(--tkc-density-control-height);
+}
+
+.button-group-dropdown .dropdown-menu a.dropdown-item:hover,
+.button-group-dropdown .dropdown-menu a.dropdown-item:focus-visible,
+.dropdown-button-secondary .dropdown-menu a.dropdown-item:hover,
+.dropdown-button-secondary .dropdown-menu a.dropdown-item:focus-visible {
+  color: var(--tkc-header-action-text);
+  background-color: var(--tkc-header-action-hover);
+}

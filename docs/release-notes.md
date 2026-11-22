@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`)
 
 ### Delivered
 
@@ -15,8 +15,10 @@
 | Legacy asset version | The legacy CSS URL now changes with the theme and font content. The new command `tkc:legacy:asset-version` sets `js_custom_version`. The build runs it in step 11b. A browser hard reload is not needed after a theme change. The value is global, so it also versions the legacy JS, sprites and `yui.css`. | SUITE-181 |
 | Radio fields | In the Angular UI, a keyboard user can now reach radio fields (`radioenum`, `enum-radio`) with Tab. The arrow keys move between the options. The focused option shows a focus ring. Each radio group has an accessible name (`aria-label`; not yet checked with a screen reader). The empty option shows the label "Not set". The filter panel radios ("Direction") get the same behaviour. The legacy UI is not changed. | SUITE-186 |
 | Dependency fix | The lock files now hold fixed versions for the HIGH and critical advisories. Composer has 43 updates (19 packages with advisories, 24 transitive), all inside the upstream constraints. These include Symfony 6.4.50, Guzzle, Smarty, phpseclib, Flysystem, `jmespath.php` (critical) and TinyMCE 8.10.2 for the legacy UI. In `yarn.lock`, `dompurify` is 3.4.18 and the `tinymce` 7.2.1 entry is merged into 7.9.3. The Angular edit field no longer loads the TinyMCE `media` plugin. After a vendor update or an upstream release, the legacy asset URL changes, so browsers load new legacy JS. Some advisories stay accepted with conditions (see below). | SUITE-183 |
+| Bug fix: Actions menu | The Actions menus on the record view and the list view were unreadable since SUITE-58 (white text on a white background). The items are now readable in light and dark mode. | SUITE-194 |
 
 ### What changes for admins and developers
+- The build test `scripts/theme/check_bundle.py` has a new check 4 (SUITE-194). It fails when a TKC button rule hits the Actions menu items again. A unit test covers it (`scripts/theme/tests/test_check_bundle.py`). A new partial `_menus.scss` styles the menu items (see the Overrides register in `docs/architecture.md`).
 - Dependency updates (SUITE-183):
   - Update locked packages as `docs/architecture.md` § Dependency re-resolve commands and `LOCAL_SETUP.md` § Dependency updates describe. Run Composer as `www-data` with `--no-security-blocking`.
   - Each security-driven version has a row in `docs/architecture.md` § Overrides register. Never hand-merge a lock file at an upstream merge.
