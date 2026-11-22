@@ -130,7 +130,7 @@ Status values: planned, built, migrated. Details: `docs/data-model.md` § Cases.
 | `AOP_Case_Updates.tkc_entry_type_c` (list `tkc_entry_type_list`, 4 keys: `note`, `staff`, `customer`, `customer_proxy`; default `staff`) | built (SUITE-68). The `before_save` preset in the create form is planned (E9-S1). |
 | `AOP_Case_Updates.tkc_channel_c` (list `tkc_channel_list`, 7 keys) | built (SUITE-68) |
 | `AOP_Case_Updates.osc_id_c` (varchar 20, index; import key of the thread rows) | built (SUITE-68). The key is ready for the import. |
-| `AOP_Case_Updates.description` as `longtext` (thread text up to 1 MB, Q13) | built (SUITE-68). The import of HTML thread text must go through `SugarCleaner::cleanHtml` (E9). |
+| `AOP_Case_Updates.description` as `longtext` (thread text up to 1 MB, Q13) | built (SUITE-68). The importer must save every thread entry through the bean (`SugarBean::save()` → `cleanBean()` → `purify_html` purifies every `text`/`longtext` field); it never writes `description` with raw or bulk SQL. If it cleans the text before the save, it uses `SugarCleaner::cleanHtml($html, true)`: the default `cleanHtml($html)` only decodes entities and does not purify (SUITE-68 security finding 1, E9/SUITE-134). |
 | Thread CC and BCC, attachments on thread entries | planned |
 | Import of thread data | not started (no row is migrated) |
 | `Cases.tkc_collect_before_share_c`, `tkc_collect_before_share_opt_c` | planned (Q10) |
