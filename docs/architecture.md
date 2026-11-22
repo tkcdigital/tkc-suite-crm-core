@@ -169,6 +169,26 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - Core-layout violations go in `known-core-violations.php` with a reason. The list is empty now.
 - Upgrade risk: medium, on purpose.
 
+## Field manifest test (SUITE-63)
+- `extensions/tkc/backend/Tests/Contract/FieldManifestTest.php` checks the compiled vardefs and lists against field manifests (C11). It is in the `contract` suite.
+- It reads every file `extensions/tkc/backend/Tests/Contract/Fields/*.php`. One file for each story, named `suite<n>_<module>.php`. The first one is `Fields/suite63_accounts.php`.
+- A manifest file returns a list of entries. Each entry has this format:
+  - `module`: the module name, for example `Accounts`.
+  - `fields`: `[field name => [type, len, options, default, audited, required, indexed, displayType]]`. The test checks only the attributes that an entry names.
+  - `absent`: field names that must not exist.
+  - `lists`: `[list name => ordered keys]`.
+  - `labels` (optional): `[list name => [key => label]]`.
+- The test checks these items:
+  - The vardef attributes of each field.
+  - A one-field index named `idx_<table>_<field>` when `indexed` is true.
+  - The list keys, in order.
+  - The empty first key, with an empty label.
+  - That the absent fields do not exist.
+- `LegacyMetadataLoader::load()` has a new key `indices`. It is `$GLOBALS['dictionary'][<object name>]['indices']`.
+- Precondition: `tkc:repair` has run, so that `Ext/` is compiled. The test boots `App\Kernel` in `dev` (SUITE-176).
+- The test does not check the database. The second `tkc:repair --dry-run` proves that the column exists: it must print "Database is in sync: no SQL."
+- A new story adds a manifest file in the same story.
+
 ## Approved decisions (2026-11-20)
 From `docs/assessment/customization-feasibility.md` §9:
 - **D1** Extension `extensions/tkc/` scaffolded from `defaultExt` (key/remote `tkc`); `defaultExt` stays disabled.
@@ -231,6 +251,8 @@ Type values: viewdef full copy · core list override · core vardef override · 
 | `extensions/tkc/app/src/theme/overrides/_radio.scss` (SUITE-186) | all (Angular) | core theme rule override | Core hides the radio inputs with `display: none`. A keyboard user cannot reach them. The override resets `display` and hides the inputs visually. It adds the focus ring on the label. | `core/app/shell/src/themes/suite8/css/components/_radio.scss:27-60` | The selector `.radioenum-input input[type='radio']` and the markup are the same. `scripts/theme/check_bundle.py` passes (check 3). |
 | `extensions/tkc/app/src/fields/radioenum/tkc-radioenum-edit.*` (SUITE-186) | all (Angular) | Angular field override | Core has no `role` and no accessible name on the radio group, no label for the empty option, and the DOM `name` is not set. Registered for `radioenum.edit` and `enum-radio.edit` (same core class). Three lines differ from the core template, each marked `TKC SUITE-186`: (1) `role="radiogroup" [attr.aria-label]="groupLabel \|\| null"` on `div.radioenum`; (2) `[attr.name]="field.name"` on the input (see the note below); (3) `{{ optionLabel(item) }}` in the label. The class extends the core class and has no own constructor. | `core/app/core/src/lib/fields/radioenum/templates/edit/radioenum.component.html` and `radioenum.component.ts` | Diff the core template and `.ts` (`getId`, `buildOptionsArray`). The keys in `core/app/core/src/lib/fields/base-fields.manifest.ts` are the same. The `FieldRegistry.register` signature is the same. `getAppString` and `getFieldLabel` of the language service exist. The `core` package is still a singleton in the extension webpack config. |
 | `extensions/tkc/config/tkc_tinymce.php` | Angular edit field (tinymce) | D5 parameter delta | Removes the TinyMCE `media` plugin from the Angular edit field. npm `tinymce` 7.9.3 has advisory GHSA-mf2p-h6hf-fcwm and no 7.x fix (SUITE-183). | `config/services/ui/ui.yaml` key `tinymce.edit.plugins` (line 21) | Check `ui.yaml` `tinymce.edit.plugins` and `core/app/core/src/lib/fields/tinymce/templates/edit/tinymce.component.ts:74-78`. The component merges the list with lodash merge, index by index. Keep 3 or more entries. The core `plugins` setting stays a list of strings. The delta treats spaces and commas as separators (security review F4, commit 736e0c496). If the setting became one string, the container build fails (fail closed). Remove the file when upstream ships a fixed npm TinyMCE. |
+| `public/legacy/custom/Extension/application/Ext/Language/en_us.tkc_account_type_dom.php` (SUITE-63) | Accounts | core list override | Replaces the whole core list `account_type_dom` with the six TKC account types (`tkc_lead`, `Prospect`, `Customer`, `tkc_supplier`, `tkc_relation`, `tkc_former_customer`). It has no empty key. The core keys Analyst, Competitor, Integrator, Investor, Partner, Press, Reseller and Other are hidden. Upgrade risk: medium. | `public/legacy/include/language/en_us.lang.php` (`account_type_dom`) | Compare the core list with the TKC file. A new upstream key stays hidden until you add it here. Core keys must not be renamed (D7). |
+| `public/legacy/custom/Extension/modules/Accounts/Ext/Vardefs/tkc_account_type_default.php` (SUITE-63) | Accounts | core vardef override | Sets `$dictionary['Account']['fields']['account_type']['default'] = 'tkc_relation'`. New accounts start as "Relation" (OSC default "Relatie"). Repair gives no SQL for it. | `public/legacy/include/SugarObjects/templates/company/vardefs.php:62-66` (`<object>_type`, built from the object name) | The field `account_type` still uses `account_type_dom`. The key `tkc_relation` is still in the TKC list. |
 | `composer.lock` | lock | dependency version (lock) | `lcobucci/clock` 3.5.0 (SUITE-175). Upstream has 3.0.0. `composer.json` keeps the PHP 8.3 platform. | `composer.lock` of the upstream tag | Keep 3.5.0 while the platform is PHP 8.3. |
 | `composer.lock` | lock | dependency version (lock) | `guzzlehttp/guzzle` 7.16.5 (upstream 7.12.1): 7 advisories (1 high, 6 medium). Title: noncanonical host bypass. | `composer.lock` of the upstream tag | Keep the TKC version or higher. Drop the row when upstream reaches it. |
 | `composer.lock` | lock | dependency version (lock) | `guzzlehttp/psr7` 2.13.5 (upstream 2.12.1): 1 medium advisory (host confusion). | same | same |
