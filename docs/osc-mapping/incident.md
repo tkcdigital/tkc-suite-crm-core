@@ -261,7 +261,7 @@ view metadata, and AOW for server-side. The architect decides which rule becomes
 6. **One-click status and taxonomy buttons** (about 9 buttons that set 3 to 8 fields at once). Needs custom record actions.
 7. **Client-side workspace rules** (required, hidden, set value, menu filters). SuiteCRM has display logic and dependencies, but no rule designer. Each rule is a developer task.
 8. **Standard text quick-insert, smart assistant, decision trees, co-browse, OSN, spell check on save.** No equivalent.
-9. **Case number format** (`YYMMDD-NNNNNN` in the screenshot) differs from the core integer counter.
+9. **Case number format** (`YYMMDD-NNNNNN` in the screenshot) differs from the core integer counter. Status (SUITE-62): the sequence service exists (`docs/architecture.md` § Sequences). The counter name and the format of `tkc_case_ref_c` are not decided (A12). They are built in E8.
 10. **Contact type changed from the case** (SPAM button writes Contact.CtypeId). Needs a cross-module action.
 
 ## 7. Open questions

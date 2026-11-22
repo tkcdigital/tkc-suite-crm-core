@@ -12,7 +12,22 @@
 - Where a column says "Notes", it also lists the list name or the default value.
 
 ## Tables
-Filled by SUITE-62.
+### `tkc_sequences` (SUITE-62)
+One row for each counter name and year. The sequence service uses it (see `docs/architecture.md` § Sequences). It is a plain table, not a module. It has no `id` and no `deleted` column. The engine is InnoDB. The character set is the core default (utf8).
+
+| Column | Type / length | Null | Notes |
+|---|---|---|---|
+| `seq_name` | varchar, 40 | NOT NULL | Counter name, for example `quote`. Part of the primary key. |
+| `seq_year` | int | NOT NULL | Year, 2000 to 2099. Part of the primary key. |
+| `seq_value` | int | NOT NULL | Last value that `next()` gave or that was set. Default 0. |
+| `date_modified` | datetime | NULL | UTC time of the last change. |
+
+- Primary key: (`seq_name`, `seq_year`).
+- Source: the TableDictionary extension `public/legacy/custom/Extension/application/Ext/TableDictionary/tkc_sequences.php`. Quick Repair and Rebuild (`tkc:repair`) creates the table.
+- The three key and value columns must have `'isnull' => 'false'` together with `'required' => true`. Without it, Repair writes NULL on the primary key columns, and MySQL 8 refuses the `CREATE TABLE`.
+- Do not name a column `last_value` or `year`. `LAST_VALUE` is a reserved word in MySQL 8.
+- Repair SQL on a local database: one `CREATE TABLE tkc_sequences`. SUITE-72 does the authoritative run.
+- OSC source: none. The table holds the numbers that replace OSC counters (see `docs/osc-mapping/opportunity.md` § 6.2).
 
 ## Accounts
 Table `accounts`. Dictionary key `Account`. Story SUITE-63. Every field is importable. Vardef file: `public/legacy/custom/Extension/modules/Accounts/Ext/Vardefs/tkc_accounts.php`. Label file: `public/legacy/custom/Extension/modules/Accounts/Ext/Language/en_us.tkc_accounts.php`.
