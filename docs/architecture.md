@@ -260,7 +260,8 @@ Not tested: the Studio UI itself, the Edit view and Quick create files, and a br
 The sequence service gives numbers that are unique for each counter name and year. The table is `tkc_sequences` (see `docs/data-model.md` § Tables). Quote numbers and case references use it later.
 
 ### Service
-- Code in `extensions/tkc/backend/Sequence/`: the final class `App\Extension\tkc\backend\Sequence\Sequence`, the interface `SequenceStore` and the class `LegacyDbSequenceStore`.
+- Code in `extensions/tkc/backend/Sequence/`: the final class `App\Extension\tkc\backend\Sequence\Sequence`, the interface `SequenceStore`, the class `LegacyDbSequenceStore`, the final class `SequenceInput` and the exception `LowerValueException`.
+- `SequenceStore` and `LegacyDbSequenceStore` are `@internal` ("Use Sequence"). Callers use `Sequence` only.
 - `LegacyDbSequenceStore` gets the connection from `DBManagerFactory::getInstance()` when it needs it. Its constructor has no arguments.
 - `config/core_services.yaml` autowires everything under `extensions/*`. No `services.yaml` entry exists.
 - The code is in `extensions/tkc/backend`, not in `custom/include/TKC`. Reason: the legacy `entryPoint.php` loads the root Composer autoloader. Shared TKC PHP code therefore lives in `extensions/tkc/backend`.
@@ -271,13 +272,20 @@ The sequence service gives numbers that are unique for each counter name and yea
 |---|---|
 | `next(string $name, int $year): int` | The last value plus one. |
 | `current(string $name, int $year): ?int` | The last value. `null` when the counter does not exist. |
-| `setLastValue(string $name, int $year, int $value, bool $allowLower = false): void` | Sets the last value. It refuses a value below the current value, unless `$allowLower` is true. The value must be from 0 to 2147483646. |
+| `setLastValue(string $name, int $year, int $value, bool $allowLower = false): void` | Sets the last value. Without `$allowLower`, it calls `SequenceStore::setIfNotLower()` and throws `LowerValueException` when the stored value is above `$value`. An equal value is a success. With `$allowLower`, it calls `SequenceStore::forceSet()`. The value must be from 0 to 2147483646. |
 
 - The name must match `^[a-z][a-z0-9_]{0,39}$`. The year must be from 2000 to 2099. Wrong input throws `InvalidArgumentException`.
+- `SequenceInput` (final, `@internal`) holds the checks: `checkKey()` (name and year) and `checkValue()` (0 to 2147483646). `Sequence`, `LegacyDbSequenceStore` and the console command call it. The store therefore refuses bad input before it opens a database connection.
+- Store methods (SUITE-205):
+  - `forceSet(string $name, int $year, int $value): void` (renamed from `set()`). It makes no check. Numbers above `$value` can repeat. `Sequence::setLastValue()` calls it only when `$allowLower` is true.
+  - `setIfNotLower(string $name, int $year, int $value): int` creates the row at `$value` when it is missing. It sends the stored value from before the call. It changes nothing when that value is above `$value`.
+- `LowerValueException` extends `\InvalidArgumentException`. It has `public readonly int $current`. The E4 import can catch it as "the counter is already ahead". A re-run of the import stays idempotent.
+- `Sequence::setLastValue()` no longer reads the value with `current()` first. The read and the write are one atomic statement in the store.
 
 ### Guarantee
 - Every value from `next()` is unique for its name and year.
 - The series can have gaps. Example: a save fails after `next()` gave a number. Do not build logic that needs a series without gaps.
+- `setLastValue()` never lowers a counter without `$allowLower`. This is also true when other processes call `next()` or `setLastValue()` at the same time (SUITE-205). Before the fix, a PHP pre-read and a later write could lower a counter, and numbers repeated.
 - At the INT maximum (2147483647), `next()` throws a `RuntimeException`. The UPDATE has the guard `AND seq_value < 2147483647`, and `next()` checks that exactly one row changed (QA finding D1). Without the guard, a non-strict MySQL session clamps the column at the maximum. `LAST_INSERT_ID()` would then give a larger value that is not stored, and a number could repeat.
 
 ### Concurrency recipe
@@ -285,6 +293,15 @@ The sequence service gives numbers that are unique for each counter name and yea
 1. `INSERT … ON DUPLICATE KEY UPDATE seq_name = seq_name` creates the row once. The primary key absorbs a race of two first calls.
 2. `UPDATE … SET seq_value = LAST_INSERT_ID(seq_value + 1) … AND seq_value < 2147483647` is atomic and takes the InnoDB row lock. The code checks that exactly one row changed.
 3. `SELECT LAST_INSERT_ID()` reads the value of this connection.
+
+`setIfNotLower()` (used by `setLastValue()` without `$allowLower`) also runs three statements on one connection, with no explicit transaction (SUITE-205):
+1. `INSERT INTO tkc_sequences (seq_name, seq_year, seq_value, date_modified) VALUES (name, year, v, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE seq_name = seq_name` creates the row at `v` when it is missing.
+2. `UPDATE tkc_sequences SET date_modified = IF(seq_value <= v, UTC_TIMESTAMP(), date_modified), seq_value = GREATEST(LAST_INSERT_ID(seq_value), v) WHERE seq_name = … AND seq_year = …` is atomic and takes the row lock. Keep the order of the assignments: MySQL runs them from left to right.
+3. `SELECT LAST_INSERT_ID()` gives the value from before the change.
+
+- Do not use the affected-row count. An equal value gives 0 rows, but it is a success.
+- Engine re-check: this recipe depends on `LAST_INSERT_ID(expr)` and on the left-to-right order of the UPDATE assignments. Re-check it when the database engine changes (the Azure plan is managed MySQL 8.0, SUITE-162; re-check if it ever moves to another engine such as MariaDB).
+- Evidence (SUITE-205): on the old code, the parallel test repeated values (2546 twice, 10212 twice). After the fix, 6 of 6 runs gave 40000 unique values. A QA run of 90000 values had 0 duplicates.
 
 Risk: inside a legacy transaction on the same connection, the row lock stays until the commit. Saves that use the same counter then run one after the other.
 
@@ -294,9 +311,17 @@ Evidence (QA): 8 parallel processes with 250 calls each gave 2000 different valu
 - `tkc:sequence` runs in the CLI only. It has no web route.
 - `show <name> <year>` prints the last value, or "no counter".
 - `next <name> <year> [--count=N]` prints one value on each line. `--count` must be from 1 to 100000.
-- `set <name> <year> <value> [--allow-lower] [--execute]` writes nothing without `--execute`. It prints a dry-run line with the old and new value.
+- `set <name> <year> <value> [--allow-lower] [--execute]` writes nothing without `--execute`. It exits with 0 in a dry run.
+- The dry run checks the range first. A value outside 0 to 2147483646 gives exit 1 and the text "The value must be from 0 to 2147483646."
+- Dry-run texts (nothing is written):
+  - `Dry run: <name> <year> would change from <current|no counter> to <v>. Use --execute to write.`
+  - For a lower value without `--allow-lower`: `Warning: 100 is lower than the current value 120. --execute refuses it without --allow-lower.`
+  - For a lower value with `--allow-lower`: `Warning: 100 is lower than the current value 120. The numbers 101 to 120 can be given again. Use --allow-lower only for a test or a recovery, after a pre-check.`
+  - The last line is always: `The counter can change before you run --execute.`
+- `--execute` with a lower value and without `--allow-lower` gives exit 1 and the `LowerValueException` message. `--execute --allow-lower` prints the warning, then `last value set to …`.
+- Rule: use `--allow-lower` only in a test or a recovery. Stop all callers of this counter first. Make sure that no record has a number above the new value.
 - The output has counter names and numbers only.
-- Console sessions run MySQL in non-strict mode: the server clamps a value instead of refusing it. Validate input in PHP. The service and the command do this.
+- All legacy database sessions run MySQL in non-strict mode: console, web, and PHPUnit tests that load the legacy layer. `MysqliManager::connect()` removes `STRICT_TRANS_TABLES` from `sql_mode` on each connection (`public/legacy/include/database/MysqliManager.php:378`). The server then clamps a number or truncates a string and gives only a warning. Validate all input in PHP before the SQL. `Sequence` and `LegacyDbSequenceStore` both do this. A guard test (`@@SESSION.sql_mode` has no `STRICT_TRANS_TABLES`) fails if upstream changes this behaviour.
 
 ### Later use
 - E4 import: calls `setLastValue()` with the highest imported number for each year.

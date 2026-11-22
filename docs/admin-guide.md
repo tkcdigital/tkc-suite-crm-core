@@ -28,6 +28,16 @@
 - To change the logo: replace the file, run `docker/dc.sh console cache:clear`, and rebuild if needed.
 - Keep "Supercharged by SuiteCRM" visible.
 
+## Sequence counters: `tkc:sequence set` (SUITE-62, SUITE-205)
+- Run `docker/dc.sh console tkc:sequence set <name> <year> <value>` to see a dry run. The command writes nothing without `--execute`.
+- The dry run shows the current value and the new value. It warns when the new value is lower than the current value.
+- `--execute` refuses a lower value. This is a safety rule: a lower value lets numbers repeat.
+- Use `--allow-lower` only in a test or a recovery. Before you use it:
+  1. Stop all callers of this counter.
+  2. Make sure that no record has a number above the new value.
+- The counter can change between the dry run and `--execute`. Check the value again before you write.
+- Details: `docs/architecture.md` § Sequences.
+
 ## Legacy asset version (SUITE-181)
 - The config key `js_custom_version` in `public/legacy/config_override.php` sets the `?v=` value of the legacy CSS, JS and sprite URLs.
 - The build sets it with `tkc:legacy:asset-version` (build step 11b). Never set it by hand. Never add it to `scripts/config/config_override.template.php`.
