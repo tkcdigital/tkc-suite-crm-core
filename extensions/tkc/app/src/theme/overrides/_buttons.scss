@@ -41,11 +41,13 @@ button,
 }
 
 // Secondary (header actions, Cancel, Filters)
-.btn-secondary,
-.btn-outline-secondary,
-.settings-button,
-.settings-button.btn,
-.action-button {
+// Menu items inherit these classes from core (buttonClass on collapsed actions), so they are excluded here
+// (SUITE-194). :where() keeps the specificity; overrides/_menus.scss styles the items.
+.btn-secondary:where(:not(.dropdown-item)),
+.btn-outline-secondary:where(:not(.dropdown-item)),
+.settings-button:where(:not(.dropdown-item)),
+.settings-button.btn:where(:not(.dropdown-item)),
+.action-button:where(:not(.dropdown-item)) {
   color: var(--tkc-header-action-text);
   fill: var(--tkc-header-action-text);
   background-color: var(--tkc-header-action-bg);
@@ -54,16 +56,16 @@ button,
   letter-spacing: var(--tkc-letter-spacing-normal);
 }
 
-.btn-secondary:hover,
-.btn-outline-secondary:hover,
-.settings-button:hover,
-.settings-button.btn:hover,
-.action-button:hover,
-.btn-outline-secondary:not(:disabled):not(.disabled):active,
-.btn-outline-secondary:not(:disabled):not(.disabled).active,
-.show > .btn-outline-secondary.dropdown-toggle,
-.settings-button.active,
-.settings-button.btn.active {
+.btn-secondary:where(:not(.dropdown-item)):hover,
+.btn-outline-secondary:where(:not(.dropdown-item)):hover,
+.settings-button:where(:not(.dropdown-item)):hover,
+.settings-button.btn:where(:not(.dropdown-item)):hover,
+.action-button:where(:not(.dropdown-item)):hover,
+.btn-outline-secondary:where(:not(.dropdown-item)):not(:disabled):not(.disabled):active,
+.btn-outline-secondary:where(:not(.dropdown-item)):not(:disabled):not(.disabled).active,
+.show > .btn-outline-secondary:where(:not(.dropdown-item)).dropdown-toggle,
+.settings-button:where(:not(.dropdown-item)).active,
+.settings-button.btn:where(:not(.dropdown-item)).active {
   color: var(--tkc-header-action-text);
   fill: var(--tkc-header-action-text);
   background-color: var(--tkc-header-action-hover);
