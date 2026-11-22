@@ -15,6 +15,24 @@
 - Code review rejects any change in `public/legacy/custom/include/language/`.
 - Overridden core lists are in `docs/architecture.md` § Overrides register.
 
+## Finance module (SUITE-64)
+### Hide Finance from the navbar (SUITE-64 AC 10)
+This is configuration in the app. Git does not hold it. Do it once for each environment.
+1. Sign in as an admin.
+2. Open Admin, then Display Modules and Subpanels.
+3. Move "Finance" to the list of hidden modules.
+4. Save. Run Quick Repair and Rebuild if the navbar still shows Finance.
+- Finance stays reachable from the "Finance" subpanel on an Account.
+- Record the date and the environment in the table at the top of this guide.
+
+### Default access (ACL)
+- The default ACL rows of Finance come from a migration. See `docs/data-model.md` § tkc_AccountFinance.
+- A user without a role cannot see Finance data. Admins can.
+- "Repair Roles" does not reset the deny values. The migration upserts the rows.
+- Never give an admin user the TKC Service role. Its `access` value is -98. That value removes Finance from the module list of the admin, so the admin gets no labels and no layout.
+- The roles TKC Sales and TKC Service are built later (E13, SUITE-151).
+- Known gap (SUITE-207): a user who can view an Account may get Finance data through a GraphQL subpanel request. Do not import real Finance data before SUITE-207 is done.
+
 ## Outbound email in dev (SUITE-45)
 - The command `docker/dc.sh console tkc:mail:use-sink` sets the outbound account. The setting is in the database, not in git. Run the command once for each new database.
 - Manual fallback: open Admin > Email Settings. Enter the same values as in the table above.
