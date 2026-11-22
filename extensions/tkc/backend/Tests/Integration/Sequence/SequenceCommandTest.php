@@ -9,8 +9,8 @@ use PHPUnit\Framework\TestCase;
 /**
  * SUITE-62. Runs against the real database, after tkc:repair --execute created tkc_sequences.
  * Uses synthetic counter names with the prefix tkc_test_. tearDown deletes only those rows.
- * The legacy layer is booted in the test process through the console command bootstrap
- * of the app (see bootLegacy), the parallel check starts real bin/console processes.
+ * The legacy layer is loaded in the test process (see bootLegacy).
+ * The parallel check starts real bin/console processes.
  */
 final class SequenceCommandTest extends TestCase
 {
@@ -43,17 +43,13 @@ final class SequenceCommandTest extends TestCase
 
     private static function bootLegacy(): void
     {
-        if (class_exists(\DBManagerFactory::class, false) && isset($GLOBALS['sugar_config'])) {
+        if (defined('sugarEntry') && class_exists(\DBManagerFactory::class, false)) {
             return;
         }
-        $root = dirname(__DIR__, 6);
-        $kernel = new \App\Kernel('test', false);
-        $kernel->boot();
-        /** @var \App\Engine\LegacyHandler\DefaultLegacyHandler $handler */
-        $handler = $kernel->getContainer()->get(\App\Engine\LegacyHandler\DefaultLegacyHandler::class);
-        $handler->init();
-        $handler->runLegacyEntryPoint();
-        chdir($root . '/public/legacy');
+        // Loads the legacy layer directly, like a legacy entry point (no Symfony kernel in this process).
+        chdir(dirname(__DIR__, 6) . '/public/legacy');
+        define('sugarEntry', true);
+        require_once 'include/entryPoint.php';
     }
 
     private function sequence(): Sequence
