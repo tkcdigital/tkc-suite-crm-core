@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`)
 
 ### Delivered
 
@@ -21,6 +21,7 @@
 | Sequence numbers | A new counter table and a new service give unique numbers for each name and year. Quote numbers and case references use them later. A number can be missing from a series (a gap), for example after a failed save. No screen shows the counters yet. | SUITE-62 |
 | Bug fix: atomic sequence set | Setting a counter can no longer lower it while other processes draw numbers. Before the fix, numbers could repeat. The console command warns before a deliberate lowering. `--execute` refuses a lower value without `--allow-lower`. The dry run refuses a value outside 0 to 2147483646. | SUITE-205 |
 | Data model: Finance module | A protected Finance module on Accounts holds hourly rates, expected revenue and other financial terms. Only admins can use it until the roles story is done. The module logs every change. The Accounts record has a "Finance" subpanel. | SUITE-64 |
+| Data model: Cases | Cases has 13 TKC fields (case reference, impact, product, category, queue, origin, dates, event remarks, TFS project ID, among others). The status list has the 12 TKC statuses in OSC order. Priority has the values 1 to 4, and the default is empty. There are 4 TKC case types. New lists: impact, product, category, queue and origin. No screen layout shows the fields yet (E8). | SUITE-66 |
 
 ### What changes for admins and developers
 - Finance module (SUITE-64):
@@ -36,6 +37,12 @@
   - Do not use Studio or the Dropdown Editor on TKC fields and lists (see `docs/admin-guide.md`).
   - New labels load after `tkc:repair` (SUITE-204 is fixed). No manual cache step is needed.
   - Two new rows are in the Overrides register: the `account_type_dom` list and the `account_type` default.
+- Cases fields (SUITE-66):
+  - Run `tkc:repair` so that Repair adds 13 columns and 2 indexes on `cases` and loads the lists.
+  - One new row is in the Overrides register: `en_us.tkc_case_core_lists.php` (the lists `case_status_dom`, `case_priority_dom`, `case_type_dom` and the string `case_priority_default_key`).
+  - Existing cases that use a hidden core key (for example `Closed_Rejected`, or the type `Product`) show no label. Seed data must use the new keys.
+  - The core "open only" status filter and the My Cases dashlet know only the core status keys. Follow-up: SUITE-200 and SUITE-201.
+  - `FieldManifestTest` has two new optional keys, `keyPatterns` and `values`. The metadata contract test allows one core defect (the Cases subpanel `ForEmails`).
 - Sequence service (SUITE-62):
   - Run `tkc:repair --execute` so that Repair creates the table `tkc_sequences` (one `CREATE TABLE`).
   - The new console command `tkc:sequence <show|next|set>` shows, advances or sets a counter. `set` writes only with `--execute`.

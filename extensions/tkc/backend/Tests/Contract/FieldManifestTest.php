@@ -17,7 +17,9 @@ use Symfony\Component\Dotenv\Dotenv;
  *    'fields' => [name => [type, len, options, default, audited, required, indexed, displayType]],
  *    'absent' => [field names that must not exist],
  *    'lists'  => [list name => ordered keys],
- *    'labels' => [list name => [key => label]]]
+ *    'labels' => [list name => [key => label]],
+ *    'keyPatterns' => [list name => regex that every key must match],
+ *    'values' => [app string name => expected scalar value]]
  * Only the attributes that a field entry names are checked. 'indexed' => true needs a one-field
  * index idx_<table>_<field>. "Field exists in the database" is proved by the second tkc:repair dry run.
  * Precondition: tkc:repair has run (Ext/ compiled). Same kernel pattern as ModuleMetadataContractTest.
@@ -101,6 +103,16 @@ class FieldManifestTest extends TestCase
             if (in_array('', $keys, true)) {
                 $this->assertSame('', $lists[$list][''], "List $list: the empty key needs an empty label.");
             }
+        }
+        foreach ($entry['keyPatterns'] ?? [] as $list => $pattern) {
+            $this->assertArrayHasKey($list, $lists, "List $list is missing.");
+            foreach (array_keys($lists[$list]) as $key) {
+                $this->assertMatchesRegularExpression($pattern, (string)$key, "List $list: key '$key' breaks the key rule.");
+            }
+        }
+        foreach ($entry['values'] ?? [] as $name => $value) {
+            $this->assertArrayHasKey($name, $lists, "App string $name is missing.");
+            $this->assertSame($value, $lists[$name], "App string $name differs.");
         }
         foreach ($entry['labels'] ?? [] as $list => $labels) {
             foreach ($labels as $key => $label) {

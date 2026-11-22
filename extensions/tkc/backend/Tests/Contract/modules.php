@@ -4,5 +4,6 @@
 // DoD for every later module story: add the module here.
 return [
     'Accounts',
+    'Cases',
     'tkc_AccountFinance',
 ];

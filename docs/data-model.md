@@ -104,7 +104,34 @@ Module `tkc_AccountFinance`. Label "Finance". Story SUITE-64. Table `tkc_account
 Filled by SUITE-65.
 
 ## Cases
-Filled by SUITE-66 and SUITE-67.
+Table `cases`. Dictionary key `Case` (the object name, not the module name). Story SUITE-66. SUITE-67 adds the relationship later. Every field is importable and has `comment = 'TKC SUITE-66'`. Vardef file: `public/legacy/custom/Extension/modules/Cases/Ext/Vardefs/tkc_cases.php`. Label file: `public/legacy/custom/Extension/modules/Cases/Ext/Language/en_us.tkc_cases.php`.
+
+| Field | Type / length | Label | OSC source | Story | Notes |
+|---|---|---|---|---|---|
+| `tkc_case_ref_c` | varchar, 20 | Case reference | `Incident.RefNo` | SUITE-66 | `inline_edit` false. `massupdate` false. Index `idx_cases_tkc_case_ref_c`. The sequence service fills it later in E8 (A12). |
+| `tkc_priority_c` | enum, 30 | Impact | `Incident.C$TkcPrioriteit` | SUITE-66 | List `tkc_impact_list`. Default empty. Audited. It is an impact scale. The core field `priority` stays the priority. |
+| `tkc_customer_priority_c` | varchar, 255 | Customer priority | `Incident.Support$SupportPriority` | SUITE-66 | Plain text for now. |
+| `tkc_tact_id_c` | varchar, 10 | Tact ID | `Incident.C$Tactid` | SUITE-66 | |
+| `tkc_product_c` | enum, 30 | Product | `Incident.ProdId` | SUITE-66 | List `tkc_product_list`. Not required. |
+| `tkc_category_c` | enum, 30 | Category | `Incident.CatId` / `DispId` | SUITE-66 | List `tkc_case_category_list`. Not required. |
+| `tkc_queue_c` | enum, 30 | Queue | `Incident.QueueId` | SUITE-66 | List `tkc_queue_list`. Audited. Index `idx_cases_tkc_queue_c`. |
+| `tkc_expected_resolution_date_c` | date | Expected resolution date | `Incident.C$IndicatedSolveDate` | SUITE-66 | Range search. |
+| `tkc_date_closed_c` | datetime | Date closed | `Incident.Closed` | SUITE-66 | `massupdate` false. Range search. |
+| `tkc_case_origin_c` | enum, 20 | Origin | `Incident.Source` | SUITE-66 | List `tkc_case_origin_list`. |
+| `tkc_event_remark_c` | varchar, 255 | Event remark | `Incident.C$EventOpmerking` | SUITE-66 | |
+| `tkc_event_remarks_c` | text | Event remarks | `Incident.C$EventOpmerkingen` | SUITE-66 | |
+| `tkc_tfs_project_id_c` | varchar, 10 | TFS project ID | `Incident.C$TfsProjectId` | SUITE-66 | |
+
+Not built on Cases:
+- `tkc_disposition_c`. The owner has not decided about Disposition.
+- `tkc_assigned_group_c`.
+- The mail header field.
+- The two "collect before share" fields.
+- `osc_id_c` and the primary contact fields. The import and relationship stories build them.
+
+Repair SQL (local dry run, SUITE-66): one `ALTER TABLE cases` with 13 `ADD COLUMN` and 2 `ADD INDEX`. SUITE-72 does the authoritative run.
+
+Contract test: `Cases` is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite66_cases.php`.
 
 ## AOP_Case_Updates
 Filled by SUITE-68.
@@ -122,6 +149,11 @@ The first key of every TKC list is the empty key `''` with an empty label. A rad
 | `tkc_rightnow_future_version_list` | `''`, then 36 keys `2012_02` to `2020_11`. Same label format. | Accounts: `tkc_rightnow_future_version_c` | `en_us.tkc_accounts_lists.php` | SUITE-63 |
 | `tkc_pod_list` | `''`, `ca_ap`, `wc`, `mw`, `pc`, `ps`, `gb`, `am`, `sy`, `jp` | Accounts: `tkc_pod_c` | `en_us.tkc_accounts_lists.php` | SUITE-63 |
 | `tkc_oracle_datacenter_list` | `''`, `gb`, `am`, `mw` | Accounts: `tkc_oracle_datacenter_c` | `en_us.tkc_accounts_lists.php` | SUITE-63 |
+| `tkc_impact_list` | `''`, `no_impact`, `some_impact`, `production_disrupted`, `immediate_action` | Cases: `tkc_priority_c` | `en_us.tkc_cases_lists.php` | SUITE-66 |
+| `tkc_product_list` | `''`, `oracle_service_cloud`, `egain`. Flat list (owner decision). | Cases: `tkc_product_c` | `en_us.tkc_cases_lists.php` | SUITE-66 |
+| `tkc_case_category_list` | `''`, `service_request`, `complaint`, `question`, `change_request`. Flat list (owner decision). | Cases: `tkc_category_c` | `en_us.tkc_cases_lists.php` | SUITE-66 |
+| `tkc_queue_list` | `''`, `support_1st_line`, `support_2nd_line`, `change_request`, `info_tkc_digital`, `answer_feedback`, `info`, `rightnow_automail`, `finance`, `archive`, `quotes`, `spam`, `consular_affairs`. The labels are English, from the OSC queue names, in OSC order. | Cases: `tkc_queue_c` | `en_us.tkc_cases_lists.php` | SUITE-66 |
+| `tkc_case_origin_list` | `''`, `email`, `selfservice`, `staff`, `other` | Cases: `tkc_case_origin_c` | `en_us.tkc_cases_lists.php` | SUITE-66 |
 
 The release lists use the key format `YYYY_MM`, in date order. The OSC menu order is not in date order, so the keys do not copy it. The release names are product data, not personal data.
 
@@ -142,3 +174,11 @@ Each row is also in `docs/architecture.md` § Overrides register.
 |---|---|---|---|
 | List `account_type_dom` | Replaced by the TKC list (C7). Keys in order: `tkc_lead` (Lead), `Prospect` (Prospect), `Customer` (Customer), `tkc_supplier` (Supplier), `tkc_relation` (Relation), `tkc_former_customer` (Former customer). No empty key. The core keys Analyst, Competitor, Integrator, Investor, Partner, Press, Reseller and Other are hidden. No core key is renamed (D7). | `public/legacy/custom/Extension/application/Ext/Language/en_us.tkc_account_type_dom.php` | SUITE-63 |
 | Vardef `Account.account_type` | The default is `tkc_relation` (C8). It matches the OSC default type "Relatie". Repair gives no SQL, because the column has no database default. | `public/legacy/custom/Extension/modules/Accounts/Ext/Vardefs/tkc_account_type_default.php` | SUITE-63 |
+| List `case_status_dom` | Replaced by 12 keys in OSC order (C7). Relabelled core keys: `Open_New` (Unresolved), `Open_Assigned` (In progress), `Open_Pending Input` (Waiting for customer (info needed)), `Closed_Closed` (Solved). New keys: `Open_Updated` (Updated), `Open_OnHold` (On hold), `Open_WaitOracle` (Waiting for Oracle), `Open_AwaitApproval` (Ready, awaiting approval of the requester), `Open_WaitFreshworks` (Waiting for Freshworks), `Open_FeatureRequest` (Feature request), `Open_CAJira` (CA Jira), `Closed_Archived` (Archived). Every key keeps the `Open_` or `Closed_` prefix, because core reads it (A2). The core keys `Closed_Rejected` and `Closed_Duplicate` are hidden. In the Angular UI the Status options follow the State field (core behaviour). | `public/legacy/custom/Extension/application/Ext/Language/en_us.tkc_case_core_lists.php` | SUITE-66 |
+| List `case_priority_dom` | Replaced by `''`, `P1`, `P2`, `P3`, `tkc_P4` with the labels "Priority 1" to "Priority 4" (A13). The empty first key keeps the priority empty. | same file | SUITE-66 |
+| String `case_priority_default_key` | Set to `''`. Core sets `P2`. Core reads it only in `modules/Cases/CasesQuickCreate.php:61` (legacy quick create). The core vardef of `priority` has no default. | same file | SUITE-66 |
+| List `case_type_dom` | Replaced by `''`, `tkc_support_request` (Support request), `tkc_general_communication` (General communication), `tkc_info_message` (Info message), `tkc_project_communication` (Project communication). The core keys Administration, Product and User are hidden. | same file | SUITE-66 |
+
+Known gaps of the Cases core overrides (check at each upstream merge):
+- AOP derives `state` from the key prefix (`modules/AOP_Case_Updates/CaseUpdatesHook.php:308`). Keep the prefixes.
+- The core "open only" search filter and the My Cases dashlet know only the core status keys. Follow-up stories: SUITE-200 and SUITE-201.
