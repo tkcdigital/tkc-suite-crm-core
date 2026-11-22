@@ -32,7 +32,18 @@ final class InMemorySequenceStore implements SequenceStore
         }
     }
 
-    public function set(string $name, int $year, int $value): void
+    public function setIfNotLower(string $name, int $year, int $value): int
+    {
+        $this->hook();
+        $before = $this->values["$name|$year"] ?? $value;
+        if ($before <= $value) {
+            $this->values["$name|$year"] = $value;
+        }
+
+        return $before;
+    }
+
+    public function forceSet(string $name, int $year, int $value): void
     {
         $this->hook();
         $this->values["$name|$year"] = $value;

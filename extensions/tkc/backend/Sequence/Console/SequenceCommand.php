@@ -87,11 +87,33 @@ class SequenceCommand extends Command
                         break;
                     case 'set':
                         $value = (int)$valueArg;
+                        $allowLower = (bool)$input->getOption('allow-lower');
+                        $current = $sequence->current($name, $year);
+                        $warning = null;
+                        if ($current !== null && $value < $current) {
+                            $warning = $allowLower
+                                ? sprintf(
+                                    'Warning: %d is lower than the current value %d. The numbers %d to %d can be given again. '
+                                    . 'Use --allow-lower only for a test or a recovery, after a pre-check.',
+                                    $value,
+                                    $current,
+                                    $value + 1,
+                                    $current
+                                )
+                                : sprintf(
+                                    'Warning: %d is lower than the current value %d. --execute refuses it without --allow-lower.',
+                                    $value,
+                                    $current
+                                );
+                        }
                         if ($input->getOption('execute')) {
-                            $sequence->setLastValue($name, $year, $value, (bool)$input->getOption('allow-lower'));
+                            // The guard is in the store, not in this check: the counter can change in between.
+                            if ($warning !== null && $allowLower) {
+                                $lines[] = $warning;
+                            }
+                            $sequence->setLastValue($name, $year, $value, $allowLower);
                             $lines[] = sprintf('%s %d: last value set to %d', $name, $year, $value);
                         } else {
-                            $current = $sequence->current($name, $year);
                             $lines[] = sprintf(
                                 'Dry run: %s %d would change from %s to %d. Use --execute to write.',
                                 $name,
@@ -99,6 +121,10 @@ class SequenceCommand extends Command
                                 $current === null ? 'no counter' : (string)$current,
                                 $value
                             );
+                            if ($warning !== null) {
+                                $lines[] = $warning;
+                            }
+                            $lines[] = 'The counter can change before you run --execute.';
                         }
                         break;
                 }

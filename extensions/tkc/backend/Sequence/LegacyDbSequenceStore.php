@@ -12,7 +12,17 @@ namespace App\Extension\tkc\backend\Sequence;
  * 3. SELECT LAST_INSERT_ID() reads the value of this connection.
  * Inside a legacy transaction on the same connection the row lock stays until the commit.
  *
- * The caller must check name and year (Sequence does this). The name is quoted again here.
+ * setIfNotLower() uses three statements too (SUITE-205):
+ * 1. INSERT ... ON DUPLICATE KEY UPDATE seq_name = seq_name creates the row at the value, or does nothing.
+ * 2. UPDATE sets date_modified first, while seq_value still has the old value, then
+ *    seq_value = GREATEST(LAST_INSERT_ID(seq_value), v). The row lock makes the read and the write one step.
+ * 3. SELECT LAST_INSERT_ID() reads the value before the change.
+ * This depends on LAST_INSERT_ID(expr) and on UPDATE assignments that run left to right (MySQL 8).
+ * Do not use affected rows: they are 0 for an equal value, which is a success.
+ *
+ * The store checks name, year and value itself (SequenceInput) because it does not trust its caller.
+ *
+ * @internal Use Sequence.
  */
 class LegacyDbSequenceStore implements SequenceStore
 {
@@ -21,6 +31,7 @@ class LegacyDbSequenceStore implements SequenceStore
 
     public function next(string $name, int $year): int
     {
+        SequenceInput::checkKey($name, $year);
         $db = $this->db();
         $where = $this->where($db, $name, $year);
 
@@ -46,14 +57,40 @@ class LegacyDbSequenceStore implements SequenceStore
 
     public function current(string $name, int $year): ?int
     {
+        SequenceInput::checkKey($name, $year);
         $db = $this->db();
         $value = $db->getOne('SELECT seq_value FROM ' . self::TABLE . ' WHERE ' . $this->where($db, $name, $year));
 
         return ($value === false || $value === null) ? null : (int)$value;
     }
 
-    public function set(string $name, int $year, int $value): void
+    public function setIfNotLower(string $name, int $year, int $value): int
     {
+        SequenceInput::checkKey($name, $year);
+        SequenceInput::checkValue($value);
+        $db = $this->db();
+        $where = $this->where($db, $name, $year);
+
+        $this->run($db, 'INSERT INTO ' . self::TABLE . ' (seq_name, seq_year, seq_value, date_modified) VALUES ('
+            . $db->quoted($name) . ', ' . $year . ', ' . $value . ', UTC_TIMESTAMP())'
+            . ' ON DUPLICATE KEY UPDATE seq_name = seq_name');
+        $this->run($db, 'UPDATE ' . self::TABLE
+            . ' SET date_modified = IF(seq_value <= ' . $value . ', UTC_TIMESTAMP(), date_modified),'
+            . ' seq_value = GREATEST(LAST_INSERT_ID(seq_value), ' . $value . ') WHERE ' . $where);
+
+        $before = $db->getOne('SELECT LAST_INSERT_ID()');
+        if ($before === false || $before === null) {
+            throw new \RuntimeException('The counter value cannot be read.');
+        }
+
+        return (int)$before;
+    }
+
+    /** No check. Numbers above $value can repeat. */
+    public function forceSet(string $name, int $year, int $value): void
+    {
+        SequenceInput::checkKey($name, $year);
+        SequenceInput::checkValue($value);
         $db = $this->db();
         $this->run($db, 'INSERT INTO ' . self::TABLE . ' (seq_name, seq_year, seq_value, date_modified) VALUES ('
             . $db->quoted($name) . ', ' . $year . ', ' . $value . ', UTC_TIMESTAMP())'
