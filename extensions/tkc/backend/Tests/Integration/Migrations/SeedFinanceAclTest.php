@@ -90,7 +90,7 @@ final class SeedFinanceAclTest extends TestCase
         $rows = $this->rows();
         self::assertSame(self::ACTIONS, array_values(array_intersect(self::ACTIONS, array_keys($rows))));
         foreach (self::ACTIONS as $a) {
-            self::assertSame([$a === 'access' ? -98 : -99], $rows[$a], "action $a");
+            self::assertSame([$a === 'access' ? 89 : -99], $rows[$a], "action $a");
         }
     }
 
@@ -111,6 +111,18 @@ final class SeedFinanceAclTest extends TestCase
         }
         $this->runUp();
         $this->assertDeny();
+    }
+
+    public function testExistingDisabledAccessRowBecomesEnabledWithoutDuplicate(): void
+    {
+        $this->conn->insert('acl_actions', [
+            'id' => bin2hex(random_bytes(16)), 'date_entered' => '2026-01-01 00:00:00', 'date_modified' => '2026-01-01 00:00:00',
+            'modified_user_id' => '1', 'created_by' => '1', 'name' => 'access', 'category' => self::CATEGORY,
+            'acltype' => 'module', 'aclaccess' => -98, 'deleted' => 0,
+        ]);
+        $this->runUp();
+        $this->assertDeny();
+        self::assertCount(8, $this->allRows());
     }
 
     public function testSecondRunChangesNothing(): void

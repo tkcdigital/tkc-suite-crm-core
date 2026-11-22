@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * SUITE-64 guard. Read-only: the real rows of tkc_AccountFinance (acltype module, deleted = 0) must deny by default.
- * Exactly 8 actions, access -98, the other seven -99, no duplicate per action.
+ * Exactly 8 actions, access 89, the other seven -99, no duplicate per action.
  * Failure messages show action names and values only. The helper is also tested on in-memory arrays,
  * so the failure path is proved without a change to the database.
  */
@@ -32,7 +32,7 @@ final class FinanceAclDenyTest extends TestCase
                 $out[] = sprintf('%s: %d rows (%s), expected 1', $a, count($values), implode(',', $values));
                 continue;
             }
-            $expected = $a === 'access' ? -98 : -99;
+            $expected = $a === 'access' ? 89 : -99;
             if ($values[0] !== $expected) {
                 $out[] = sprintf('%s: %d, expected %d', $a, $values[0], $expected);
             }
@@ -75,11 +75,18 @@ final class FinanceAclDenyTest extends TestCase
         );
     }
 
+    public function testHelperReportsAccessDisabled(): void
+    {
+        $rows = $this->goodRows();
+        $rows[0]['aclaccess'] = -98;
+        self::assertSame(['access: -98, expected 89'], self::violations($rows));
+    }
+
     /** @return array<int, array{name: string, aclaccess: int}> */
     private function goodRows(): array
     {
         return array_map(
-            static fn(string $a): array => ['name' => $a, 'aclaccess' => $a === 'access' ? -98 : -99],
+            static fn(string $a): array => ['name' => $a, 'aclaccess' => $a === 'access' ? 89 : -99],
             self::ACTIONS
         );
     }
