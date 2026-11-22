@@ -67,7 +67,7 @@ New-field names follow the rules: suffix `_c`. Final names are for the architect
 | Incident.OrgId ("Organisatie") | relationship to Org (verified: `organization`, nullable) | Algemeen | Cases.account_id / account_name | core | - | - | Core `account_cases`. |
 | Incident.SlaiId ("SLA-exemplaar") | relationship to SLA instance | Categorisatie | - | drop | - | - | Owner decision 2026-11-20: SLA dropped. |
 | Incident.SlaRespDelta ("Reactie-interval") | numeric with increment 1 (XML `Increment`); unit ? | Categorisatie, read-only (screenshot, tooltip "Reactie-interval voor dit incident") | - | drop | - | - | Owner decision: SLA dropped. |
-| Incident.SeverityId ("Prioriteit", label from screenshot) | menu (verified, `severity`, nullable), 4 items | Categorisatie | Cases.priority | core | dropdown: replace `case_priority_dom` | 1 Prioriteit 1, 2 Prioriteit 2, 3 Prioriteit 3, 4 Prioriteit 4. Counts in tst1 (4053 incidents): empty 4036, 4: 7, 3: 6, 2: 3, 1: 1 | Core `case_priority_dom` has P1, P2, P3 only (High, Medium, Low). Proposal: keep keys P1-P3, add key P4, relabel to "Prioriteit 1..4" in a custom language extension. Used on only 17 of 4053 incidents. Mapping 1:1 (Q4). |
+| Incident.SeverityId ("Prioriteit", label from screenshot) | menu (verified, `severity`, nullable), 4 items | Categorisatie | Cases.priority | core | dropdown: replace `case_priority_dom` | 1 Prioriteit 1, 2 Prioriteit 2, 3 Prioriteit 3, 4 Prioriteit 4. Counts in tst1 (4053 incidents): empty 4036, 4: 7, 3: 6, 2: 3, 1: 1 | Core `case_priority_dom` has P1, P2, P3 only (High, Medium, Low). Proposal: keep keys P1-P3, add key `tkc_P4` (A13), labels "Priority 1..4" (A20) in a custom language extension (built in SUITE-66). Used on only 17 of 4053 incidents. Mapping 1:1 (Q4). |
 | Incident.C$TkcPrioriteit ("TKC Prioriteit") | custom **menu** (verified `c.tkc_prioriteit`), 4 items | Categorisatie | Cases.tkc_priority_c | new | enum | 209 Geen impact, 210 Enige impact, 211 Verstoring productieproces, 212 Direct actie vereist | An impact scale, not a priority number. Same four labels as the older menu `c.prioriteit` (ids 84, 74, 75, 76), which is not on the workspace. |
 | Incident.Support$SupportPriority ("Klantprioriteit") | relation to custom object `Support.SupportPriority` (verified; REST name `Support.SupportPriority`), nullable | Categorisatie | Cases.tkc_customer_priority_c | new | relate to a small custom module or enum (see 2.3) | See 2.3. The list of distinct `klant_prioriteit` values was not read. | Not a menu: a lookup row per support contract (114 rows in tst1). See 2.3 and Q7. |
 | Incident.C$Typeincident ("Type Incident") | custom **menu** (verified `c.typeincident`), 4 items | Categorisatie | Cases.type | core | - | 184 Support verzoek, 185 Algemene Communicatie, 186 Info bericht, 195 Project Communicatie | Reuse core `type`; replace the `case_type_dom` list (Administration, Product, User) in a custom language extension. |
@@ -106,6 +106,30 @@ New-field names follow the rules: suffix `_c`. Final names are for the architect
 
 **Counts (rows in this table, recounted after REST 2026-11-20; no row added or removed):** core 12 | new 21 | drop 10 | total 43.
 New includes the import keys `osc_id_c` and `tkc_case_ref_c`.
+
+### 2.4 Build status (SUITE-66, 2026-11-22)
+
+Status values: planned, built, migrated. Details: `docs/data-model.md` § Cases.
+
+| SuiteCRM item | Status |
+|---|---|
+| `Cases.tkc_case_ref_c` (varchar 20, index) | built (SUITE-66). Number format not built (E8, A12). |
+| `Cases.tkc_priority_c` (list `tkc_impact_list`) | built (SUITE-66) |
+| `Cases.tkc_customer_priority_c` (varchar 255; see 2.3) | built (SUITE-66) as plain text |
+| `Cases.tkc_tact_id_c`, `tkc_event_remark_c`, `tkc_event_remarks_c`, `tkc_tfs_project_id_c` | built (SUITE-66) |
+| `Cases.tkc_product_c`, `tkc_category_c` (flat owner lists) | built (SUITE-66) |
+| `Cases.tkc_queue_c` (12 queues, index) | built (SUITE-66) |
+| `Cases.tkc_expected_resolution_date_c`, `tkc_date_closed_c` | built (SUITE-66) |
+| `Cases.tkc_case_origin_c` (4 keys) | built (SUITE-66) |
+| `case_status_dom` (12 statuses, section 10.1) | built (SUITE-66). Keys as in 10.1. |
+| `case_priority_dom` (4 keys) | built (SUITE-66). The fourth key is `tkc_P4`, not `P4` (A13). The default is empty. |
+| `case_type_dom` (4 types) | built (SUITE-66). The keys are `tkc_support_request`, `tkc_general_communication`, `tkc_info_message` and `tkc_project_communication`. |
+| `Cases.tkc_disposition_c` | planned. The owner has not decided (Q5). |
+| `Cases.tkc_assigned_group_c` | planned (Q6) |
+| Thread `mailHeader` field | planned |
+| `Cases.tkc_collect_before_share_c`, `tkc_collect_before_share_opt_c` | planned (Q10) |
+| `Cases.osc_id_c`, primary contact fields | planned (import and relationship stories) |
+| Import of Cases data | not started (no row is migrated) |
 
 ### 2.2 Custom fields (package `c`, verified by REST schema 2026-11-20)
 
