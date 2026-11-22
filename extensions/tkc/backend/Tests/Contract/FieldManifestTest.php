@@ -84,6 +84,13 @@ class FieldManifestTest extends TestCase
             }
         }
 
+        // Each field label must resolve to a non-empty string (SUITE-204: stale language cache).
+        foreach ($entry['fields'] ?? [] as $name => $expected) {
+            $vname = $fieldDefs[$name]['vname'] ?? '';
+            $this->assertNotSame('', $vname, "$module.$name has no vname.");
+            $this->assertNotEmpty($data['modStrings'][$vname] ?? '', "$module.$name: label $vname does not resolve.");
+        }
+
         foreach ($entry['absent'] ?? [] as $name) {
             $this->assertArrayNotHasKey($name, $fieldDefs, "$module.$name must not exist.");
         }

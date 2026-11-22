@@ -18,7 +18,7 @@ class LegacyMetadataLoader
     }
 
     /**
-     * @return array{layouts: array<string, mixed>, fieldDefs: array<string, array<string, mixed>>, indices: array<string, array<string, mixed>>, appListStrings: array<string, mixed>}
+     * @return array{layouts: array<string, mixed>, fieldDefs: array<string, array<string, mixed>>, indices: array<string, array<string, mixed>>, appListStrings: array<string, mixed>, modStrings: array<string, string>}
      */
     public function load(string $module): array
     {
@@ -64,6 +64,7 @@ class LegacyMetadataLoader
                 'fieldDefs' => $bean->field_defs,
                 'indices' => $GLOBALS['dictionary'][$bean->getObjectName()]['indices'] ?? [],
                 'appListStrings' => return_app_list_strings_language('en_us'),
+                'modStrings' => return_module_language('en_us', $module),
             ];
         } finally {
             if ($previousSelf === null) {

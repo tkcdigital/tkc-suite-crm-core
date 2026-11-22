@@ -3,6 +3,7 @@
 namespace App\Extension\tkc\backend\Console;
 
 use App\Engine\LegacyHandler\DefaultLegacyHandler;
+use App\Engine\Service\CacheManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,6 +13,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * CLI version of Admin > Repair > Quick Repair and Rebuild (SUITE-13, D10).
  * Rebuilds the Ext/ files, clears the legacy caches and shows (or runs) the repairDatabase SQL.
+ * Also clears the module and JS language caches, checks that the Ext labels resolve, and marks
+ * rebuild_all so the web process clears its Angular metadata cache (SUITE-204).
  */
 #[AsCommand(
     name: 'tkc:repair',
@@ -19,8 +22,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 class RepairCommand extends Command
 {
-    public function __construct(private readonly DefaultLegacyHandler $legacyHandler)
-    {
+    public function __construct(
+        private readonly DefaultLegacyHandler $legacyHandler,
+        private readonly CacheManagerInterface $cacheManager
+    ) {
         parent::__construct();
     }
 
@@ -44,6 +49,10 @@ class RepairCommand extends Command
         ob_start(); // the legacy code echoes HTML; drop it
         try {
             $sql = $this->runRepair($execute, $module, $error);
+            if ($error === null) {
+                // After the legacy handler closed. The web process clears cache.app on the next request.
+                $this->cacheManager->markAsNeedsUpdate('rebuild_all');
+            }
         } catch (\Throwable $e) {
             $error = get_class($e) . ': ' . $e->getMessage();
             $sql = '';
@@ -66,7 +75,7 @@ class RepairCommand extends Command
             $output->writeln($this->formatSql($sql));
         }
         if (!$execute) {
-            $output->writeln('Dry run: the database was not changed.');
+            $output->writeln('Dry run: the database schema was not changed.');
         }
         $output->writeln('Next: php bin/console cache:clear');
 
@@ -95,6 +104,11 @@ class RepairCommand extends Command
 
             $this->rebuildAndClear($execute);
 
+            $error = $this->checkLabels();
+            if ($error !== null) {
+                return '';
+            }
+
             return $this->repairDatabase($execute, $module);
         } finally {
             $this->legacyHandler->close();
@@ -122,10 +136,51 @@ class RepairCommand extends Command
         $rc->clearSearchCache();
         $rc->clearExternalAPICache();
         $rc->rebuildExtensions();
+        // rebuildExtensions() compiles Ext/Language but keeps the cached module language files.
+        // The core clearLanguageCache() skips an empty module_list, so clear all of them here.
+        \LanguageManager::clearLanguageCache();
+        $rc->clearLanguageCache();
+        $rc->clearJsLangFiles();
         $rc->clearVardefs();
         if ($execute) {
             $rc->rebuildAuditTables(); // creates tables
         }
+    }
+
+    /**
+     * Post-condition: every label of a compiled Ext/Language file resolves with the same value.
+     * Sends an error text with module, language and keys (never values), or null.
+     */
+    private function checkLabels(): ?string
+    {
+        $load = static function (string $__file): array {
+            $mod_strings = [];
+            include $__file;
+            return $mod_strings;
+        };
+
+        $problems = [];
+        foreach (glob('custom/modules/*/Ext/Language/*.lang.ext.php') ?: [] as $file) {
+            $parts = explode('/', $file);
+            $module = $parts[2];
+            $lang = basename($file, '.lang.ext.php');
+            $resolved = return_module_language($lang, $module);
+            $bad = [];
+            foreach ($load($file) as $key => $value) {
+                if (!is_array($resolved) || ($resolved[$key] ?? null) !== $value) {
+                    $bad[] = $key;
+                }
+            }
+            if ($bad !== []) {
+                $problems[] = "$module ($lang): " . implode(', ', $bad);
+            }
+        }
+
+        if ($problems === []) {
+            return null;
+        }
+
+        return "Stale language cache: these labels do not resolve after the rebuild.\n" . implode("\n", $problems);
     }
 
     /**

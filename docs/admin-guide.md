@@ -15,11 +15,6 @@
 - Code review rejects any change in `public/legacy/custom/include/language/`.
 - Overridden core lists are in `docs/architecture.md` § Overrides register.
 
-### Known issue: stale language cache after Repair (SUITE-204)
-- After `tkc:repair --execute`, new labels can be missing in the Angular UI. The cause is a stale legacy module language cache in `public/legacy/cache/modules/<Module>/language/`.
-- This stays a known issue until SUITE-204 is fixed.
-- Workaround: delete the stale files for that module in the cache directory. Then run `docker/dc.sh console cache:clear`. Reload the page.
-
 ## Outbound email in dev (SUITE-45)
 - The command `docker/dc.sh console tkc:mail:use-sink` sets the outbound account. The setting is in the database, not in git. Run the command once for each new database.
 - Manual fallback: open Admin > Email Settings. Enter the same values as in the table above.
