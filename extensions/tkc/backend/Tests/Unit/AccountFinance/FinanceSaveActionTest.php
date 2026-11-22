@@ -21,11 +21,12 @@ final class FinanceSaveActionTest extends TestCase
     /** @return array<string, mixed> */
     private static function financeSave(): array
     {
-        if (!defined('sugarEntry')) {
-            define('sugarEntry', true);
-        }
+        // Do not define sugarEntry here (the sequence test defines it). Drop the entry guard and evaluate the file.
+        $code = (string)file_get_contents(self::root() . '/public/legacy/modules/tkc_AccountFinance/metadata/detailviewdefs.php');
+        $code = preg_replace("/if \\(!defined\\('sugarEntry'\\).*?\\n\\}\\n/s", '', $code, 1);
+        $code = preg_replace('/^<\\?php/', '', (string)$code);
         $viewdefs = [];
-        require self::root() . '/public/legacy/modules/tkc_AccountFinance/metadata/detailviewdefs.php';
+        eval($code);
 
         return $viewdefs['tkc_AccountFinance']['DetailView']['recordActions']['actions']['save'] ?? [];
     }
