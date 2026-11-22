@@ -3,7 +3,7 @@
 namespace App\Extension\tkc\backend\Sequence;
 
 /**
- * Storage for the counters of Sequence (SUITE-62). The arguments are already validated.
+ * Storage for the counters of Sequence (SUITE-62). Implementations check their input with SequenceInput.
  *
  * @internal Use Sequence.
  */
