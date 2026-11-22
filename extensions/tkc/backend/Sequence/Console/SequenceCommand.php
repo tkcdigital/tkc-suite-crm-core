@@ -4,6 +4,7 @@ namespace App\Extension\tkc\backend\Sequence\Console;
 
 use App\Engine\LegacyHandler\DefaultLegacyHandler;
 use App\Extension\tkc\backend\Sequence\Sequence;
+use App\Extension\tkc\backend\Sequence\SequenceInput;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -87,6 +88,9 @@ class SequenceCommand extends Command
                         break;
                     case 'set':
                         $value = (int)$valueArg;
+                        // Check the range before the dry-run text, so a dry run never predicts a write
+                        // that --execute refuses (SUITE-205 QA). A huge number casts to PHP_INT_MAX and fails here.
+                        SequenceInput::checkValue($value);
                         $allowLower = (bool)$input->getOption('allow-lower');
                         $current = $sequence->current($name, $year);
                         $warning = null;
