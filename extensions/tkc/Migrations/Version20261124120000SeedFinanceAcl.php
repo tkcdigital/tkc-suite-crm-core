@@ -14,12 +14,16 @@ use Doctrine\Migrations\Exception\IrreversibleMigration;
  * Upsert, not insert-only: ACLAction::addActions(), SugarBean::create_tables() and Repair Roles insert
  * allow-all rows first (access 89, other actions 90). A seed that skips existing rows would leave Finance open.
  * Existing rows (deleted = 0) are set to deny. Missing rows are inserted. A second run changes nothing.
+ * Why access is 89 and not -98 (ACL_ALLOW_DISABLED): ModuleRegistryHandler::applyUserActionFilter() drops a module
+ * with access below 89 from the frontend module list and mod strings, and it has no admin exception. With -98 an admin
+ * gets no labels and no subpanel metadata. The data stays denied by the seven -99 actions (view, list, edit, delete,
+ * import, export, massupdate). -98 is only for a role override.
  * Role grants are not here (E13-S1). Logs counts only.
  */
 final class Version20261124120000SeedFinanceAcl extends AbstractMigration
 {
     private const CATEGORY = 'tkc_AccountFinance';
-    private const ACL_ALLOW_DISABLED = -98; // access action: module off
+    private const ACL_ALLOW_ENABLED = 89;   // access action: module enabled (registry visible)
     private const ACL_ALLOW_NONE = -99;     // every other action: no access
     /** Names of $ACLActions['module']['actions'] in modules/ACLActions/actiondefs.php. */
     private const ACTIONS = ['access', 'view', 'list', 'edit', 'delete', 'import', 'export', 'massupdate'];
@@ -36,7 +40,7 @@ final class Version20261124120000SeedFinanceAcl extends AbstractMigration
         $now = gmdate('Y-m-d H:i:s');
 
         foreach (self::ACTIONS as $action) {
-            $value = $action === 'access' ? self::ACL_ALLOW_DISABLED : self::ACL_ALLOW_NONE;
+            $value = $action === 'access' ? self::ACL_ALLOW_ENABLED : self::ACL_ALLOW_NONE;
             $where = 'name = ? AND category = ? AND acltype = ? AND deleted = 0';
             $key = [$action, self::CATEGORY, 'module'];
 
