@@ -160,7 +160,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
 
 ## Tests (SUITE-46)
 - `scripts/test.sh [--php] [--ng] [--theme]` runs the TKC tests.
-- PHP: PHPUnit 10 in the app container. Config `extensions/tkc/phpunit.xml.dist` has the suites `unit` and `contract`. The bootstrap `backend/Tests/bootstrap.php` loads only `vendor/autoload.php`, not `tests/bootstrap.php`.
+- PHP: PHPUnit 10 in the app container. Config `extensions/tkc/phpunit.xml.dist` has the suites `unit`, `contract` and `integration` (SUITE-62). The `integration` suite is in `backend/Tests/Integration`. It needs the database, and the table `tkc_sequences` must exist, so run `tkc:repair --execute` first. It loads the legacy entry point directly, because the Symfony `test` env does not boot (SUITE-176). `scripts/test.sh --php` runs all three suites. The bootstrap `backend/Tests/bootstrap.php` loads only `vendor/autoload.php`, not `tests/bootstrap.php`.
 - NG: Karma with ChromeHeadless on the host (needs Google Chrome), project `tkc`. The spec build uses `extensions/tkc/app/webpack.config.spec.js`, because module federation breaks Karma. There is no `main` or `test.ts`: Angular 18 finds the specs through `include`.
 - THEME: `unittest` of `scripts/theme/tests` (since SUITE-194 this includes `test_check_bundle.py`, which tests check 4 with inline CSS samples), then `check_bundle.py` (sentinel, `.navbar` order, since SUITE-186 the radio `display` rule, and since SUITE-194 the Actions menu check; see Angular theme). It fails when `public/dist` is not built.
 - Test directories are named `Tests`. The file `config/core_services.yaml` excludes `Tests` from `App\Extension\` autowiring.
@@ -253,7 +253,56 @@ Not tested: the Studio UI itself, the Edit view and Quick create files, and a br
 - `php bin/console tkc:mail:use-sink [--dry-run]`: sets the system outbound account to the mail sink. DEV only, idempotent (SUITE-45).
 - `php bin/console tkc:users:repair-number-separators [--dry-run]`: removes the user preferences `dec_sep` and `num_grp_sep` that equal the other effective separator (SUITE-179). Run it after `tkc:config:apply`. It writes through the legacy `UserPreference` bean. A signed-in user must sign out and in again (the session writes the old values back). Code in `extensions/tkc/backend/Users/` (`Console/RepairNumberSeparatorsCommand`, `NumberSeparatorPolicy`, `LegacyPreferenceStore`). Upgrade risk: it depends on the key names `dec_sep` and `num_grp_sep`, on the config keys `default_decimal_seperator` and `default_number_grouping_seperator`, and on the base64-serialized format of `user_preferences.contents`. Re-check at each upstream merge.
 - `php bin/console tkc:legacy:asset-version [--dry-run] [--target=<file>]`: sets `js_custom_version` in `public/legacy/config_override.php` to `tkc` and 12 hex characters of a sha256 hash over the legacy theme inputs, `composer.lock` and `public/legacy/suitecrm_version.php` (SUITE-181, SUITE-183). It prints only that key and the result ("No change", "Would apply" or "Applied"). It exits with 1 when an input is missing or the file cannot be written. Run it after `tkc:config:apply` (build step 11b). Details in § Legacy theme.
+- `php bin/console tkc:sequence <show|next|set> <name> <year> [<value>] [--count=N] [--allow-lower] [--execute]`: shows, advances or sets a counter of the sequence service (SUITE-62). Details in § Sequences.
 - Code in `extensions/tkc/backend/Console/` and `Config/`. Details in `scripts/config/README.md`.
+
+## Sequences (SUITE-62)
+The sequence service gives numbers that are unique for each counter name and year. The table is `tkc_sequences` (see `docs/data-model.md` § Tables). Quote numbers and case references use it later.
+
+### Service
+- Code in `extensions/tkc/backend/Sequence/`: the final class `App\Extension\tkc\backend\Sequence\Sequence`, the interface `SequenceStore` and the class `LegacyDbSequenceStore`.
+- `LegacyDbSequenceStore` gets the connection from `DBManagerFactory::getInstance()` when it needs it. Its constructor has no arguments.
+- `config/core_services.yaml` autowires everything under `extensions/*`. No `services.yaml` entry exists.
+- The code is in `extensions/tkc/backend`, not in `custom/include/TKC`. Reason: the legacy `entryPoint.php` loads the root Composer autoloader. Shared TKC PHP code therefore lives in `extensions/tkc/backend`.
+- Symfony code autowires `Sequence`. Hooks and legacy code call the static `Sequence::legacy()`. The legacy layer must be loaded.
+
+### API
+| Method | Result |
+|---|---|
+| `next(string $name, int $year): int` | The last value plus one. |
+| `current(string $name, int $year): ?int` | The last value. `null` when the counter does not exist. |
+| `setLastValue(string $name, int $year, int $value, bool $allowLower = false): void` | Sets the last value. It refuses a value below the current value, unless `$allowLower` is true. The value must be from 0 to 2147483646. |
+
+- The name must match `^[a-z][a-z0-9_]{0,39}$`. The year must be from 2000 to 2099. Wrong input throws `InvalidArgumentException`.
+
+### Guarantee
+- Every value from `next()` is unique for its name and year.
+- The series can have gaps. Example: a save fails after `next()` gave a number. Do not build logic that needs a series without gaps.
+- At the INT maximum (2147483647), `next()` throws a `RuntimeException`. The UPDATE has the guard `AND seq_value < 2147483647`, and `next()` checks that exactly one row changed (QA finding D1). Without the guard, a non-strict MySQL session clamps the column at the maximum. `LAST_INSERT_ID()` would then give a larger value that is not stored, and a number could repeat.
+
+### Concurrency recipe
+`next()` runs three statements on one connection. It uses no explicit transaction.
+1. `INSERT … ON DUPLICATE KEY UPDATE seq_name = seq_name` creates the row once. The primary key absorbs a race of two first calls.
+2. `UPDATE … SET seq_value = LAST_INSERT_ID(seq_value + 1) … AND seq_value < 2147483647` is atomic and takes the InnoDB row lock. The code checks that exactly one row changed.
+3. `SELECT LAST_INSERT_ID()` reads the value of this connection.
+
+Risk: inside a legacy transaction on the same connection, the row lock stays until the commit. Saves that use the same counter then run one after the other.
+
+Evidence (QA): 8 parallel processes with 250 calls each gave 2000 different values. Counters of two years are independent. Input that fails validation writes nothing.
+
+### Console
+- `tkc:sequence` runs in the CLI only. It has no web route.
+- `show <name> <year>` prints the last value, or "no counter".
+- `next <name> <year> [--count=N]` prints one value on each line. `--count` must be from 1 to 100000.
+- `set <name> <year> <value> [--allow-lower] [--execute]` writes nothing without `--execute`. It prints a dry-run line with the old and new value.
+- The output has counter names and numbers only.
+- Console sessions run MySQL in non-strict mode: the server clamps a value instead of refusing it. Validate input in PHP. The service and the command do this.
+
+### Later use
+- E4 import: calls `setLastValue()` with the highest imported number for each year.
+- E10 quote number: the counter `quote` replaces the OSC `CRM.offerteNr` (see `docs/osc-mapping/opportunity.md` § 6.2).
+- E8 case reference (decision A12): the counter name and the format are not decided yet.
+- No row in the Overrides register: the service does not override core code.
 
 ## Core patches
 | Patch | File | Reason | Issue | Re-check on upgrade |

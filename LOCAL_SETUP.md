@@ -96,7 +96,7 @@ One command runs all TKC tests: `scripts/test.sh` (or `--php`, `--ng`, `--theme`
 | THEME (unittest + bundle check) | host | `python3 -I -m unittest discover scripts/theme/tests`, then `python3 -I scripts/theme/check_bundle.py` |
 
 Prerequisites:
-- PHP part: `docker/dc.sh up -d` must run. The container needs the composer dev dependencies.
+- PHP part: `docker/dc.sh up -d` must run. The container needs the composer dev dependencies. The `integration` suite also needs a repaired database (see below).
 - NG part: `yarn install` and `yarn merge-angular-json` have run, and Google Chrome is installed (ChromeHeadless).
   Set `CHROME_BIN` if Chrome is not in the default place.
 - THEME part: Python 3 only. `check_bundle.py` checks the newest `public/dist/styles*.css` (sentinel present, TKC `.navbar` rule after core's). It exits 1 if `public/dist` is not built: run `scripts/build.sh` first.
@@ -104,6 +104,7 @@ Prerequisites:
 Where the tests live:
 - PHP unit tests: `extensions/tkc/backend/Tests/Unit/` (suite `unit`). Fixtures: `backend/Tests/Fixtures/` (synthetic data only).
 - PHP contract tests: `extensions/tkc/backend/Tests/Contract/` (suite `contract`, SUITE-47).
+- PHP integration tests: `extensions/tkc/backend/Tests/Integration/` (suite `integration`, SUITE-62). They use the database. Run `docker/dc.sh console tkc:repair --execute` first, so that the table `tkc_sequences` exists. The tests load the legacy entry point directly, because the Symfony `test` env does not boot (SUITE-176). `scripts/test.sh --php` runs this suite with the others.
 - Angular specs: `extensions/tkc/app/src/**/*.spec.ts`. Karma config: `extensions/tkc/app/karma.conf.js`.
 - Theme tests: `scripts/theme/tests/`.
 
