@@ -16,5 +16,8 @@
         <testsuite name="contract">
             <directory>backend/Tests/Contract</directory>
         </testsuite>
+        <testsuite name="integration">
+            <directory>backend/Tests/Integration</directory>
+        </testsuite>
     </testsuites>
 </phpunit>
