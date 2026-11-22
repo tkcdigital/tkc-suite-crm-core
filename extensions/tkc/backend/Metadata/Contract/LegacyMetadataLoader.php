@@ -18,7 +18,7 @@ class LegacyMetadataLoader
     }
 
     /**
-     * @return array{layouts: array<string, mixed>, fieldDefs: array<string, array<string, mixed>>, appListStrings: array<string, mixed>}
+     * @return array{layouts: array<string, mixed>, fieldDefs: array<string, array<string, mixed>>, indices: array<string, array<string, mixed>>, appListStrings: array<string, mixed>}
      */
     public function load(string $module): array
     {
@@ -62,6 +62,7 @@ class LegacyMetadataLoader
             return [
                 'layouts' => $this->loadLayouts($module),
                 'fieldDefs' => $bean->field_defs,
+                'indices' => $GLOBALS['dictionary'][$bean->getObjectName()]['indices'] ?? [],
                 'appListStrings' => return_app_list_strings_language('en_us'),
             ];
         } finally {

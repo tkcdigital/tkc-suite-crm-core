@@ -7,6 +7,19 @@
 | 2026-11-20 | System Settings / Locale / Currencies (via `tkc:config:apply`, template `scripts/config/config_override.template.php`) | Default currency EUR (Euro, symbol EUR sign, 2 digits); date `d-m-Y`; time `H:i`; name format `f l`; decimal `,`; grouping `.`; export charset UTF-8; system name `TKC CRM` (placeholder); developerMode off | In the template, not yet applied to the local environment | SUITE-14 |
 | 2026-11-21 | Email Settings, outbound account (dev only; set by `docker/dc.sh console tkc:mail:use-sink`) | SMTP server `mailpit`, port 1025, no authentication, no SSL, no user or password, from address `crm@example.com`, from name "TKC CRM (dev)" | Not in git. Run the command once for each new database. | SUITE-45 |
 
+## TKC fields and lists: no Studio, no Dropdown Editor (C13, SUITE-63)
+- Do not use Studio on a TKC field (`tkc_*_c`). Do not use the Dropdown Editor on a TKC list (`tkc_*_list`). Do not use it on a core list that TKC overrides, for example `account_type_dom`.
+- Reason: a Dropdown Editor save writes `public/legacy/custom/include/language/en_us.lang.php`. Git tracks that file. It loads after the extension files. The save therefore keeps a full copy of the list and overrides the TKC file.
+- To change a list: edit the file in `public/legacy/custom/Extension/application/Ext/Language/`. Then run `tkc:repair`.
+- To change a field: edit the vardef in `public/legacy/custom/Extension/modules/<Module>/Ext/Vardefs/`. Then run `tkc:repair`. Studio fields would break the main-table rule (D2).
+- Code review rejects any change in `public/legacy/custom/include/language/`.
+- Overridden core lists are in `docs/architecture.md` § Overrides register.
+
+### Known issue: stale language cache after Repair (SUITE-204)
+- After `tkc:repair --execute`, new labels can be missing in the Angular UI. The cause is a stale legacy module language cache in `public/legacy/cache/modules/<Module>/language/`.
+- This stays a known issue until SUITE-204 is fixed.
+- Workaround: delete the stale files for that module in the cache directory. Then run `docker/dc.sh console cache:clear`. Reload the page.
+
 ## Outbound email in dev (SUITE-45)
 - The command `docker/dc.sh console tkc:mail:use-sink` sets the outbound account. The setting is in the database, not in git. Run the command once for each new database.
 - Manual fallback: open Admin > Email Settings. Enter the same values as in the table above.
