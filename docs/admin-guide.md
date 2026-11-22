@@ -31,7 +31,9 @@ This is configuration in the app. Git does not hold it. Do it once for each envi
 - "Repair Roles" does not reset the deny values. The migration upserts the rows.
 - Never give an admin user the TKC Service role. Its `access` value is -98. That value removes Finance from the module list of the admin, so the admin gets no labels and no layout.
 - The roles TKC Sales and TKC Service are built later (E13, SUITE-151).
-- Known gap (SUITE-207): a user who can view an Account may get Finance data through a GraphQL subpanel request. Do not import real Finance data before SUITE-207 is done.
+- Known gaps (SUITE-64 security review): a user who can view an Account may get Finance values through core paths that do not check the Finance permissions: a GraphQL subpanel request and the subpanel count (SUITE-207), the legacy change-log pop-up (SUITE-208), the legacy subpanel viewer URL (SUITE-209) and a report on another module with Finance columns (SUITE-210).
+- Until these issues are closed, do not import or type in real Finance values in any environment.
+- Do not add Finance fields to a report on another module (for example a report on Accounts).
 
 ## Outbound email in dev (SUITE-45)
 - The command `docker/dc.sh console tkc:mail:use-sink` sets the outbound account. The setting is in the database, not in git. Run the command once for each new database.
