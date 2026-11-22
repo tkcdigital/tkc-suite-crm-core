@@ -193,6 +193,18 @@ final class SequenceCommandTest extends TestCase
         self::assertSame(120, $this->sequence()->current($this->name, 2026));
     }
 
+    public function testDryRunRefusesAValueOutOfRange(): void
+    {
+        // SUITE-205 QA observation: the dry run must not predict a write that --execute refuses.
+        foreach (['2147483647', '99999999999999999999'] as $value) {
+            [$code, $out] = $this->console('set', $this->name, '2026', $value);
+            self::assertNotSame(0, $code, 'Dry run with ' . $value . ' must fail');
+            self::assertStringContainsString('The value must be from 0 to 2147483646.', $out);
+            self::assertStringNotContainsString('Dry run:', $out);
+        }
+        self::assertNull($this->sequence()->current($this->name, 2026));
+    }
+
     public function testDryRunWithAllowLowerNamesTheRepeatedNumbers(): void
     {
         $this->sequence()->setLastValue($this->name, 2026, 120);
