@@ -17,6 +17,7 @@ namespace App\Extension\tkc\backend\Sequence;
 class LegacyDbSequenceStore implements SequenceStore
 {
     private const TABLE = 'tkc_sequences';
+    private const INT_MAX = 2147483647; // signed INT column maximum
 
     public function next(string $name, int $year): int
     {
@@ -26,10 +27,13 @@ class LegacyDbSequenceStore implements SequenceStore
         $this->run($db, 'INSERT INTO ' . self::TABLE . ' (seq_name, seq_year, seq_value, date_modified) VALUES ('
             . $db->quoted($name) . ', ' . $year . ', 0, UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE seq_name = seq_name');
 
+        // The guard keeps the value inside a signed INT. Without it, a non-strict MySQL session clamps the column
+        // at 2147483647 while LAST_INSERT_ID() returns the larger, unstored value, which can repeat (SUITE-62 QA D1).
         $result = $this->run($db, 'UPDATE ' . self::TABLE
-            . ' SET seq_value = LAST_INSERT_ID(seq_value + 1), date_modified = UTC_TIMESTAMP() WHERE ' . $where);
+            . ' SET seq_value = LAST_INSERT_ID(seq_value + 1), date_modified = UTC_TIMESTAMP() WHERE ' . $where
+            . ' AND seq_value < ' . self::INT_MAX);
         if ($db->getAffectedRowCount($result) !== 1) {
-            throw new \RuntimeException('The counter was not updated.');
+            throw new \RuntimeException('The counter was not updated (it may be at its maximum ' . self::INT_MAX . ').');
         }
 
         $value = $db->getOne('SELECT LAST_INSERT_ID()');
