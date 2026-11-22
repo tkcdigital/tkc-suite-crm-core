@@ -1,0 +1,40 @@
+<?php
+if (!defined('sugarEntry') || !sugarEntry) {
+    die('Not A Valid Entry Point');
+}
+
+$mod_strings = [
+    'LBL_ID' => 'ID',
+    'LBL_DATE_ENTERED' => 'Date Created',
+    'LBL_DATE_MODIFIED' => 'Date Modified',
+    'LBL_MODIFIED' => 'Modified By',
+    'LBL_MODIFIED_ID' => 'Modified By Id',
+    'LBL_MODIFIED_NAME' => 'Modified By Name',
+    'LBL_CREATED' => 'Created By',
+    'LBL_CREATED_ID' => 'Created By Id',
+    'LBL_DESCRIPTION' => 'Description',
+    'LBL_DELETED' => 'Deleted',
+    'LBL_NAME' => 'Name',
+    'LBL_CREATED_USER' => 'Created by User',
+    'LBL_MODIFIED_USER' => 'Modified by User',
+    'LBL_LIST_NAME' => 'Name',
+    'LBL_EDIT_BUTTON' => 'Edit',
+    'LBL_REMOVE' => 'Remove',
+    'LBL_LIST_FORM_TITLE' => 'Finance List',
+    'LBL_MODULE_NAME' => 'Finance',
+    'LBL_MODULE_TITLE' => 'Finance',
+    'LBL_HOMEPAGE_TITLE' => 'My Finance',
+    'LNK_NEW_RECORD' => 'Create Finance',
+    'LNK_LIST' => 'View Finance',
+    'LBL_SEARCH_FORM_TITLE' => 'Search Finance',
+    'LBL_NEW_FORM_TITLE' => 'New Finance',
+    'LBL_TKC_ACCOUNTFINANCE_SUBPANEL_TITLE' => 'Finance',
+    'LBL_ACCOUNT_ID' => 'Account ID',
+    'LBL_ACCOUNT_NAME' => 'Account',
+    'LBL_RATE_ANGELS' => 'Hourly rate Angels',
+    'LBL_RATE_SNOR' => 'Hourly rate SNOR',
+    'LBL_RATE_BODY' => 'Hourly rate Body',
+    'LBL_EXPECTED_REVENUE_CURRENT_FY' => 'Expected revenue current fiscal year',
+    'LBL_EXPECTED_REVENUE_NEXT_FY' => 'Expected revenue next fiscal year',
+    'LBL_OTHER_FINANCIAL_TERMS' => 'Other financial terms',
+];
