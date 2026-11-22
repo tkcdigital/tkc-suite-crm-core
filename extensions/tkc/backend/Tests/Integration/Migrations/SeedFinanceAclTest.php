@@ -9,8 +9,11 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
 /**
- * SUITE-64. Runs against the real database. Works on category tkc_AccountFinance only and
- * removes those rows before and after each test (test data cleanup). Logs counts only.
+ * SUITE-64. Runs against the real database. Works on category tkc_AccountFinance only.
+ * setUp keeps a snapshot of the existing rows (all columns) and clears the category. tearDown deletes
+ * what the test made and puts the snapshot back exactly, then asserts that the rows equal the snapshot.
+ * The dev DB keeps its deny-by-default ACL rows (the migration is recorded as executed and does not run again).
+ * A DBAL transaction does not work here: the legacy connection (ACLAction) is a second connection.
  */
 final class SeedFinanceAclTest extends TestCase
 {
@@ -18,16 +21,29 @@ final class SeedFinanceAclTest extends TestCase
     private const ACTIONS = ['access', 'view', 'list', 'edit', 'delete', 'import', 'export', 'massupdate'];
 
     private Connection $conn;
+    /** @var array<int, array<string, mixed>> */
+    private array $snapshot = [];
 
     protected function setUp(): void
     {
         $this->conn = self::connect();
+        $this->snapshot = $this->allRows();
         $this->clean();
     }
 
     protected function tearDown(): void
     {
         $this->clean();
+        foreach ($this->snapshot as $row) {
+            $this->conn->insert('acl_actions', $row);
+        }
+        self::assertSame($this->snapshot, $this->allRows(), 'The ACL rows of tkc_AccountFinance must be restored exactly.');
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function allRows(): array
+    {
+        return $this->conn->fetchAllAssociative('SELECT * FROM acl_actions WHERE category = ? ORDER BY id', [self::CATEGORY]);
     }
 
     private function clean(): void
