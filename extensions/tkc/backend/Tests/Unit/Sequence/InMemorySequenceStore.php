@@ -20,8 +20,21 @@ final class InMemorySequenceStore implements SequenceStore
         return $this->values["$name|$year"] ?? null;
     }
 
+    /** Called once at the start of a write, then cleared. Simulates a parallel next(). */
+    public ?\Closure $beforeWrite = null;
+
+    private function hook(): void
+    {
+        $hook = $this->beforeWrite;
+        $this->beforeWrite = null;
+        if ($hook !== null) {
+            $hook();
+        }
+    }
+
     public function set(string $name, int $year, int $value): void
     {
+        $this->hook();
         $this->values["$name|$year"] = $value;
     }
 }
