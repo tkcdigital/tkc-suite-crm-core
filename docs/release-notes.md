@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`)
 
 ### Delivered
 
@@ -19,6 +19,7 @@
 | Data model: Accounts | Accounts has 14 TKC fields: RightNow, POD, datacenter, contract dates and debtor number, among others. Three of them are Yes/No radio fields. There is a shared Yes/No list. The account types are Lead, Prospect, Customer, Supplier, Relation and Former customer. New accounts start as Relation. No screen layout shows the fields yet (E6). A new test, `FieldManifestTest`, checks the fields and lists. | SUITE-63 |
 | Bug fix: labels after Repair | New labels were missing in the Angular UI after `tkc:repair --execute`, because of a stale module language cache. `tkc:repair` now clears the module, app and JS language caches for all modules and languages. It checks that every compiled `Ext/Language` label loads, and exits with 1 when one does not. It marks `rebuild_all`, so the web process clears the Angular language strings. A dry run also clears the caches. It does not change the schema. New test: `RepairLanguageCacheTest`. On Azure with APCu, restart PHP-FPM after a repair (SUITE-164). | SUITE-204 |
 | Sequence numbers | A new counter table and a new service give unique numbers for each name and year. Quote numbers and case references use them later. A number can be missing from a series (a gap), for example after a failed save. No screen shows the counters yet. | SUITE-62 |
+| Bug fix: atomic sequence set | Setting a counter can no longer lower it while other processes draw numbers. Before the fix, numbers could repeat. The console command warns before a deliberate lowering. `--execute` refuses a lower value without `--allow-lower`. The dry run refuses a value outside 0 to 2147483646. | SUITE-205 |
 
 ### What changes for admins and developers
 - The build test `scripts/theme/check_bundle.py` has a new check 4 (SUITE-194). It fails when a TKC button rule hits the Actions menu items again. A unit test covers it (`scripts/theme/tests/test_check_bundle.py`). A new partial `_menus.scss` styles the menu items (see the Overrides register in `docs/architecture.md`).
@@ -32,6 +33,7 @@
   - The new console command `tkc:sequence <show|next|set>` shows, advances or sets a counter. `set` writes only with `--execute`.
   - The new PHPUnit suite `integration` needs the database and a repaired schema. `scripts/test.sh --php` runs it.
   - Code: `extensions/tkc/backend/Sequence/`. Details: `docs/architecture.md` § Sequences.
+  - SUITE-205: `SequenceStore::set()` is now `forceSet()`. `setLastValue()` throws `LowerValueException` for a lower value. Use `--allow-lower` only in a test or a recovery (see `docs/admin-guide.md`).
 - Dependency updates (SUITE-183):
   - Update locked packages as `docs/architecture.md` § Dependency re-resolve commands and `LOCAL_SETUP.md` § Dependency updates describe. Run Composer as `www-data` with `--no-security-blocking`.
   - Each security-driven version has a row in `docs/architecture.md` § Overrides register. Never hand-merge a lock file at an upstream merge.

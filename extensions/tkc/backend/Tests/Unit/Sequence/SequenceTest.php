@@ -2,6 +2,7 @@
 
 namespace App\Extension\tkc\backend\Tests\Unit\Sequence;
 
+use App\Extension\tkc\backend\Sequence\LowerValueException;
 use App\Extension\tkc\backend\Sequence\Sequence;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -68,6 +69,51 @@ final class SequenceTest extends TestCase
         $this->sequence->setLastValue('quote', 2026, 50);
         $this->sequence->setLastValue('quote', 2026, 5, true);
         self::assertSame(6, $this->sequence->next('quote', 2026));
+    }
+
+    public function testParallelNextBeforeTheWriteIsAccepted(): void
+    {
+        // SUITE-205: counter 499, a parallel next() makes it 500, then setLastValue(500) succeeds.
+        $store = new InMemorySequenceStore();
+        $sequence = new Sequence($store);
+        $sequence->setLastValue('quote', 2026, 499);
+        $store->beforeWrite = fn () => $sequence->next('quote', 2026);
+        $sequence->setLastValue('quote', 2026, 500);
+        self::assertSame(501, $sequence->next('quote', 2026));
+    }
+
+    public function testParallelNextsBeforeTheWriteMakeSetRefuse(): void
+    {
+        // SUITE-205 F1: counter 499, two parallel next() calls make it 501, then setLastValue(500) must
+        // refuse and must not lower the counter (a number that was already given would repeat).
+        $store = new InMemorySequenceStore();
+        $sequence = new Sequence($store);
+        $sequence->setLastValue('quote', 2026, 499);
+        $store->beforeWrite = function () use ($sequence): void {
+            $sequence->next('quote', 2026);
+            $sequence->next('quote', 2026);
+        };
+        try {
+            $sequence->setLastValue('quote', 2026, 500);
+            self::fail('setLastValue must throw LowerValueException');
+        } catch (LowerValueException $e) {
+            self::assertSame(501, $e->current);
+        }
+        self::assertSame(501, $sequence->current('quote', 2026));
+        self::assertSame(502, $sequence->next('quote', 2026));
+    }
+
+    public function testLowerValueExceptionIsAnInvalidArgumentException(): void
+    {
+        $this->sequence->setLastValue('quote', 2026, 50);
+        $this->expectException(LowerValueException::class);
+        $this->sequence->setLastValue('quote', 2026, 49);
+    }
+
+    public function testValueAboveTheMaximumIsRefused(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->sequence->setLastValue('quote', 2026, 2147483647, true);
     }
 
     public function testNegativeValueIsRefusedEvenWhenLowerIsAllowed(): void

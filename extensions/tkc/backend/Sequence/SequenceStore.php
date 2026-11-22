@@ -3,7 +3,9 @@
 namespace App\Extension\tkc\backend\Sequence;
 
 /**
- * Storage for the counters of Sequence (SUITE-62). The arguments are already validated.
+ * Storage for the counters of Sequence (SUITE-62). Implementations check their input with SequenceInput.
+ *
+ * @internal Use Sequence.
  */
 interface SequenceStore
 {
@@ -13,6 +15,13 @@ interface SequenceStore
     /** Sends the last value, or null when the counter does not exist. */
     public function current(string $name, int $year): ?int;
 
-    /** Sets the last value. Creates the counter when needed. */
-    public function set(string $name, int $year, int $value): void;
+    /**
+     * Atomic. Creates the counter at $value when it does not exist. Raises the counter to $value when it is
+     * not higher. Changes nothing when it is higher. Sends the stored value before the call
+     * ($value when the counter did not exist). The caller treats a result above $value as a refusal.
+     */
+    public function setIfNotLower(string $name, int $year, int $value): int;
+
+    /** No check. Numbers above $value can repeat. Creates the counter when needed. */
+    public function forceSet(string $name, int $year, int $value): void;
 }

@@ -9,14 +9,10 @@ namespace App\Extension\tkc\backend\Sequence;
  * The series can have gaps. A save that fails after next() leaves a gap. Do not rely on a series without gaps.
  *
  * Use it from Symfony by autowiring Sequence. Use Sequence::legacy() in hooks and legacy code.
+ * Do not call SequenceStore or LegacyDbSequenceStore directly.
  */
 final class Sequence
 {
-    private const NAME_PATTERN = '/^[a-z][a-z0-9_]{0,39}\z/';
-    private const YEAR_MIN = 2000;
-    private const YEAR_MAX = 2099;
-    private const VALUE_MAX = 2147483646; // next() must still fit in a signed INT
-
     public function __construct(private readonly SequenceStore $store)
     {
     }
@@ -45,34 +41,29 @@ final class Sequence
 
     /**
      * Sets the last value. The next call of next() gives $value + 1.
-     * Without $allowLower the method refuses a value that is lower than the current value.
+     *
+     * Without $allowLower this is one atomic step in the store. When the stored value is above $value
+     * (also when a parallel next() got there first), nothing changes and the method throws LowerValueException.
+     * An equal value is a success. With $allowLower the write is unchecked and numbers above $value can repeat.
+     *
+     * @throws LowerValueException when the stored value is above $value
      */
     public function setLastValue(string $name, int $year, int $value, bool $allowLower = false): void
     {
         $this->check($name, $year);
-        if ($value < 0 || $value > self::VALUE_MAX) {
-            throw new \InvalidArgumentException('The value must be from 0 to ' . self::VALUE_MAX . '.');
+        SequenceInput::checkValue($value);
+        if ($allowLower) {
+            $this->store->forceSet($name, $year, $value);
+            return;
         }
-        $current = $this->store->current($name, $year);
-        if (!$allowLower && $current !== null && $value < $current) {
-            throw new \InvalidArgumentException(sprintf(
-                'The value %d is lower than the current value %d of the counter %s %d.',
-                $value,
-                $current,
-                $name,
-                $year
-            ));
+        $before = $this->store->setIfNotLower($name, $year, $value);
+        if ($before > $value) {
+            throw new LowerValueException($before, $value, $name, $year);
         }
-        $this->store->set($name, $year, $value);
     }
 
     private function check(string $name, int $year): void
     {
-        if (preg_match(self::NAME_PATTERN, $name) !== 1) {
-            throw new \InvalidArgumentException('The counter name must match ^[a-z][a-z0-9_]{0,39}$.');
-        }
-        if ($year < self::YEAR_MIN || $year > self::YEAR_MAX) {
-            throw new \InvalidArgumentException('The year must be from ' . self::YEAR_MIN . ' to ' . self::YEAR_MAX . '.');
-        }
+        SequenceInput::checkKey($name, $year);
     }
 }
