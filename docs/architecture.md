@@ -195,6 +195,14 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - Precondition: `tkc:repair` has run, so that `Ext/` is compiled. The test boots `App\Kernel` in `dev` (SUITE-176).
 - The test does not check the database. The second `tkc:repair --dry-run` proves that the column exists: it must print "Database is in sync: no SQL."
 - A new story adds a manifest file in the same story.
+- `LegacyMetadataLoader::load()` has a new key `modStrings`. It is the result of `return_module_language('en_us', <module>)`. `FieldManifestTest` uses it to check that the label (`vname`) of each manifest field loads.
+
+## Repair language cache test (SUITE-204)
+- `extensions/tkc/backend/Tests/Contract/RepairLanguageCacheTest.php` is in the `contract` suite.
+- The test writes a stale `cache/modules/Accounts/language/en_us.lang.php` with a synthetic key. It then runs `php bin/console tkc:repair --dry-run` as a subprocess. The command must exit with 0.
+- The test checks these items: the stale file is rebuilt; the loader `modStrings` has no stale key; every Accounts `Ext/Language` label loads with its value; `cache_rebuild` has a `rebuild_all` row.
+- The test always removes the stale file when it fails.
+- Preconditions: `tkc:repair` has run, so that `Ext/` is compiled. The database is reachable. The dry run writes one `cache_rebuild` row and no schema change.
 
 ## Approved decisions (2026-11-20)
 From `docs/assessment/customization-feasibility.md` §9:
@@ -235,7 +243,12 @@ Decision: Studio is **allowed with a check** for the four redesign modules. Rule
 Not tested: the Studio UI itself, the Edit view and Quick create files, and a browser run.
 
 ## Console commands (D10, D12)
-- `php bin/console tkc:repair [--dry-run|--execute] [--module=<Module>]`: Quick Repair and Rebuild from the CLI. Dry run is the default and shows the SQL.
+- `php bin/console tkc:repair [--dry-run|--execute] [--module=<Module>]`: Quick Repair and Rebuild from the CLI. Dry run is the default and shows the SQL. "Dry run" means that the database schema is not changed. The caches are still cleared and rebuilt (SUITE-204).
+  - After the extension rebuild, the command clears the legacy module language cache (`cache/modules/<Module>/language/`), the app and list strings cache and the JS language files. It does this for all modules and all languages. It calls `LanguageManager::clearLanguageCache()` of the core. The core `RepairAndClear::clearLanguageCache()` skips the module cache for an empty module list, so the call is needed.
+  - The command then checks that every label of the compiled `Ext/Language` files loads with the same value. The output shows module, language and keys, never values. The command exits with 1 when a label does not match.
+  - The command writes a `rebuild_all` row to the table `cache_rebuild`. The web process then clears `cache.app` on the next request. This clears the Angular language strings. The dry run also writes this row.
+  - Upgrade re-checks: the signature of `LanguageManager::clearLanguageCache()`; the path `cache/modules/<Module>/language/`; the `cache_rebuild` and `rebuild_all` contract of `CacheManagerInterface::markAsNeedsUpdate()`; the cache key `app-metadata-language-strings-<lang>`.
+  - Azure risk: with APCu, the CLI cannot clear the `sugar_cache` of PHP-FPM. The deploy must clear it after a repair (for example with a PHP-FPM reload; SUITE-164 decides the method).
 - `php bin/console tkc:config:apply [--dry-run]`: merges `scripts/config/config_override.template.php` (secret-free) into `public/legacy/config_override.php`.
 - `php bin/console tkc:mail:use-sink [--dry-run]`: sets the system outbound account to the mail sink. DEV only, idempotent (SUITE-45).
 - `php bin/console tkc:users:repair-number-separators [--dry-run]`: removes the user preferences `dec_sep` and `num_grp_sep` that equal the other effective separator (SUITE-179). Run it after `tkc:config:apply`. It writes through the legacy `UserPreference` bean. A signed-in user must sign out and in again (the session writes the old values back). Code in `extensions/tkc/backend/Users/` (`Console/RepairNumberSeparatorsCommand`, `NumberSeparatorPolicy`, `LegacyPreferenceStore`). Upgrade risk: it depends on the key names `dec_sep` and `num_grp_sep`, on the config keys `default_decimal_seperator` and `default_number_grouping_seperator`, and on the base64-serialized format of `user_preferences.contents`. Re-check at each upstream merge.
