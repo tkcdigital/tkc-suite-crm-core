@@ -134,13 +134,28 @@ Repair SQL (local dry run, SUITE-66): one `ALTER TABLE cases` with 13 `ADD COLUM
 Contract test: `Cases` is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite66_cases.php`.
 
 ## AOP_Case_Updates
-Filled by SUITE-68.
+Table `aop_case_updates`. Dictionary key `AOP_Case_Updates`. Story SUITE-68. A row is one entry of the case thread. Every new field has `comment = 'TKC SUITE-68'`. Vardef files in `public/legacy/custom/Extension/modules/AOP_Case_Updates/Ext/Vardefs/`: `tkc_thread.php`, `tkc_osc_id.php` and `tkc_description_longtext.php`. Label file: `public/legacy/custom/Extension/modules/AOP_Case_Updates/Ext/Language/en_us.tkc_thread.php`.
+
+| Field | Type / length | Label | OSC source | Story | Notes |
+|---|---|---|---|---|---|
+| `tkc_entry_type_c` | enum, 20 | Entry type | Thread entry type (see `docs/osc-mapping/incident.md`) | SUITE-68 | List `tkc_entry_type_list`. Default `staff`. `massupdate` false. |
+| `tkc_channel_c` | enum, 20 | Channel | Thread channel (see `docs/osc-mapping/incident.md`) | SUITE-68 | List `tkc_channel_list`. Default empty. `massupdate` false. |
+| `osc_id_c` | varchar, 20 | OSC ID (`LBL_OSC_ID`) | Thread entry ID | SUITE-68 | Import key of the thread rows. `inline_edit` false. `massupdate` false. Index `idx_aop_case_updates_osc_id_c` (not unique). |
+| `description` | text (column `longtext`) | core label | Thread text | SUITE-68 | Core vardef override (C8). `dbType` is `longtext` (was `text`). The field type stays `text`. See § Core overrides. |
+
+Not built on AOP_Case_Updates:
+- The `before_save` rule that presets the entry type in the create form. Core does not preset defaults in the create form (spike S8). E9-S1 builds the rule. The column default `staff` covers rows that are saved without a value.
+- Layouts, CC and BCC fields, attachments and the mail header field.
+
+Repair SQL (local): one `ALTER TABLE aop_case_updates`. It has one `modify COLUMN description longtext NULL`, three `add COLUMN` and one `ADD INDEX idx_aop_case_updates_osc_id_c`. SUITE-72 does the authoritative run.
+
+Contract test: `AOP_Case_Updates` is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite68_aop_case_updates.php`. The long text test is `Tests/Integration/Thread/LongDescriptionTest.php` (see `docs/architecture.md` § Tests).
 
 ## Opportunities
 Filled by SUITE-69 and SUITE-70.
 
 ## Lists
-The first key of every TKC list is the empty key `''` with an empty label. A radio field shows it as "Not set" (SUITE-186). Application lists are in `public/legacy/custom/Extension/application/Ext/Language/`. Never change a TKC list in Studio or in the Dropdown Editor (see `docs/admin-guide.md`).
+The first key of every TKC list is the empty key `''` with an empty label. Exception: `tkc_entry_type_list` has no empty key, because every thread entry has a type. A radio field shows it as "Not set" (SUITE-186). Application lists are in `public/legacy/custom/Extension/application/Ext/Language/`. Never change a TKC list in Studio or in the Dropdown Editor (see `docs/admin-guide.md`).
 
 | List | Keys (in order) | Used by | File | Story |
 |---|---|---|---|---|
@@ -154,6 +169,8 @@ The first key of every TKC list is the empty key `''` with an empty label. A rad
 | `tkc_case_category_list` | `''`, `service_request`, `complaint`, `question`, `change_request`. Flat list (owner decision). | Cases: `tkc_category_c` | `en_us.tkc_cases_lists.php` | SUITE-66 |
 | `tkc_queue_list` | `''`, `support_1st_line`, `support_2nd_line`, `change_request`, `info_tkc_digital`, `answer_feedback`, `info`, `rightnow_automail`, `finance`, `archive`, `quotes`, `spam`, `consular_affairs`. The labels are English, from the OSC queue names, in OSC order. | Cases: `tkc_queue_c` | `en_us.tkc_cases_lists.php` | SUITE-66 |
 | `tkc_case_origin_list` | `''`, `email`, `selfservice`, `staff`, `other` | Cases: `tkc_case_origin_c` | `en_us.tkc_cases_lists.php` | SUITE-66 |
+| `tkc_entry_type_list` | `note` (Internal note), `staff` (Agent reply), `customer` (Customer), `customer_proxy` (Customer (logged by agent)). No empty key. | AOP_Case_Updates: `tkc_entry_type_c` | `en_us.tkc_thread_lists.php` | SUITE-68 |
+| `tkc_channel_list` | `''`, `email`, `phone`, `web`, `chat`, `fax`, `social`, `other` | AOP_Case_Updates: `tkc_channel_c` | `en_us.tkc_thread_lists.php` | SUITE-68 |
 
 The release lists use the key format `YYYY_MM`, in date order. The OSC menu order is not in date order, so the keys do not copy it. The release names are product data, not personal data.
 
@@ -177,6 +194,7 @@ Each row is also in `docs/architecture.md` § Overrides register.
 | List `case_status_dom` | Replaced by 12 keys in OSC order (C7). Relabelled core keys: `Open_New` (Unresolved), `Open_Assigned` (In progress), `Open_Pending Input` (Waiting for customer (info needed)), `Closed_Closed` (Solved). New keys: `Open_Updated` (Updated), `Open_OnHold` (On hold), `Open_WaitOracle` (Waiting for Oracle), `Open_AwaitApproval` (Ready, awaiting approval of the requester), `Open_WaitFreshworks` (Waiting for Freshworks), `Open_FeatureRequest` (Feature request), `Open_CAJira` (CA Jira), `Closed_Archived` (Archived). Every key keeps the `Open_` or `Closed_` prefix, because core reads it (A2). The core keys `Closed_Rejected` and `Closed_Duplicate` are hidden. In the Angular UI the Status options follow the State field (core behaviour). | `public/legacy/custom/Extension/application/Ext/Language/en_us.tkc_case_core_lists.php` | SUITE-66 |
 | List `case_priority_dom` | Replaced by `''`, `P1`, `P2`, `P3`, `tkc_P4` with the labels "Priority 1" to "Priority 4" (A13). The empty first key keeps the priority empty. | same file | SUITE-66 |
 | String `case_priority_default_key` | Set to `''`. Core sets `P2`. Core reads it only in `modules/Cases/CasesQuickCreate.php:61` (legacy quick create). The core vardef of `priority` has no default. | same file | SUITE-66 |
+| Vardef `AOP_Case_Updates.description` | `dbType` is `longtext` (C8). Reason: OSC thread texts can be longer than `text` (64 KB). The field type stays `text`. Check at merge: the core `description` definition of AOP_Case_Updates and the Basic template. Upgrade risk: medium. | `public/legacy/custom/Extension/modules/AOP_Case_Updates/Ext/Vardefs/tkc_description_longtext.php` | SUITE-68 |
 | List `case_type_dom` | Replaced by `''`, `tkc_support_request` (Support request), `tkc_general_communication` (General communication), `tkc_info_message` (Info message), `tkc_project_communication` (Project communication). The core keys Administration, Product and User are hidden. | same file | SUITE-66 |
 
 Known gaps of the Cases core overrides (check at each upstream merge):
