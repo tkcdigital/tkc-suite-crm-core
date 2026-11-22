@@ -197,6 +197,14 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - A new story adds a manifest file in the same story.
 - `LegacyMetadataLoader::load()` has a new key `modStrings`. It is the result of `return_module_language('en_us', <module>)`. `FieldManifestTest` uses it to check that the label (`vname`) of each manifest field loads.
 
+## Finance module tests (SUITE-64)
+- `Tests/Unit/AccountFinance/FinanceSaveActionTest.php` (unit): drift guard. It compares the `save` action copy in the Finance detail viewdef with the core `actions.yaml` entry.
+- `Tests/Integration/Migrations/SeedFinanceAclTest.php` (integration): runs `up()` of the seed. It saves a snapshot of the rows and restores it. It covers the empty case, the allow-all case (89/90) and a -98 row.
+- `Tests/Integration/Migrations/FinanceAclDenyTest.php` (integration): reads the real ACL rows. `access` must be 89 and the seven other actions must be -99. A helper case shows that -98 fails the check.
+- `Tests/Unit/Console/MigrationsMigrateCommandTest.php` (unit): the filter keeps only TKC versions. With none left the command says "No new TKC migrations." and exits with 0.
+- `Tests/Contract/FieldManifestTest::testAuditTableExistsForAuditedFields`: an audited field needs its audit table. The manifest is `Tests/Contract/Fields/suite64_accountfinance.php`.
+- `tkc_AccountFinance` is in `Tests/Contract/modules.php`.
+
 ## Repair language cache test (SUITE-204)
 - `extensions/tkc/backend/Tests/Contract/RepairLanguageCacheTest.php` is in the `contract` suite.
 - The test writes a stale `cache/modules/Accounts/language/en_us.lang.php` with a synthetic key. It then runs `php bin/console tkc:repair --dry-run` as a subprocess. The command must exit with 0.
@@ -219,6 +227,16 @@ From `docs/assessment/customization-feasibility.md` §9:
 - **D11** New Module Builder modules `public/legacy/modules/tkc_*` count as Level 2.
 - **D12** Secret-free settings template in `scripts/config/`, merged into `config_override.php` per environment.
 - Doctrine migrations: data/config seeding only, never schema.
+
+### TKC data migrations (SUITE-64)
+- TKC data migrations run only through `tkc:migrations:migrate` (`extensions/tkc/backend/Console/MigrationsMigrateCommand.php`). The command uses the Doctrine `DependencyFactory`. It runs the new versions in `App\Extension\tkc\Migrations`. `--dry-run` lists them and runs nothing.
+- Never run `doctrine:migrations:migrate` or `doctrine:migrations:version --add --all` in the build or in a deploy.
+  - The SuiteCRM installer never records the core migrations. After an install, 39 show as "New". This is the normal upstream state.
+  - The core migrations have side effects. They rewrite `config.php`, append `APP_SECRET` to `.env.<env>.local`, move media folders and create manual-migration tasks.
+  - `version --add --all` also marks TKC migrations that never ran. This is a security gap.
+- A seed migration must be an upsert. Core code (`ACLAction::addActions`, `create_tables`, "Repair Roles") inserts allow-all rows and never updates them.
+- The core migrations at an upstream merge are open work: SUITE-206.
+- Risk: the command depends on the Doctrine Migrations 3.x API. Check it at each upstream merge.
 
 ## Studio and layouts (S3)
 Spike SUITE-10 ran the Studio save path from PHP CLI: `ParserFactory::getParser(MB_DETAILVIEW, 'Accounts')` then `handleSave()`. The input was a custom `detailviewdefs.php` with test keys. A save without a layout change gave a byte-identical file. A save with a changed cell order (the `_REQUEST` slot form that Studio sends) gave the results below.
@@ -249,6 +267,8 @@ Not tested: the Studio UI itself, the Edit view and Quick create files, and a br
   - The command writes a `rebuild_all` row to the table `cache_rebuild`. The web process then clears `cache.app` on the next request. This clears the Angular language strings. The dry run also writes this row.
   - Upgrade re-checks: the signature of `LanguageManager::clearLanguageCache()`; the path `cache/modules/<Module>/language/`; the `cache_rebuild` and `rebuild_all` contract of `CacheManagerInterface::markAsNeedsUpdate()`; the cache key `app-metadata-language-strings-<lang>`.
   - Azure risk: with APCu, the CLI cannot clear the `sugar_cache` of PHP-FPM. The deploy must clear it after a repair (for example with a PHP-FPM reload; SUITE-164 decides the method).
+  - Audit tables (SUITE-64): the command creates each missing audit table of an audited module. The dry run shows `/* MISSING AUDIT TABLE: <name> */`. The core `rebuildAuditTables()` does nothing with an empty module list, so the command does the check itself.
+- `php bin/console tkc:migrations:migrate [--dry-run]`: runs the new TKC data migrations (SUITE-64). It does not run core migrations. The output lists the versions and "N core migrations not run (upstream-merge flow only)". It never prints record contents. It exits with 1 on an exception. See § TKC data migrations. Build step 8 runs it with `--dry-run`. Build step 10b runs it after `tkc:repair --execute`.
 - `php bin/console tkc:config:apply [--dry-run]`: merges `scripts/config/config_override.template.php` (secret-free) into `public/legacy/config_override.php`.
 - `php bin/console tkc:mail:use-sink [--dry-run]`: sets the system outbound account to the mail sink. DEV only, idempotent (SUITE-45).
 - `php bin/console tkc:users:repair-number-separators [--dry-run]`: removes the user preferences `dec_sep` and `num_grp_sep` that equal the other effective separator (SUITE-179). Run it after `tkc:config:apply`. It writes through the legacy `UserPreference` bean. A signed-in user must sign out and in again (the session writes the old values back). Code in `extensions/tkc/backend/Users/` (`Console/RepairNumberSeparatorsCommand`, `NumberSeparatorPolicy`, `LegacyPreferenceStore`). Upgrade risk: it depends on the key names `dec_sep` and `num_grp_sep`, on the config keys `default_decimal_seperator` and `default_number_grouping_seperator`, and on the base64-serialized format of `user_preferences.contents`. Re-check at each upstream merge.
@@ -336,7 +356,8 @@ Evidence (QA): 8 parallel processes with 250 calls each gave 2000 different valu
 
 ## Overrides register
 This register lists every file that overrides a core file or a core parameter. Re-check every row at each upstream merge. Add a row in the same story that adds the override.
-Type values: viewdef full copy · core list override · core vardef override · D5 parameter delta · core theme rule override · Angular field override · dependency version (lock) · dependency resolution (package.json).
+Type values: viewdef full copy · core list override · core vardef override · D5 parameter delta · core theme rule override · Angular field override · dependency version (lock) · dependency resolution (package.json) · core action definition copy.
+- "Core action definition copy": a module viewdef holds a full copy of a core record action entry, with one changed parameter. A module action replaces the core action with the same key. The copy does not follow later core changes, so a drift guard test checks it (SUITE-64).
 - "Dependency version (lock)": `composer.lock` or `yarn.lock` holds a newer version than upstream. The constraint in `composer.json` or `package.json` does not change. This is not a core patch (SUITE-183, decision 1).
 - "Dependency resolution (package.json)": a `resolutions` entry in `package.json` forces a version. Use it only when a parent range blocks a lock-only fix. No row uses this type yet. A change to a constraint in `composer.json` or to a range in `package.json` is Level 5 and needs the architect.
 
@@ -348,6 +369,7 @@ Type values: viewdef full copy · core list override · core vardef override · 
 | `extensions/tkc/config/tkc_tinymce.php` | Angular edit field (tinymce) | D5 parameter delta | Removes the TinyMCE `media` plugin from the Angular edit field. npm `tinymce` 7.9.3 has advisory GHSA-mf2p-h6hf-fcwm and no 7.x fix (SUITE-183). | `config/services/ui/ui.yaml` key `tinymce.edit.plugins` (line 21) | Check `ui.yaml` `tinymce.edit.plugins` and `core/app/core/src/lib/fields/tinymce/templates/edit/tinymce.component.ts:74-78`. The component merges the list with lodash merge, index by index. Keep 3 or more entries. The core `plugins` setting stays a list of strings. The delta treats spaces and commas as separators (security review F4, commit 736e0c496). If the setting became one string, the container build fails (fail closed). Remove the file when upstream ships a fixed npm TinyMCE. |
 | `public/legacy/custom/Extension/application/Ext/Language/en_us.tkc_account_type_dom.php` (SUITE-63) | Accounts | core list override | Replaces the whole core list `account_type_dom` with the six TKC account types (`tkc_lead`, `Prospect`, `Customer`, `tkc_supplier`, `tkc_relation`, `tkc_former_customer`). It has no empty key. The core keys Analyst, Competitor, Integrator, Investor, Partner, Press, Reseller and Other are hidden. Upgrade risk: medium. | `public/legacy/include/language/en_us.lang.php` (`account_type_dom`) | Compare the core list with the TKC file. A new upstream key stays hidden until you add it here. Core keys must not be renamed (D7). |
 | `public/legacy/custom/Extension/modules/Accounts/Ext/Vardefs/tkc_account_type_default.php` (SUITE-63) | Accounts | core vardef override | Sets `$dictionary['Account']['fields']['account_type']['default'] = 'tkc_relation'`. New accounts start as "Relation" (OSC default "Relatie"). Repair gives no SQL for it. | `public/legacy/include/SugarObjects/templates/company/vardefs.php:62-66` (`<object>_type`, built from the object name) | The field `account_type` still uses `account_type_dom`. The key `tkc_relation` is still in the TKC list. |
+| `public/legacy/modules/tkc_AccountFinance/metadata/detailviewdefs.php` `recordActions.actions.save` (SUITE-64) | tkc_AccountFinance | core action definition copy | A full copy of the core `save` entry with `params.reloadSubpanels` set to false. The core `record-view.store.ts` `reloadSubpanels()` throws for a module without subpanels, because `subpanels` is never initialised. Without the override the save never goes back to the record (D2b). Latent: `actions.adapter.ts:150` has the same flaw. Finance does not reach it. Every future TKC module without subpanels needs the same override. | `config/services/module/recordview/actions.yaml` `default.actions.save`; `core/app/core/src/lib/views/record/store/record-view/record-view.store.ts` | `FinanceSaveActionTest` (drift guard) passes. Remove the override when upstream guards the null. |
 | `composer.lock` | lock | dependency version (lock) | `lcobucci/clock` 3.5.0 (SUITE-175). Upstream has 3.0.0. `composer.json` keeps the PHP 8.3 platform. | `composer.lock` of the upstream tag | Keep 3.5.0 while the platform is PHP 8.3. |
 | `composer.lock` | lock | dependency version (lock) | `guzzlehttp/guzzle` 7.16.5 (upstream 7.12.1): 7 advisories (1 high, 6 medium). Title: noncanonical host bypass. | `composer.lock` of the upstream tag | Keep the TKC version or higher. Drop the row when upstream reaches it. |
 | `composer.lock` | lock | dependency version (lock) | `guzzlehttp/psr7` 2.13.5 (upstream 2.12.1): 1 medium advisory (host confusion). | same | same |

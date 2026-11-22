@@ -108,4 +108,36 @@ class FieldManifestTest extends TestCase
             }
         }
     }
+
+    /**
+     * An audited module needs its <table>_audit table (SUITE-64: tkc:repair --execute never created it).
+     * Reads information_schema only. The second tkc:repair dry run also lists a missing audit table.
+     *
+     * @param array<string, mixed> $entry
+     */
+    #[DataProvider('manifestProvider')]
+    public function testAuditTableExistsForAuditedFields(array $entry): void
+    {
+        $audited = array_filter($entry['fields'] ?? [], static fn(array $f): bool => !empty($f['audited']));
+        if ($audited === []) {
+            $this->markTestSkipped('No audited field in this manifest entry.');
+        }
+
+        $root = dirname(__DIR__, 5);
+        $files = array_filter(["$root/.env", "$root/.env.local"], 'is_file');
+        (new Dotenv())->load(...$files);
+        $kernel = new Kernel('dev', false);
+        $kernel->boot();
+        /** @var LegacyMetadataLoader $loader */
+        $loader = $kernel->getContainer()->get(LegacyMetadataLoader::class);
+        $fieldDefs = $loader->load($entry['module'])['fieldDefs'];
+        $table = $fieldDefs['id']['table'] ?? strtolower($entry['module']);
+
+        $conn = \Doctrine\DBAL\DriverManager::getConnection(['url' => $_ENV['DATABASE_URL'] ?? $_SERVER['DATABASE_URL'] ?? getenv('DATABASE_URL')]);
+        $found = $conn->fetchOne(
+            'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?',
+            [$table . '_audit']
+        );
+        $this->assertSame(1, (int)$found, "{$entry['module']}: the table {$table}_audit is missing (audited fields: " . implode(', ', array_keys($audited)) . ').');
+    }
 }

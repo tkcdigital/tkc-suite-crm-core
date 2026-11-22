@@ -56,13 +56,17 @@ scripts/build.sh [--yes] [--skip-core] [--skip-frontend] [--dry-run-only]
 | 6 | Compile the core Dawn CSS with `pscss` (output is gitignored) |
 | 7 | `scrm:copy-legacy-assets` |
 | 7b | `chown` of `cache`, `logs` and `var`, then `cache:clear`, so the console knows new `tkc:*` commands (SUITE-181) |
-| 8 | `tkc:repair --dry-run`: shows the SQL |
+| 8 | `tkc:repair --dry-run`: shows the SQL. Also `tkc:migrations:migrate --dry-run`: lists the new TKC data migrations |
 | 9 | Asks "Run tkc:repair --execute? [y/N]" (always, also when there is no SQL) |
-| 10-11 | `tkc:repair --execute`, `tkc:config:apply` |
+| 10 | `tkc:repair --execute` |
+| 10b | `tkc:migrations:migrate`: runs only the new migrations in `extensions/tkc/Migrations` (SUITE-64) |
+| 11 | `tkc:config:apply` |
 | 11b | `tkc:legacy:asset-version`: sets `js_custom_version` from the legacy theme content, `composer.lock` and the SuiteCRM version (SUITE-181, SUITE-183) |
 | 12 | `cache:clear` (also rebuilds the cached legacy theme CSS) |
 | 13 | Smoke test: `GET http://localhost:8081/` must give HTTP 200 (`APP_PORT` overrides the port) |
 | 14 | Fails when the cached legacy CSS has no `--tkc-theme-build` (SUITE-60) or when the legacy login page has no `Dawn/style.css?v=` link (SUITE-181) |
+
+Do not run `doctrine:migrations:migrate` or `doctrine:migrations:version --add --all`. After an install, the core migrations show as "New". This is the normal upstream state. There is no baseline step. See `docs/architecture.md` § TKC data migrations.
 
 Flags: `--yes` skips the confirmation (only for reviewed deploys: it runs SQL unread); `--skip-core` skips step 3;
 `--skip-frontend` skips steps 1-5; `--dry-run-only` stops after step 8.

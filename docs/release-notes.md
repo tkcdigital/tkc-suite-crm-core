@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`)
 
 ### Delivered
 
@@ -20,8 +20,16 @@
 | Bug fix: labels after Repair | New labels were missing in the Angular UI after `tkc:repair --execute`, because of a stale module language cache. `tkc:repair` now clears the module, app and JS language caches for all modules and languages. It checks that every compiled `Ext/Language` label loads, and exits with 1 when one does not. It marks `rebuild_all`, so the web process clears the Angular language strings. A dry run also clears the caches. It does not change the schema. New test: `RepairLanguageCacheTest`. On Azure with APCu, restart PHP-FPM after a repair (SUITE-164). | SUITE-204 |
 | Sequence numbers | A new counter table and a new service give unique numbers for each name and year. Quote numbers and case references use them later. A number can be missing from a series (a gap), for example after a failed save. No screen shows the counters yet. | SUITE-62 |
 | Bug fix: atomic sequence set | Setting a counter can no longer lower it while other processes draw numbers. Before the fix, numbers could repeat. The console command warns before a deliberate lowering. `--execute` refuses a lower value without `--allow-lower`. The dry run refuses a value outside 0 to 2147483646. | SUITE-205 |
+| Data model: Finance module | A protected Finance module on Accounts holds hourly rates, expected revenue and other financial terms. Only admins can use it until the roles story is done. The module logs every change. The Accounts record has a "Finance" subpanel. | SUITE-64 |
 
 ### What changes for admins and developers
+- Finance module (SUITE-64):
+  - Run `tkc:repair --execute` so that Repair creates the tables `tkc_accountfinance` and `tkc_accountfinance_audit`. Then run `tkc:migrations:migrate`. The build does both (steps 10 and 10b).
+  - New command `tkc:migrations:migrate [--dry-run]` runs the new TKC data migrations. Never run `doctrine:migrations:migrate` or `doctrine:migrations:version --add --all` (see `docs/architecture.md` § TKC data migrations).
+  - `tkc:repair` now creates missing audit tables.
+  - A module without subpanels needs a save action override. The row is in the Overrides register.
+  - Hide Finance from the navbar in Admin (see `docs/admin-guide.md`). Never give an admin the TKC Service role.
+  - Known gap SUITE-207: close it before the real Finance import.
 - The build test `scripts/theme/check_bundle.py` has a new check 4 (SUITE-194). It fails when a TKC button rule hits the Actions menu items again. A unit test covers it (`scripts/theme/tests/test_check_bundle.py`). A new partial `_menus.scss` styles the menu items (see the Overrides register in `docs/architecture.md`).
 - Accounts fields (SUITE-63):
   - Run `tkc:repair` so that the new columns, the index and the lists load. Repair adds 14 columns and 1 index on `accounts`.

@@ -60,7 +60,45 @@ Not built on Accounts:
 Repair SQL (local dry run, SUITE-63): one `ALTER TABLE accounts` with 14 `add COLUMN tkc_*_c` and one `ADD INDEX idx_accounts_tkc_debtor_number_c`. A second dry run says "Database is in sync: no SQL." SUITE-72 does the authoritative run.
 
 ## tkc_AccountFinance
-Filled by SUITE-64.
+Module `tkc_AccountFinance`. Label "Finance". Story SUITE-64. Table `tkc_accountfinance` (utf8). One row holds the Finance data of one account.
+- The module is hand-written in `public/legacy/modules/tkc_AccountFinance/` (D11). It uses the `basic` template only, so it has no assigned user.
+- The fields have plain snake case names, without prefix or suffix (A8). Every field has `comment = 'TKC SUITE-64'`.
+- `save()` fills `name` from the account name. Without an account, `name` is "Finance".
+- `importable` is false and `unified_search` is false. The OSC data is not imported into this module yet.
+- One Finance row for each account is not a database constraint. The Accounts subpanel has no select button, so a user can create more than one row.
+
+| Field | Type / length | Label | OSC source | Story | Notes |
+|---|---|---|---|---|---|
+| `rate_angels` | text | Hourly rate Angels | `Org.C$Uurtariefangels` | SUITE-64 | Audited. `massupdate` false. Label `LBL_RATE_ANGELS`. |
+| `rate_snor` | text | Hourly rate SNOR | `Org.C$Uursnor` | SUITE-64 | Audited. `massupdate` false. |
+| `rate_body` | text | Hourly rate Body | `Org.C$Uurtariefbody` | SUITE-64 | Audited. `massupdate` false. |
+| `expected_revenue_current_fy` | text | Expected revenue current fiscal year | `Org.C$Tekstgebieduurtarief` | SUITE-64 | Audited. `massupdate` false. |
+| `expected_revenue_next_fy` | text | Expected revenue next fiscal year | `Org.C$Tekstgebiedreiskosten` | SUITE-64 | Audited. `massupdate` false. |
+| `other_financial_terms` | text | Other financial terms | `Org.C$Tekstgebiedoverig` | SUITE-64 | Audited. `massupdate` false. |
+| `account_id` | id | Account ID | n/a | SUITE-64 | Required. Index `idx_tkc_accountfinance_account_id`. |
+| `account_name` | relate (non-db) | Account | n/a | SUITE-64 | Required. Link `tkc_accounts_tkc_accountfinance`. |
+
+- Audit table: `tkc_accountfinance_audit`. `tkc:repair --execute` creates it (see `docs/architecture.md` § Console commands).
+- Repair SQL (local): one `CREATE TABLE tkc_accountfinance` with the index. The audit table comes at execute.
+- Contract test: the module is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite64_accountfinance.php`.
+
+### Default ACL of the module
+- Eight module ACL rows exist (category `tkc_AccountFinance`, acltype `module`):
+  - `access` = 89 (Enabled).
+  - `view`, `list`, `edit`, `delete`, `import`, `export` and `massupdate` = -99 (None).
+- The migration `extensions/tkc/Migrations/Version20261124120000SeedFinanceAcl.php` seeds the rows. It uses DBAL. It updates existing rows and inserts missing rows. A second run changes nothing. `down()` throws.
+- Why `access` is 89 and not -98: `ModuleRegistryHandler::applyUserActionFilter()` removes each module with `access` below 89 for every user, also for admins. With -98 the admin gets no labels and no metadata. The data stays denied: `ACLAction::userHasAccess` gives the same result for -98/-99 and for 89/-99.
+- Why an upsert: `ACLAction::addActions`, `create_tables` and "Repair Roles" insert allow-all rows (89 and 90). They never update a row. An insert-only seed would leave Finance open.
+- Role values (E13, SUITE-151):
+
+| Role | access | view | list | edit | delete | import | export | massupdate |
+|---|---|---|---|---|---|---|---|---|
+| TKC Sales | 89 | 90 | 90 | 90 | -99 | -99 | -99 | -99 |
+| TKC Service | -98 | -99 | -99 | -99 | -99 | -99 | -99 | -99 |
+
+- Never give an admin user the TKC Service role. The -98 override removes Finance from the admin registry.
+- The test `FinanceAclDenyTest` reads the real rows. SUITE-164 checks the rows at the Azure deploy.
+- Known core gap (SUITE-207): a GraphQL subpanel preset and the subpanel statistic do not check the list access of the child module. A user who can view the Account can get Finance data this way. SUITE-207 must close the gap before the real Finance import.
 
 ## Contacts
 Filled by SUITE-65.
@@ -88,7 +126,14 @@ The first key of every TKC list is the empty key `''` with an empty label. A rad
 The release lists use the key format `YYYY_MM`, in date order. The OSC menu order is not in date order, so the keys do not copy it. The release names are product data, not personal data.
 
 ## Relationships
-Filled by SUITE-67 and SUITE-70.
+Other relationships are filled by SUITE-67 and SUITE-70.
+
+| Relationship | Type | Sides | Declared in | Story |
+|---|---|---|---|---|
+| `tkc_accounts_tkc_accountfinance` | 1:N | `Accounts.id` to `tkc_accountfinance.account_id` | The module vardef `public/legacy/modules/tkc_AccountFinance/vardefs.php` only. There is no `custom/metadata/` file. | SUITE-64 |
+
+- The Accounts link is in `public/legacy/custom/Extension/modules/Accounts/Ext/Vardefs/tkc_finance_link.php`.
+- The Accounts subpanel "Finance" is in `public/legacy/custom/Extension/modules/Accounts/Ext/Layoutdefs/tkc_finance_subpanel.php`. It has a quick create button and no select button.
 
 ## Core overrides
 Each row is also in `docs/architecture.md` § Overrides register.

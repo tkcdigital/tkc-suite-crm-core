@@ -142,9 +142,7 @@ class RepairCommand extends Command
         $rc->clearLanguageCache();
         $rc->clearJsLangFiles();
         $rc->clearVardefs();
-        if ($execute) {
-            $rc->rebuildAuditTables(); // creates tables
-        }
+        // No rebuildAuditTables() here: with an empty module_list it does nothing (SUITE-64). repairDatabase() handles audit tables.
     }
 
     /**
@@ -211,6 +209,13 @@ class RepairCommand extends Command
             if (($focus instanceof \SugarBean) && !isset($repaired[$focus->table_name])) {
                 $sql .= $db->repairTable($focus, $execute);
                 $repaired[$focus->table_name] = true;
+            }
+            if (($focus instanceof \SugarBean) && $focus->is_AuditEnabled() && !$db->tableExists($focus->get_audit_table_name())) {
+                // Shown in the dry run too, so the allow-list review sees it (SUITE-64).
+                $sql .= '/* MISSING AUDIT TABLE: ' . $focus->get_audit_table_name() . " */\n";
+                if ($execute) {
+                    $focus->create_audit_table();
+                }
             }
             if (($focus instanceof \SugarBean) && $focus->hasCustomFields() && !isset($repaired[$focus->table_name . '_cstm'])) {
                 $df = new \DynamicField($focus->module_dir);

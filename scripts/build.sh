@@ -94,8 +94,9 @@ step 7b "cache:clear (so the console knows new or changed tkc commands and servi
 $DC exec -T app chown -R www-data:www-data cache logs var
 $DC console cache:clear
 
-step 8 "tkc:repair --dry-run (review the SQL)"
+step 8 "tkc:repair --dry-run (review the SQL) and tkc:migrations:migrate --dry-run"
 $DC console tkc:repair --dry-run
+$DC console tkc:migrations:migrate --dry-run
 if [ "$DRY_RUN_ONLY" -eq 1 ]; then
   echo "Stopped after the dry run (--dry-run-only)."
   exit 0
@@ -117,6 +118,9 @@ fi
 
 step 10 "tkc:repair --execute"
 $DC console tkc:repair --execute
+
+step 10b "tkc:migrations:migrate (new TKC data migrations only; never doctrine:migrations:migrate: core migrations are not run, SUITE-64)"
+$DC console tkc:migrations:migrate
 
 step 11 "tkc:config:apply"
 $DC console tkc:config:apply

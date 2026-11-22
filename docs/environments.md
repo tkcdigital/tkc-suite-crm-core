@@ -36,3 +36,13 @@ The security-officer accepted some dependency advisories on these conditions. Se
 - Run no dev server (`ng serve`, Karma) on Azure or on a public CI agent.
 - The runtime image must contain `composer.lock` and `public/legacy/suitecrm_version.php`. The command `tkc:legacy:asset-version` reads both.
 - The deploy runs `tkc:legacy:asset-version` after `scrm:copy-legacy-assets`.
+
+## Azure deploy sequence (SUITE-64, SUITE-164)
+1. `tkc:repair --execute`
+2. `tkc:migrations:migrate`
+3. `tkc:config:apply`
+4. Clear the cache.
+5. Check the Finance ACL rows (SUITE-164): `access` 89 and seven actions -99 for `tkc_AccountFinance`.
+
+- Run the sequence as one job for each deploy, not for each replica.
+- Never run `doctrine:migrations:migrate` or `doctrine:migrations:version --add --all`. See `docs/architecture.md` § TKC data migrations.
