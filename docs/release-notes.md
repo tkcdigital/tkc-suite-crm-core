@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`)
 
 ### Delivered
 
@@ -22,6 +22,7 @@
 | Bug fix: atomic sequence set | Setting a counter can no longer lower it while other processes draw numbers. Before the fix, numbers could repeat. The console command warns before a deliberate lowering. `--execute` refuses a lower value without `--allow-lower`. The dry run refuses a value outside 0 to 2147483646. | SUITE-205 |
 | Data model: Finance module | A protected Finance module on Accounts holds hourly rates, expected revenue and other financial terms. Only admins can use it until the roles story is done. The module logs every change. The Accounts record has a "Finance" subpanel. | SUITE-64 |
 | Data model: Cases | Cases has 13 TKC fields (case reference, impact, product, category, queue, origin, dates, event remarks, TFS project ID, among others). The status list has the 12 TKC statuses in OSC order. Priority has the values 1 to 4, and the default is empty. There are 4 TKC case types. New lists: impact, product, category, queue and origin. No screen layout shows the fields yet (E8). | SUITE-66 |
+| Data model: case thread | Case updates get an entry type (internal note, agent reply, customer, customer via agent), a channel and the OSC import key. They also have room for long message texts (up to 1 MB). No thread screen yet (E9). | SUITE-68 |
 
 ### What changes for admins and developers
 - Finance module (SUITE-64):
@@ -43,6 +44,12 @@
   - Existing cases that use a hidden core key (for example `Closed_Rejected`, or the type `Product`) show no label. Seed data must use the new keys.
   - The core "open only" status filter and the My Cases dashlet know only the core status keys. Follow-up: SUITE-200 and SUITE-201.
   - `FieldManifestTest` has two new optional keys, `keyPatterns` and `values`. The metadata contract test allows one core defect (the Cases subpanel `ForEmails`).
+- Case thread fields (SUITE-68):
+  - Run `tkc:repair` so that Repair changes `aop_case_updates`: one `MODIFY` of `description` to `longtext`, three new columns and one index.
+  - One new row is in the Overrides register: `tkc_description_longtext.php` (core vardef override).
+  - Set `max_allowed_packet` to 16 MB or more. Plan the `MODIFY` time on Azure (see `docs/environments.md`).
+  - `FieldManifestTest` has a new optional key `dbType`. The metadata contract test allows a second core defect (the `AOP_Case_Updates` detail view).
+  - New test: `LongDescriptionTest`.
 - Sequence service (SUITE-62):
   - Run `tkc:repair --execute` so that Repair creates the table `tkc_sequences` (one `CREATE TABLE`).
   - The new console command `tkc:sequence <show|next|set>` shows, advances or sets a counter. `set` writes only with `--execute`.

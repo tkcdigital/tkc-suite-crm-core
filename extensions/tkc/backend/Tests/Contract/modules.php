@@ -4,6 +4,7 @@
 // DoD for every later module story: add the module here.
 return [
     'Accounts',
+    'AOP_Case_Updates',
     'Cases',
     'tkc_AccountFinance',
 ];

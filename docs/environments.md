@@ -37,6 +37,10 @@ The security-officer accepted some dependency advisories on these conditions. Se
 - The runtime image must contain `composer.lock` and `public/legacy/suitecrm_version.php`. The command `tkc:legacy:asset-version` reads both.
 - The deploy runs `tkc:legacy:asset-version` after `scrm:copy-legacy-assets`.
 
+## MySQL conditions (SUITE-68)
+- Set the MySQL `max_allowed_packet` to 16 MB or more. Case thread texts can be 1 MB. The MySQL 8 default is 64 MB, so the local dev database meets this. Check the value on every Azure database.
+- Azure risk (E14, SUITE-164): Repair changes the column `aop_case_updates.description` from `text` to `longtext` with a `MODIFY`. MySQL copies the table for this change. Measure the time at production volume. Plan the maintenance window before the first deploy with real data.
+
 ## Azure deploy sequence (SUITE-64, SUITE-164)
 1. `tkc:repair --execute`
 2. `tkc:migrations:migrate`

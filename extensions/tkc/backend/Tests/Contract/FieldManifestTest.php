@@ -14,7 +14,7 @@ use Symfony\Component\Dotenv\Dotenv;
  * Compiled vardefs and dropdown lists must match the field manifests (C11, SUITE-63).
  * One manifest file per story in Fields/*.php. Each returns a list of entries:
  *   ['module' => 'Accounts',
- *    'fields' => [name => [type, len, options, default, audited, required, indexed, displayType]],
+ *    'fields' => [name => [type, len, options, default, dbType, audited, required, indexed, displayType]],
  *    'absent' => [field names that must not exist],
  *    'lists'  => [list name => ordered keys],
  *    'labels' => [list name => [key => label]],
@@ -69,7 +69,7 @@ class FieldManifestTest extends TestCase
         foreach ($entry['fields'] ?? [] as $name => $expected) {
             $this->assertArrayHasKey($name, $fieldDefs, "$module.$name is missing.");
             $def = $fieldDefs[$name];
-            foreach (['type', 'len', 'options', 'default', 'displayType'] as $attr) {
+            foreach (['type', 'len', 'options', 'default', 'displayType', 'dbType'] as $attr) {
                 if (array_key_exists($attr, $expected)) {
                     $this->assertEquals($expected[$attr], $def[$attr] ?? null, "$module.$name: $attr");
                 }

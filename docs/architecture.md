@@ -173,7 +173,9 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - The test boots `App\Kernel` in `dev`, because the `test` env does not boot (SUITE-176). It loads `.env` and `.env.local` into the process.
 - Precondition: `tkc:repair` has run.
 - Each module story adds its module to `modules.php`.
-- Core-layout violations go in `known-core-violations.php` with a reason. One entry exists (SUITE-66): the core Cases subpanel `ForEmails` lists `reply_to_status`, which is an Emails field. Core has no Cases vardef for it. The test showed it when `Cases` joined `modules.php`. TKC does not change the core subpanel.
+- Core-layout violations go in `known-core-violations.php` with a reason. Two entries exist. TKC changes neither core layout.
+  - SUITE-66: the core Cases subpanel `ForEmails` lists `reply_to_status`, which is an Emails field. Core has no Cases vardef for it. The test showed it when `Cases` joined `modules.php`.
+  - SUITE-68: the core `detailviewdefs` of `AOP_Case_Updates` (path `panels.default.2.1`) lists `aop_case_updates_contacts_1_name`. The module has no vardef for it. The test showed it when `AOP_Case_Updates` joined `modules.php`.
 - Upgrade risk: medium, on purpose.
 
 ## Field manifest test (SUITE-63)
@@ -181,7 +183,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - It reads every file `extensions/tkc/backend/Tests/Contract/Fields/*.php`. One file for each story, named `suite<n>_<module>.php`. The first one is `Fields/suite63_accounts.php`.
 - A manifest file returns a list of entries. Each entry has this format:
   - `module`: the module name, for example `Accounts`.
-  - `fields`: `[field name => [type, len, options, default, audited, required, indexed, displayType]]`. The test checks only the attributes that an entry names.
+  - `fields`: `[field name => [type, len, options, default, dbType, audited, required, indexed, displayType]]`. The test checks only the attributes that an entry names. `dbType` (SUITE-68) is optional. It checks the column type of a field, for example `longtext` for `AOP_Case_Updates.description`.
   - `absent`: field names that must not exist.
   - `lists`: `[list name => ordered keys]`.
   - `labels` (optional): `[list name => [key => label]]`.
@@ -205,6 +207,10 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - `Tests/Integration/Migrations/FinanceAclDenyTest.php` (integration): reads the real ACL rows. `access` must be 89 and the seven other actions must be -99. A helper case shows that -98 fails the check.
 - `Tests/Unit/Console/MigrationsMigrateCommandTest.php` (unit): the filter keeps only TKC versions. With none left the command says "No new TKC migrations." and exits with 0.
 - `Tests/Contract/FieldManifestTest::testAuditTableExistsForAuditedFields`: an audited field needs its audit table. The manifest is `Tests/Contract/Fields/suite64_accountfinance.php`.
+
+## Case thread tests (SUITE-68)
+- `Tests/Integration/Thread/LongDescriptionTest.php` (integration): a synthetic text of 1,048,576 characters is saved in `AOP_Case_Updates.description` through the bean. The test reads it back and compares the SHA-256 hash. It uses no case and no contact. It deletes the row at the end. It needs `tkc:repair --execute` first, so that the column is `longtext`, and a MySQL `max_allowed_packet` of 16 MB or more (see `docs/environments.md`).
+- `Tests/Contract/Fields/suite68_aop_case_updates.php` is the manifest of the thread fields. `testAuditTableExistsForAuditedFields` skips it, because it has no audited field. This is expected.
 - `tkc_AccountFinance` is in `Tests/Contract/modules.php`.
 
 ## Repair language cache test (SUITE-204)
@@ -373,6 +379,7 @@ Type values: viewdef full copy · core list override · core vardef override · 
 | `public/legacy/custom/Extension/modules/Accounts/Ext/Vardefs/tkc_account_type_default.php` (SUITE-63) | Accounts | core vardef override | Sets `$dictionary['Account']['fields']['account_type']['default'] = 'tkc_relation'`. New accounts start as "Relation" (OSC default "Relatie"). Repair gives no SQL for it. | `public/legacy/include/SugarObjects/templates/company/vardefs.php:62-66` (`<object>_type`, built from the object name) | The field `account_type` still uses `account_type_dom`. The key `tkc_relation` is still in the TKC list. |
 | `public/legacy/modules/tkc_AccountFinance/metadata/detailviewdefs.php` `recordActions.actions.save` (SUITE-64) | tkc_AccountFinance | core action definition copy | A full copy of the core `save` entry with `params.reloadSubpanels` set to false. The core `record-view.store.ts` `reloadSubpanels()` throws for a module without subpanels, because `subpanels` is never initialised. Without the override the save never goes back to the record (D2b). Latent: `actions.adapter.ts:150` has the same flaw. Finance does not reach it. Every future TKC module without subpanels needs the same override. | `config/services/module/recordview/actions.yaml` `default.actions.save`; `core/app/core/src/lib/views/record/store/record-view/record-view.store.ts` | `FinanceSaveActionTest` (drift guard) passes. Remove the override when upstream guards the null. |
 | `public/legacy/custom/Extension/application/Ext/Language/en_us.tkc_case_core_lists.php` (SUITE-66) | Cases | core list override | One file with four overrides. It replaces the whole core lists `case_status_dom` (12 keys in OSC order; keys keep the `Open_` or `Closed_` prefix, A2), `case_priority_dom` (`''`, `P1`, `P2`, `P3`, `tkc_P4`) and `case_type_dom` (`''` and four `tkc_*` keys). It also sets the string `case_priority_default_key` to `''` (core: `P2`). Hidden core keys: `Closed_Rejected`, `Closed_Duplicate` (status); Administration, Product, User (type). No core key is renamed (D7). The values are in `docs/data-model.md` § Core overrides. Upgrade risk: medium. | `public/legacy/include/language/en_us.lang.php` (`case_status_dom`, `case_priority_dom`, `case_priority_default_key`, `case_type_dom`) | Compare each core list with the TKC file. A new upstream key stays hidden until you add it here. `modules/AOP_Case_Updates/CaseUpdatesHook.php:308` still derives `state` from the key prefix. `modules/Cases/CasesQuickCreate.php:61` is still the only reader of `case_priority_default_key`. The core "open only" search filter and the My Cases dashlet still use the core status keys (SUITE-200, SUITE-201). |
+| `public/legacy/custom/Extension/modules/AOP_Case_Updates/Ext/Vardefs/tkc_description_longtext.php` (SUITE-68) | AOP_Case_Updates | core vardef override | Sets `$dictionary['AOP_Case_Updates']['fields']['description']['dbType'] = 'longtext'`. OSC thread texts can be longer than `text` (64 KB). The field type stays `text`. Repair changes the column (one `MODIFY`). Upgrade risk: medium. | `public/legacy/include/SugarObjects/templates/basic/vardefs.php` (`description`) and the core vardefs of `AOP_Case_Updates` | The core `description` definition of AOP_Case_Updates and of the Basic template still has the type `text`. `LongDescriptionTest` and the manifest check `dbType` pass. |
 | `composer.lock` | lock | dependency version (lock) | `lcobucci/clock` 3.5.0 (SUITE-175). Upstream has 3.0.0. `composer.json` keeps the PHP 8.3 platform. | `composer.lock` of the upstream tag | Keep 3.5.0 while the platform is PHP 8.3. |
 | `composer.lock` | lock | dependency version (lock) | `guzzlehttp/guzzle` 7.16.5 (upstream 7.12.1): 7 advisories (1 high, 6 medium). Title: noncanonical host bypass. | `composer.lock` of the upstream tag | Keep the TKC version or higher. Drop the row when upstream reaches it. |
 | `composer.lock` | lock | dependency version (lock) | `guzzlehttp/psr7` 2.13.5 (upstream 2.12.1): 1 medium advisory (host confusion). | same | same |
