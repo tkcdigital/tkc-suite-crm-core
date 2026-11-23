@@ -234,6 +234,14 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - The manifest is `Tests/Contract/Fields/suite67_primary_contact.php`. It uses the `massupdate` key (see § Field manifest test). It covers the Cases fields and the Contacts link.
 - No core override. No row in the Overrides register.
 
+## Source case relationship test (SUITE-70)
+- `extensions/tkc/backend/Tests/Contract/SourceCaseRelationshipTest.php` is in the `contract` suite.
+- The test reads only `relationship_name` and `relationship_type` from the `relationships` table, and the table names. It reads no records.
+- It checks two items: `tkc_cases_opportunities` is `one-to-many`, and `SHOW TABLES LIKE 'tkc\_cases\_opportunities%'` finds no table (C9: no join table).
+- Precondition: `tkc:repair` has run, so that it writes the `relationships` row. The database is reachable.
+- The manifest is `Tests/Contract/Fields/suite70_source_case.php`. It checks `audited`, `indexed`, `massupdate` and `importable` of the Opportunities fields, and the link on Cases.
+- The subpanel is an extension file (`Cases/Ext/Layoutdefs/tkc_opportunities_subpanel.php`). No core override. No row in the Overrides register.
+
 ## Repair language cache test (SUITE-204)
 - `extensions/tkc/backend/Tests/Contract/RepairLanguageCacheTest.php` is in the `contract` suite.
 - The test writes a stale `cache/modules/Accounts/language/en_us.lang.php` with a synthetic key. It then runs `php bin/console tkc:repair --dry-run` as a subprocess. The command must exit with 0.
