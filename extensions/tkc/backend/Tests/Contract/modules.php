@@ -6,5 +6,6 @@ return [
     'Accounts',
     'AOP_Case_Updates',
     'Cases',
+    'Opportunities',
     'tkc_AccountFinance',
 ];
