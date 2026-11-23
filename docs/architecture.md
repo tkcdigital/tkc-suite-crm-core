@@ -185,7 +185,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - It reads every file `extensions/tkc/backend/Tests/Contract/Fields/*.php`. One file for each story, named `suite<n>_<module>.php`. The first one is `Fields/suite63_accounts.php`.
 - A manifest file returns a list of entries. Each entry has this format:
   - `module`: the module name, for example `Accounts`.
-  - `fields`: `[field name => [type, len, options, default, dbType, audited, required, massupdate, indexed, displayType]]`. The test checks only the attributes that an entry names. `dbType` (SUITE-68) is optional. `massupdate` (SUITE-65) is optional: `false` means that the vardef must set `massupdate` to false, because core makes `enum` and similar types mass-updatable when the vardef does not set it. It checks the column type of a field, for example `longtext` for `AOP_Case_Updates.description`.
+  - `fields`: `[field name => [type, len, options, default, dbType, audited, required, massupdate, importable, indexed, displayType]]`. The test checks only the attributes that an entry names. `dbType` (SUITE-68) is optional. `massupdate` (SUITE-65) is optional: `false` means that the vardef must set `massupdate` to false, because core makes `enum` and similar types mass-updatable when the vardef does not set it. `importable` (SUITE-67) is optional in the same way: `false` means that the vardef must set `importable` to false. It checks the column type of a field, for example `longtext` for `AOP_Case_Updates.description`.
   - `absent`: field names that must not exist.
   - `lists`: `[list name => ordered keys]`.
   - `labels` (optional): `[list name => [key => label]]`.
@@ -225,6 +225,14 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - `extensions/tkc/backend/Tests/Unit/Config/DuplicateIgnoreDeltaTest.php` (unit): it applies the D5 delta `tkc_duplicate_ignore.php` to a `ContainerBuilder`. It checks four things: the `default` list has the three fields; existing entries and module lists stay; there are no duplicates; a second run changes nothing. It also covers a missing parameter.
 - `Tests/Contract/Fields/suite71_osc_id.php` is the manifest of `osc_id_c` for Accounts, Contacts, Cases and Opportunities (varchar 20, not audited, not required, indexed).
 - `Contacts` is in `Tests/Contract/modules.php` since SUITE-65. The manifest of its fields is `Tests/Contract/Fields/suite65_contacts.php`.
+
+## Primary contact relationship test (SUITE-67)
+- `extensions/tkc/backend/Tests/Contract/PrimaryContactRelationshipTest.php` is in the `contract` suite.
+- The test reads only `relationship_name` and `relationship_type` from the `relationships` table. It reads no records.
+- It checks two items: `tkc_contacts_cases_primary` is `one-to-many`, and the core relationship `contacts_cases` exists.
+- Precondition: `tkc:repair` has run, so that it writes the `relationships` rows. The database is reachable.
+- The manifest is `Tests/Contract/Fields/suite67_primary_contact.php`. It uses the `massupdate` key (see § Field manifest test). It covers the Cases fields and the Contacts link.
+- No core override. No row in the Overrides register.
 
 ## Repair language cache test (SUITE-204)
 - `extensions/tkc/backend/Tests/Contract/RepairLanguageCacheTest.php` is in the `contract` suite.
