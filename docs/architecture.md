@@ -173,9 +173,11 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - The test boots `App\Kernel` in `dev`, because the `test` env does not boot (SUITE-176). It loads `.env` and `.env.local` into the process.
 - Precondition: `tkc:repair` has run.
 - Each module story adds its module to `modules.php`.
-- Core-layout violations go in `known-core-violations.php` with a reason. Two entries exist. TKC changes neither core layout.
+- Core-layout violations go in `known-core-violations.php` with a reason. Three entries exist. TKC changes none of these core layouts.
   - SUITE-66: the core Cases subpanel `ForEmails` lists `reply_to_status`, which is an Emails field. Core has no Cases vardef for it. The test showed it when `Cases` joined `modules.php`.
   - SUITE-68: the core `detailviewdefs` of `AOP_Case_Updates` (path `panels.default.2.1`) lists `aop_case_updates_contacts_1_name`. The module has no vardef for it. The test showed it when `AOP_Case_Updates` joined `modules.php`.
+  - SUITE-65: the core Contacts subpanel `ForContacts` (path `contact_id`) lists `contact_id`. Contacts has no vardef for it. The test showed it when `Contacts` joined `modules.php`.
+- QA hint for layouts: the Angular record view shows a new field only inside an existing panel of `detailviewdefs`. After a layout change, run `cache:pool:clear cache.app cache.system` and reload the page. Do not run a cache clear or `chown` in the container while `scripts/test.sh` runs. The Repair-based tests use the same caches.
 - Upgrade risk: medium, on purpose.
 
 ## Field manifest test (SUITE-63)
@@ -222,7 +224,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
 ## Import key tests (SUITE-71)
 - `extensions/tkc/backend/Tests/Unit/Config/DuplicateIgnoreDeltaTest.php` (unit): it applies the D5 delta `tkc_duplicate_ignore.php` to a `ContainerBuilder`. It checks four things: the `default` list has the three fields; existing entries and module lists stay; there are no duplicates; a second run changes nothing. It also covers a missing parameter.
 - `Tests/Contract/Fields/suite71_osc_id.php` is the manifest of `osc_id_c` for Accounts, Contacts, Cases and Opportunities (varchar 20, not audited, not required, indexed).
-- Contacts is not in `Tests/Contract/modules.php` yet. The Contacts module story (SUITE-65) must add it.
+- `Contacts` is in `Tests/Contract/modules.php` since SUITE-65. The manifest of its fields is `Tests/Contract/Fields/suite65_contacts.php`.
 
 ## Repair language cache test (SUITE-204)
 - `extensions/tkc/backend/Tests/Contract/RepairLanguageCacheTest.php` is in the `contract` suite.
