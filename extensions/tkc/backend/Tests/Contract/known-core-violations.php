@@ -18,4 +18,11 @@ return [
             'reason' => 'Core detailviewdefs of AOP_Case_Updates shows aop_case_updates_contacts_1_name, which has no vardef (the relationship is not defined in the module). Core defect, not changed by TKC. Visible since SUITE-68 added AOP_Case_Updates to modules.php.',
         ],
     ],
+    'Contacts' => [
+        [
+            'file' => 'subpanels/ForContacts',
+            'path' => 'contact_id',
+            'reason' => 'Core Contacts subpanel ForContacts lists contact_id, which has no vardef in Contacts. Core defect, not changed by TKC. Visible since SUITE-65 added Contacts to modules.php.',
+        ],
+    ],
 ];
