@@ -78,7 +78,7 @@
   - Run `tkc:repair` so that Repair adds the column `tkc_primary_contact_id_c` (char 36) and the index `idx_cases_tkc_primary_contact_id_c` on `cases`. The rebuild writes the relationship `tkc_contacts_cases_primary`.
   - No row in the Overrides register (no core override).
   - The field is `required`, but the check runs only in an Angular layout that shows the field (SUITE-117, E8). Legacy saves, AOP email-to-case and the import do not check it.
-  - An Angular save can store an empty string instead of NULL. The import and the hooks treat both the same.
+  - An Angular save can store an empty string instead of NULL. The import (E4) and the hooks (E8) must treat both the same.
   - New test: `PrimaryContactRelationshipTest`. New manifest: `suite67_primary_contact.php`.
   - SUITE-220 tracks an intermittent PHP test failure. No output is kept yet.
 - Sequence service (SUITE-62):

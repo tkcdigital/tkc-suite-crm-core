@@ -21,6 +21,9 @@ $dictionary['Case']['fields']['tkc_primary_contact_c'] = [
     // Core makes relate fields mass-updatable by default. A bulk change would make one person
     // the primary contact of many cases (SUITE-67 QA finding).
     'massupdate' => false,
+    // The legacy Import wizard matches a relate field by name and takes the first match. The import
+    // (E4) sets tkc_primary_contact_id_c by OSC id instead (SUITE-67 security C1).
+    'importable' => false,
     'save' => true,
     'id_name' => 'tkc_primary_contact_id_c',
     'link' => 'tkc_contacts_cases_primary',
