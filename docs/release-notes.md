@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`, `feature/SUITE-69-opportunities-fields`, `feature/SUITE-71-import-key`, `feature/SUITE-65-contacts-fields`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`, `feature/SUITE-69-opportunities-fields`, `feature/SUITE-71-import-key`, `feature/SUITE-65-contacts-fields`, `feature/SUITE-67-case-primary-contact`)
 
 ### Delivered
 
@@ -26,6 +26,7 @@
 | Data model: Opportunities | Opportunities has 8 TKC fields (reference, closed amount, sales type, country, approach and three dates). Opportunity names can have up to 255 characters (core: 50). The sales stages are the 8 TKC stages, from "0% - Lead" to "Lost". The probability fills in per stage in the edit and create view. No screen layout shows the fields yet (E10). | SUITE-69 |
 | Data model: OSC import key | The OSC record ID `osc_id_c` (with an index) is now on Accounts, Contacts, Cases and Opportunities. The import uses it to update a record that it already created. No screen shows it. The Duplicate action no longer copies the import key, the quote number or the case reference. A copy keeps these fields empty. | SUITE-71 |
 | Data model: Contacts | Contacts has 9 TKC fields: contact type (14 types, every change is logged), function level, language and six Yes/No program flags, among them the newsletter. A Yes/No flag can stay empty ("not set"). No screen layout shows the fields yet (E7). | SUITE-65 |
+| Data model: case primary contact | Each case gets one primary contact. The field is required once the Cases screen shows it (E8). The existing case-contact links stay. The primary contact is not mass-updatable. No screen layout shows the field yet. | SUITE-67 |
 
 ### What changes for admins and developers
 - Finance module (SUITE-64):
@@ -73,6 +74,13 @@
   - Seed data must use the keys of `tkc_contact_type_list`. The OSC value SPAM is the key `spam`. An empty flag stays empty.
   - New manifest: `suite65_contacts.php`.
   - QA hint: after a layout change, run `cache:pool:clear cache.app cache.system`. Do not clear caches while `scripts/test.sh` runs (see `docs/architecture.md` § Metadata contract test).
+- Case primary contact (SUITE-67):
+  - Run `tkc:repair` so that Repair adds the column `tkc_primary_contact_id_c` (char 36) and the index `idx_cases_tkc_primary_contact_id_c` on `cases`. The rebuild writes the relationship `tkc_contacts_cases_primary`.
+  - No row in the Overrides register (no core override).
+  - The field is `required`, but the check runs only in an Angular layout that shows the field (SUITE-117, E8). Legacy saves, AOP email-to-case and the import do not check it.
+  - An Angular save can store an empty string instead of NULL. The import and the hooks treat both the same.
+  - New test: `PrimaryContactRelationshipTest`. New manifest: `suite67_primary_contact.php`.
+  - SUITE-220 tracks an intermittent PHP test failure. No output is kept yet.
 - Sequence service (SUITE-62):
   - Run `tkc:repair --execute` so that Repair creates the table `tkc_sequences` (one `CREATE TABLE`).
   - The new console command `tkc:sequence <show|next|set>` shows, advances or sets a counter. `set` writes only with `--execute`.

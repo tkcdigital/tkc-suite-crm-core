@@ -141,10 +141,16 @@ Not built on Contacts:
 
 Repair SQL (local): one `ALTER TABLE contacts` with 9 `ADD COLUMN` and 1 `ADD INDEX idx_contacts_tkc_contact_type_c`. The audit table `contacts_audit` already existed. SUITE-72 does the authoritative run. No core override and no Overrides register row.
 
+SUITE-67 adds one link to Contacts. It has no database column and no subpanel:
+
+| Field | Type | Label | Story | Notes |
+|---|---|---|---|---|
+| `tkc_contacts_cases_primary` | link | Cases as primary contact (`LBL_TKC_PRIMARY_CASES`) | SUITE-67 | The Contacts side of the relationship in § Relationships. Files: `public/legacy/custom/Extension/modules/Contacts/Ext/Vardefs/tkc_primary_cases_link.php` and `public/legacy/custom/Extension/modules/Contacts/Ext/Language/en_us.tkc_primary_cases_link.php`. The manifest is `Tests/Contract/Fields/suite67_primary_contact.php`. |
+
 Contract test: `Contacts` is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite65_contacts.php`. The metadata test has one allowed core defect for Contacts (see `docs/architecture.md` § Metadata contract test).
 
 ## Cases
-Table `cases`. Dictionary key `Case` (the object name, not the module name). Story SUITE-66. SUITE-67 adds the relationship later. Every field is importable and has `comment = 'TKC SUITE-66'`. Vardef file: `public/legacy/custom/Extension/modules/Cases/Ext/Vardefs/tkc_cases.php`. Label file: `public/legacy/custom/Extension/modules/Cases/Ext/Language/en_us.tkc_cases.php`.
+Table `cases`. Dictionary key `Case` (the object name, not the module name). Story SUITE-66. SUITE-67 adds the primary contact (see below). Every SUITE-66 field is importable and has `comment = 'TKC SUITE-66'`. Vardef file: `public/legacy/custom/Extension/modules/Cases/Ext/Vardefs/tkc_cases.php`. Label file: `public/legacy/custom/Extension/modules/Cases/Ext/Language/en_us.tkc_cases.php`.
 
 | Field | Type / length | Label | OSC source | Story | Notes |
 |---|---|---|---|---|---|
@@ -162,17 +168,30 @@ Table `cases`. Dictionary key `Case` (the object name, not the module name). Sto
 | `tkc_event_remarks_c` | text | Event remarks | `Incident.C$EventOpmerkingen` | SUITE-66 | |
 | `tkc_tfs_project_id_c` | varchar, 10 | TFS project ID | `Incident.C$TfsProjectId` | SUITE-66 | |
 | `osc_id_c` | varchar, 20 | OSC ID | `Incident.IId` | SUITE-71 | Import key. Index `idx_cases_osc_id_c` (not unique). `inline_edit` false. `massupdate` false. It is not the case reference `tkc_case_ref_c`. See § OSC import key. |
+| `tkc_primary_contact_id_c` | id, char(36) NULL | Primary contact ID (`LBL_TKC_PRIMARY_CONTACT_ID`) | `Incident.CId` | SUITE-67 | Audited. Reportable. Importable. Index `idx_cases_tkc_primary_contact_id_c`. An Angular save can store an empty string instead of NULL. The import (E4) and the hooks (E8) must treat NULL and an empty string the same. |
+| `tkc_primary_contact_c` | relate, non-db | Primary contact (`LBL_TKC_PRIMARY_CONTACT`) | `Incident.CId` | SUITE-67 | `required` true. This takes effect only when a layout shows the field (SUITE-117, E8). `massupdate` false: a bulk change would make one person the primary contact of many cases. `id_name` `tkc_primary_contact_id_c`. `module` Contacts. `rname` name. `link` `tkc_contacts_cases_primary`. `save` true. |
+| `tkc_contacts_cases_primary` | link | Primary contact (`LBL_TKC_PRIMARY_CONTACT`) | `Incident.CId` | SUITE-67 | `link_type` one. `side` right. The relationship is in § Relationships. |
+
+SUITE-67 files: `public/legacy/custom/Extension/modules/Cases/Ext/Vardefs/tkc_primary_contact.php` and `public/legacy/custom/Extension/modules/Cases/Ext/Language/en_us.tkc_primary_contact.php`. The fields have `comment = 'TKC SUITE-67: ...'`.
+
+Required behaviour of the primary contact (A4):
+- Angular builds validators only for fields that are in the view layout. The back end has no required check.
+- Legacy saves, AOP email-to-case and the import do not check the field.
+- An agent sets the primary contact when editing a case in Angular, after E8 puts the field on the layout.
 
 Not built on Cases:
 - `tkc_disposition_c`. The owner has not decided about Disposition.
 - `tkc_assigned_group_c`.
 - The mail header field.
 - The two "collect before share" fields.
-- The primary contact fields. The relationship story builds them. (`osc_id_c` is built in SUITE-71.)
+- The after-save hook that adds the primary contact to `contacts_cases` (E8).
+- The layout cell of the primary contact (SUITE-117, E8).
 
 Repair SQL (local dry run, SUITE-66): one `ALTER TABLE cases` with 13 `ADD COLUMN` and 2 `ADD INDEX`. SUITE-72 does the authoritative run.
 
-Contract test: `Cases` is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite66_cases.php`.
+Repair SQL (local, SUITE-67): `ALTER TABLE cases ADD COLUMN tkc_primary_contact_id_c char(36) NULL, ADD INDEX idx_cases_tkc_primary_contact_id_c`. The extension rebuild writes the `relationships` row.
+
+Contract test: `Cases` is in `Tests/Contract/modules.php`. The manifests are `Tests/Contract/Fields/suite66_cases.php` and `Tests/Contract/Fields/suite67_primary_contact.php`. The relationship test is `Tests/Contract/PrimaryContactRelationshipTest.php` (see `docs/architecture.md` § Tests).
 
 ## AOP_Case_Updates
 Table `aop_case_updates`. Dictionary key `AOP_Case_Updates`. Story SUITE-68. A row is one entry of the case thread. Every new field has `comment = 'TKC SUITE-68'`. Vardef files in `public/legacy/custom/Extension/modules/AOP_Case_Updates/Ext/Vardefs/`: `tkc_thread.php`, `tkc_osc_id.php` and `tkc_description_longtext.php`. Label file: `public/legacy/custom/Extension/modules/AOP_Case_Updates/Ext/Language/en_us.tkc_thread.php`.
@@ -249,11 +268,16 @@ The first key of every TKC list is the empty key `''` with an empty label. Excep
 The release lists use the key format `YYYY_MM`, in date order. The OSC menu order is not in date order, so the keys do not copy it. The release names are product data, not personal data.
 
 ## Relationships
-Other relationships are filled by SUITE-67 and SUITE-70.
+SUITE-70 fills the source-case relationship later.
 
 | Relationship | Type | Sides | Declared in | Story |
 |---|---|---|---|---|
 | `tkc_accounts_tkc_accountfinance` | 1:N | `Accounts.id` to `tkc_accountfinance.account_id` | The module vardef `public/legacy/modules/tkc_AccountFinance/vardefs.php` only. There is no `custom/metadata/` file. | SUITE-64 |
+| `tkc_contacts_cases_primary` | 1:N (`one-to-many`) | `Contacts.id` to `cases.tkc_primary_contact_id_c` | The Cases vardef `public/legacy/custom/Extension/modules/Cases/Ext/Vardefs/tkc_primary_contact.php`. The Contacts link is in `.../Contacts/Ext/Vardefs/tkc_primary_cases_link.php`. | SUITE-67 |
+
+- `tkc_contacts_cases_primary` copies the core relationship `cases_created_contact` (C9). It is the primary contact of a case.
+- The core M:N relationship `contacts_cases` is not changed. It stays independent and holds the additional contacts of a case.
+- Not built (E8): the after-save hook that adds the primary contact to `contacts_cases`. The layout cell is also not built (SUITE-117).
 
 - The Accounts link is in `public/legacy/custom/Extension/modules/Accounts/Ext/Vardefs/tkc_finance_link.php`.
 - The Accounts subpanel "Finance" is in `public/legacy/custom/Extension/modules/Accounts/Ext/Layoutdefs/tkc_finance_subpanel.php`. It has a quick create button and no select button.

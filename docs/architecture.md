@@ -226,6 +226,14 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - `Tests/Contract/Fields/suite71_osc_id.php` is the manifest of `osc_id_c` for Accounts, Contacts, Cases and Opportunities (varchar 20, not audited, not required, indexed).
 - `Contacts` is in `Tests/Contract/modules.php` since SUITE-65. The manifest of its fields is `Tests/Contract/Fields/suite65_contacts.php`.
 
+## Primary contact relationship test (SUITE-67)
+- `extensions/tkc/backend/Tests/Contract/PrimaryContactRelationshipTest.php` is in the `contract` suite.
+- The test reads only `relationship_name` and `relationship_type` from the `relationships` table. It reads no records.
+- It checks two items: `tkc_contacts_cases_primary` is `one-to-many`, and the core relationship `contacts_cases` exists.
+- Precondition: `tkc:repair` has run, so that it writes the `relationships` rows. The database is reachable.
+- The manifest is `Tests/Contract/Fields/suite67_primary_contact.php`. It uses the `massupdate` key (see § Field manifest test). It covers the Cases fields and the Contacts link.
+- No core override. No row in the Overrides register.
+
 ## Repair language cache test (SUITE-204)
 - `extensions/tkc/backend/Tests/Contract/RepairLanguageCacheTest.php` is in the `contract` suite.
 - The test writes a stale `cache/modules/Accounts/language/en_us.lang.php` with a synthetic key. It then runs `php bin/console tkc:repair --dry-run` as a subprocess. The command must exit with 0.

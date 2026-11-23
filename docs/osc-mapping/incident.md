@@ -63,7 +63,7 @@ New-field names follow the rules: suffix `_c`. Final names are for the architect
 | Incident.Subject ("Onderwerp") | text, single line; verified: string, **maxLength 240**, nullable in REST (required by the workspace) | Algemeen | Cases.name | core | - | - | Required on new and edit (XML). Core `name` is varchar(255): OSC 240 fits. |
 | Incident.RefNo ("Meldingnr RN") | string, **maxLength 13**, not null, read-only (REST `referenceNumber`). Format `YYMMDD-NNNNNN` has 13 characters: length matches the screenshot example | Algemeen, read-only look | Cases.tkc_case_ref_c | new | varchar(13) (use 20 for safety) | - | Core `case_number` is an auto-increment integer and cannot hold this format. Keep `case_number` for new SuiteCRM cases. Index `tkc_case_ref_c`. |
 | Incident.IId | integer (REST `id`, up to 9223372036854775807) | Info panel only | Cases.osc_id_c | new | varchar(20), indexed | - | Import key per `suitecrm-customization.md`. **Status: built (SUITE-71).** `osc_id_c` is not `tkc_case_ref_c`. |
-| Incident.CId ("Contactpersoon") | relationship to Contact, 1:1 primary contact; verified: `primaryContact` object is **not nullable** (required in OSC) | Algemeen | Cases.tkc_primary_contact_c (relate to Contacts) + `tkc_primary_contact_id_c` | new | relate / id char(36) | - | Screenshot shows required (*). Core Cases has only M:N `contacts` (`contacts_cases`) and `contact_created_by` (portal creator). A primary-contact field is a gap. See Q3. |
+| Incident.CId ("Contactpersoon") | relationship to Contact, 1:1 primary contact; verified: `primaryContact` object is **not nullable** (required in OSC) | Algemeen | Cases.tkc_primary_contact_c (relate to Contacts) + `tkc_primary_contact_id_c` | new | relate / id char(36) | - | Screenshot shows required (*). Core Cases has only M:N `contacts` (`contacts_cases`) and `contact_created_by` (portal creator). A primary-contact field is a gap. See Q3. **Status: built (SUITE-67)** as `tkc_primary_contact_c` + `tkc_primary_contact_id_c` and the relationship `tkc_contacts_cases_primary`. |
 | Incident.OrgId ("Organisatie") | relationship to Org (verified: `organization`, nullable) | Algemeen | Cases.account_id / account_name | core | - | - | Core `account_cases`. |
 | Incident.SlaiId ("SLA-exemplaar") | relationship to SLA instance | Categorisatie | - | drop | - | - | Owner decision 2026-11-20: SLA dropped. |
 | Incident.SlaRespDelta ("Reactie-interval") | numeric with increment 1 (XML `Increment`); unit ? | Categorisatie, read-only (screenshot, tooltip "Reactie-interval voor dit incident") | - | drop | - | - | Owner decision: SLA dropped. |
@@ -135,7 +135,7 @@ Status values: planned, built, migrated. Details: `docs/data-model.md` § Cases.
 | Import of thread data | not started (no row is migrated) |
 | `Cases.tkc_collect_before_share_c`, `tkc_collect_before_share_opt_c` | planned (Q10) |
 | `Cases.osc_id_c` (varchar 20, index `idx_cases_osc_id_c`; import key of the cases) | built (SUITE-71). The thread key `AOP_Case_Updates.osc_id_c` is built in SUITE-68. |
-| Cases primary contact fields | planned (relationship story) |
+| Cases primary contact: `tkc_primary_contact_id_c` (char 36, index), `tkc_primary_contact_c` (relate), link `tkc_contacts_cases_primary` (1:N) | built (SUITE-67). The relate field is `required`, but it takes effect only when a layout shows it (SUITE-117, E8). It is not mass-updatable. The hook that adds the primary contact to `contacts_cases` is planned (E8). E4 sets `tkc_primary_contact_id_c` from the contact `osc_id_c`. |
 | Import of Cases data | not started (no row is migrated) |
 
 ### 2.2 Custom fields (package `c`, verified by REST schema 2026-11-20)
@@ -267,7 +267,7 @@ view metadata, and AOW for server-side. The architect decides which rule becomes
 
 | OSC relation | OSC control | SuiteCRM relationship | Notes |
 |---|---|---|---|
-| Incident -> Contact (primary) | Field CId | New relate field `tkc_primary_contact_c` (1:N Contacts -> Cases) | Core `contacts_cases` is M:N. Keep it for additional contacts. |
+| Incident -> Contact (primary) | Field CId | New relate field `tkc_primary_contact_c` (1:N Contacts -> Cases) | **Status: built (SUITE-67).** Relationship `tkc_contacts_cases_primary`. E4 sets `tkc_primary_contact_id_c` from the contact `osc_id_c`. Core `contacts_cases` is M:N. Keep it for additional contacts. |
 | Incident <-> Contact (all) | Contacts relationship (tab Koppelingen) | `contacts_cases` (core, M:N) | Core. |
 | Incident -> Org | Field OrgId | `account_cases` (core) | Core. |
 | Incident -> Thread | RichIncidentThread | `cases_aop_case_updates` (core) | See 2.1. |
@@ -287,7 +287,7 @@ view metadata, and AOW for server-side. The architect decides which rule becomes
 1. **SLA engine**: SLA instance, response interval, response due, solve due, escalation level (`RuleCtx`). No SuiteCRM equivalent. Needs custom code or drop.
 2. **Queues** and group-based assignment. Core has only `assigned_user_id`. AOP has a round-robin assign manager (`AOPAssignManager`) but no queue.
 3. **Hierarchical Product / Category / Disposition** on the case. Core Cases has none of the three.
-4. **Primary contact (1:N)**. Core Cases links contacts M:N only.
+4. **Primary contact (1:N)**. Core Cases links contacts M:N only. Status (SUITE-67): built as the 1:N relationship `tkc_contacts_cases_primary`.
 5. **Thread entry types and channel** (customer proxy, phone entries). AOP has only `internal` and `contact_id`.
 6. **One-click status and taxonomy buttons** (about 9 buttons that set 3 to 8 fields at once). Needs custom record actions.
 7. **Client-side workspace rules** (required, hidden, set value, menu filters). SuiteCRM has display logic and dependencies, but no rule designer. Each rule is a developer task.
