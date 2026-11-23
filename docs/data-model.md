@@ -179,6 +179,11 @@ Required behaviour of the primary contact (A4):
 - Legacy saves, AOP email-to-case and the import do not check the field.
 - An agent sets the primary contact when editing a case in Angular, after E8 puts the field on the layout.
 
+SUITE-70 adds the Cases side of the source case (see § Relationships):
+- Link `tkc_cases_opportunities`. `module` Opportunities. `bean_name` `Opportunity`. File: `public/legacy/custom/Extension/modules/Cases/Ext/Vardefs/tkc_opportunities_link.php`.
+- Subpanel `tkc_cases_opportunities`, title "Opportunities" (`LBL_TKC_OPPORTUNITIES_SUBPANEL`). Order 120. Subpanel definition `default`. Buttons: core Create and Link/Unlink (select). Files: `public/legacy/custom/Extension/modules/Cases/Ext/Layoutdefs/tkc_opportunities_subpanel.php` and `.../Cases/Ext/Language/en_us.tkc_opportunities_subpanel.php`. E8 sets the final order. E8 can remove the Link/Unlink button, because it moves an opportunity to another source case (the move is audited).
+- Create from the panel: the Angular create sends `relate_to` and `relate_id`, and the bean save sets `tkc_source_case_id_c` to the case. A check with a synthetic bean passed. No end-to-end browser test exists.
+
 Not built on Cases:
 - `tkc_disposition_c`. The owner has not decided about Disposition.
 - `tkc_assigned_group_c`.
@@ -212,7 +217,7 @@ Repair SQL (local): one `ALTER TABLE aop_case_updates`. It has one `modify COLUM
 Contract test: `AOP_Case_Updates` is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite68_aop_case_updates.php`. The long text test is `Tests/Integration/Thread/LongDescriptionTest.php` (see `docs/architecture.md` § Tests).
 
 ## Opportunities
-Table `opportunities`. Dictionary key `Opportunity` (the object name, not the module name). Story SUITE-69. SUITE-70 adds the source-case relationship later. Every new field is importable and has `comment = 'TKC SUITE-69'`. Vardef file: `public/legacy/custom/Extension/modules/Opportunities/Ext/Vardefs/tkc_opportunities.php`. Label file: `public/legacy/custom/Extension/modules/Opportunities/Ext/Language/en_us.tkc_opportunities.php`.
+Table `opportunities`. Dictionary key `Opportunity` (the object name, not the module name). Story SUITE-69. SUITE-70 adds the source case (see the rows below). Every SUITE-69 field is importable and has `comment = 'TKC SUITE-69'`. Vardef file: `public/legacy/custom/Extension/modules/Opportunities/Ext/Vardefs/tkc_opportunities.php`. Label file: `public/legacy/custom/Extension/modules/Opportunities/Ext/Language/en_us.tkc_opportunities.php`.
 
 | Field | Type / length | Label | OSC source | Story | Notes |
 |---|---|---|---|---|---|
@@ -225,13 +230,18 @@ Table `opportunities`. Dictionary key `Opportunity` (the object name, not the mo
 | `tkc_approach_c` | enum, 20 | Approach | `Opportunity.C$Benadering` | SUITE-69 | List `tkc_approach_list`. |
 | `tkc_initial_contact_c` | date | Initial contact | `Opportunity.InitialContact` | SUITE-69 | Range search. |
 | `osc_id_c` | varchar, 20 | OSC ID | `Opportunity.OpId` | SUITE-71 | Import key. Index `idx_opportunities_osc_id_c` (not unique). `inline_edit` false. `massupdate` false. See § OSC import key. |
+| `tkc_source_case_id_c` | id, char(36) NULL | Source case ID (`LBL_TKC_SOURCE_CASE_ID`) | `Support.Incident` | SUITE-70 | Audited: a move to another case is in `opportunities_audit`. Reportable. Importable: the import (E4, step 6) sets it from the case `osc_id_c`. Index `idx_opportunities_tkc_source_case_id_c`. `comment = 'TKC SUITE-70: ...'`. |
+| `tkc_source_case_c` | relate, non-db | Source case (`LBL_TKC_SOURCE_CASE`) | `Support.Incident` | SUITE-70 | `id_name` `tkc_source_case_id_c`. `module` Cases. `rname` `name` (E10 can change it to `tkc_case_ref_c`). `link` `tkc_cases_opportunities`. `save` true. `massupdate` false: a bulk change would link many opportunities to one case. `importable` false: the legacy Import wizard matches a relate field by name and takes the first match (SUITE-67 lesson). |
+| `tkc_cases_opportunities` | link | Source case (`LBL_TKC_SOURCE_CASE`) | `Support.Incident` | SUITE-70 | `module` Cases. `bean_name` `aCase`. `link_type` one. `side` right. The relationship is in § Relationships. |
+
+SUITE-70 files: `public/legacy/custom/Extension/modules/Opportunities/Ext/Vardefs/tkc_source_case.php` and `public/legacy/custom/Extension/modules/Opportunities/Ext/Language/en_us.tkc_source_case.php`. No layout shows the source case yet (E8, E10).
 
 Not built on Opportunities:
 - The menu `waarschijnlijkheid`. The core `probability` field replaces it.
 - `type_medewerker` and `VERKOOP_ID`.
 - The hook that sets the actual close date on a won deal.
 - The quote number action and the reference validator (E10, SUITE-138 and SUITE-139). The index of `tkc_reference_c` is not unique. SUITE-139 plans the duplicate warning.
-- The source-case relationship. SUITE-70 builds it. (`osc_id_c` is built in SUITE-71.)
+- The layout cell of the source case (E8 and E10, SUITE-70 has no layout).
 
 SUITE-71 adds `tkc_reference_c` to the Duplicate exclusion list. The Duplicate action does not copy the quote number.
 
@@ -239,7 +249,9 @@ The `name` length and the `probability` logic are core overrides. See § Core ov
 
 Repair SQL (local): one `ALTER TABLE opportunities` with one `modify COLUMN name varchar(255) NULL`, 8 `add COLUMN tkc_*_c` and one `ADD INDEX idx_opportunities_tkc_reference_c`. SUITE-72 does the authoritative run.
 
-Contract test: `Opportunities` is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite69_opportunities.php`. The probability test is `Tests/Contract/OpportunityProbabilityLogicTest.php` (see `docs/architecture.md` § Tests).
+Repair SQL (local, SUITE-70): `ALTER TABLE opportunities ADD COLUMN tkc_source_case_id_c char(36) NULL, ADD INDEX idx_opportunities_tkc_source_case_id_c`. The extension rebuild writes the `relationships` row.
+
+Contract test: `Opportunities` is in `Tests/Contract/modules.php`. The manifests are `Tests/Contract/Fields/suite69_opportunities.php` and `Tests/Contract/Fields/suite70_source_case.php`. The relationship test is `Tests/Contract/SourceCaseRelationshipTest.php`. The probability test is `Tests/Contract/OpportunityProbabilityLogicTest.php` (see `docs/architecture.md` § Tests).
 
 ## Lists
 The first key of every TKC list is the empty key `''` with an empty label. Exception: `tkc_entry_type_list` has no empty key, because every thread entry has a type. A radio field shows it as "Not set" (SUITE-186). Application lists are in `public/legacy/custom/Extension/application/Ext/Language/`. Never change a TKC list in Studio or in the Dropdown Editor (see `docs/admin-guide.md`).
@@ -268,16 +280,18 @@ The first key of every TKC list is the empty key `''` with an empty label. Excep
 The release lists use the key format `YYYY_MM`, in date order. The OSC menu order is not in date order, so the keys do not copy it. The release names are product data, not personal data.
 
 ## Relationships
-SUITE-70 fills the source-case relationship later.
+SUITE-70 built the last relationship of E3.
 
 | Relationship | Type | Sides | Declared in | Story |
 |---|---|---|---|---|
 | `tkc_accounts_tkc_accountfinance` | 1:N | `Accounts.id` to `tkc_accountfinance.account_id` | The module vardef `public/legacy/modules/tkc_AccountFinance/vardefs.php` only. There is no `custom/metadata/` file. | SUITE-64 |
 | `tkc_contacts_cases_primary` | 1:N (`one-to-many`) | `Contacts.id` to `cases.tkc_primary_contact_id_c` | The Cases vardef `public/legacy/custom/Extension/modules/Cases/Ext/Vardefs/tkc_primary_contact.php`. The Contacts link is in `.../Contacts/Ext/Vardefs/tkc_primary_cases_link.php`. | SUITE-67 |
+| `tkc_cases_opportunities` | 1:N (`one-to-many`) | `Cases.id` to `opportunities.tkc_source_case_id_c` | The Opportunities vardef `public/legacy/custom/Extension/modules/Opportunities/Ext/Vardefs/tkc_source_case.php`. The Cases link is in `.../Cases/Ext/Vardefs/tkc_opportunities_link.php`. | SUITE-70 |
 
 - `tkc_contacts_cases_primary` copies the core relationship `cases_created_contact` (C9). It is the primary contact of a case.
 - The core M:N relationship `contacts_cases` is not changed. It stays independent and holds the additional contacts of a case.
 - Not built (E8): the after-save hook that adds the primary contact to `contacts_cases`. The layout cell is also not built (SUITE-117).
+- `tkc_cases_opportunities` is a foreign key with no join table (C9). A case has many opportunities. An opportunity has one source case. The relationship is declared in the Opportunities vardef. The Cases subpanel "Opportunities" is in `.../Cases/Ext/Layoutdefs/tkc_opportunities_subpanel.php` (see § Cases).
 
 - The Accounts link is in `public/legacy/custom/Extension/modules/Accounts/Ext/Vardefs/tkc_finance_link.php`.
 - The Accounts subpanel "Finance" is in `public/legacy/custom/Extension/modules/Accounts/Ext/Layoutdefs/tkc_finance_subpanel.php`. It has a quick create button and no select button.

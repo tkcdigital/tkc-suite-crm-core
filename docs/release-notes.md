@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`, `feature/SUITE-69-opportunities-fields`, `feature/SUITE-71-import-key`, `feature/SUITE-65-contacts-fields`, `feature/SUITE-67-case-primary-contact`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`, `feature/SUITE-69-opportunities-fields`, `feature/SUITE-71-import-key`, `feature/SUITE-65-contacts-fields`, `feature/SUITE-67-case-primary-contact`, `feature/SUITE-70-opportunity-source-case`)
 
 ### Delivered
 
@@ -27,6 +27,7 @@
 | Data model: OSC import key | The OSC record ID `osc_id_c` (with an index) is now on Accounts, Contacts, Cases and Opportunities. The import uses it to update a record that it already created. No screen shows it. The Duplicate action no longer copies the import key, the quote number or the case reference. A copy keeps these fields empty. | SUITE-71 |
 | Data model: Contacts | Contacts has 9 TKC fields: contact type (14 types, every change is logged), function level, language and six Yes/No program flags, among them the newsletter. A Yes/No flag can stay empty ("not set"). No screen layout shows the fields yet (E7). | SUITE-65 |
 | Data model: case primary contact | Each case gets one primary contact. The field is required once the Cases screen shows it (E8). The existing case-contact links stay. The primary contact is not mass-updatable. No screen layout shows the field yet. | SUITE-67 |
+| Data model: opportunity source case | An opportunity can point to the case it came from. The case shows its opportunities in an "Opportunities" panel. The source case is not mass-updatable and not importable by name. A move to another case is logged. No opportunity layout shows the field yet (E10). | SUITE-70 |
 
 ### What changes for admins and developers
 - Finance module (SUITE-64):

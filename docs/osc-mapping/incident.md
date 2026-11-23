@@ -274,7 +274,7 @@ view metadata, and AOW for server-side. The architect decides which rule becomes
 | Incident -> Attachments | FileAttachments | `case_notes` (core) | |
 | Incident -> Tasks | Tasks | `case_tasks` (core) | Core subpanel. |
 | Incident -> Support$Project | Support$ProjectRelatedRecordsView (FK `i_id`) | `projects_cases` (core, Project module) or new custom module | Depends on what Support$Project is (Q12). |
-| Incident -> Opportunity | Report 100672 ("voor dit incident") and report 100622 ("per organisatie"), ribbon "New service opp" | No core relationship Cases-Opportunities | New M:N relationship (vardef) or drop. Report contents unknown (Q18). |
+| Incident -> Opportunity | Report 100672 ("voor dit incident") and report 100622 ("per organisatie"), ribbon "New service opp" | No core relationship Cases-Opportunities | **Status: built (SUITE-70).** The relationship is 1:N, not M:N: `tkc_cases_opportunities` (`Cases.id` to `opportunities.tkc_source_case_id_c`). Cases shows an "Opportunities" subpanel. The ribbon button "New service opp" maps to the subpanel Create button (Q15 is open). Report contents unknown (Q18). |
 | Incident -> Support contract | Report 100641 | AOS_Contracts via Account, shown as a case subpanel or on the account | Content unknown (Q18). |
 | Incident -> Answer (KB) | Propose, BestAnswer | AOK_KnowledgeBase has no Cases link in core | Drop for now (Q15). |
 | Incident -> Asset | Record type Asset in export, not on this workspace | none | Out of scope. |
