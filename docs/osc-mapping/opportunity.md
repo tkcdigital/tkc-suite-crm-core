@@ -2,7 +2,7 @@
 
 Status: **VERIFIED with REST 2026-11-20 (tst1).** Customer names are replaced by placeholders; the real values are in OSC and in data/osc/rest-output/ (gitignored). Field types, lengths, nullability, all menu values, menu id 279 and the quote number structure are verified (4 batch runs). The remaining open points are business decisions. Source: `designs/screens/opportunities/tkc-opportunities.xml`
 (OSC 26C SP1 export), the screenshot, and the SuiteCRM vardefs. Raw parse: `data/osc/workspace/opportunities.json` (gitignored).
-**Build status (SUITE-69): built.** The 8 new fields of section 2 (`tkc_reference_c`, `tkc_closed_amount_c`, `tkc_sales_type_c`, `tkc_approach_c`, `tkc_country_c`, `tkc_initial_contact_c`, `tkc_quote_date_c`, `tkc_date_closed_actual_c`), the 3 lists, the `name` length 255, the stage list and the probability logic exist. See `docs/data-model.md` § Opportunities. Planned: `osc_id_c` and the source-case relationship (SUITE-70), the quote number action and the reference validator (E10, SUITE-138 and SUITE-139), the won-date hook, and the import. Not migrated: no data is imported yet.
+**Build status (SUITE-69): built.** The 8 new fields of section 2 (`tkc_reference_c`, `tkc_closed_amount_c`, `tkc_sales_type_c`, `tkc_approach_c`, `tkc_country_c`, `tkc_initial_contact_c`, `tkc_quote_date_c`, `tkc_date_closed_actual_c`), the 3 lists, the `name` length 255, the stage list and the probability logic exist. See `docs/data-model.md` § Opportunities. `osc_id_c` is built in SUITE-71. Planned: the source-case relationship (SUITE-70), the quote number action and the reference validator (E10, SUITE-138 and SUITE-139), the won-date hook, and the import. Not migrated: no data is imported yet.
 The workspace is in Dutch. Labels below are the workspace labels. A label in "quotes" replaces the OSC default label.
 
 Types, lengths and menu values were verified by REST on 2026-11-20 (schemas with `Accept: application/schema+json`, menu resources `namedIDs/opportunities/customFields/c/<field>`, aggregate ROQL counts). Counts come from tst1 (1964 opportunities) and are not production numbers.
@@ -104,7 +104,7 @@ Field names for new fields follow the rule: suffix `_c`, prefix `tkc_`.
 | `Opportunity.CreatedBy` | Account, system | Info panel | Opportunities.`created_by` | core | n/a | n/a | Staff-to-user map (Q9). |
 | `Opportunity.Updated` | datetime, system | Info panel | Opportunities.`date_modified` | core | n/a | n/a | |
 | `Opportunity.UpdatedBy` | Account, system | Info panel | Opportunities.`modified_user_id` | core | n/a | n/a | |
-| `Opportunity.OpId` | integer ID, system | Info panel | Opportunities.`osc_id_c` | new | varchar(20), indexed (OSC ID is integer, up to 9223372036854775807) | n/a | Import key (project rule: `osc_id_c`, indexed). |
+| `Opportunity.OpId` | integer ID, system | Info panel | Opportunities.`osc_id_c` | new | varchar(20), indexed (OSC ID is integer, up to 9223372036854775807) | n/a | Import key (project rule: `osc_id_c`, indexed). **Status: built (SUITE-71).** See `docs/data-model.md` § OSC import key. |
 | `Opportunity.RuleCtx.Escllevel` | system rule context | Info panel | none | drop | n/a | n/a | Escalation level. Rule engine state, no SuiteCRM meaning. |
 | `Opportunity.RuleCtx.State` | system rule context | Info panel | none | drop | n/a | n/a | Rule engine state. |
 

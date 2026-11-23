@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`, `feature/SUITE-69-opportunities-fields`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`, `feature/SUITE-69-opportunities-fields`, `feature/SUITE-71-import-key`)
 
 ### Delivered
 
@@ -24,6 +24,7 @@
 | Data model: Cases | Cases has 13 TKC fields (case reference, impact, product, category, queue, origin, dates, event remarks, TFS project ID, among others). The status list has the 12 TKC statuses in OSC order. Priority has the values 1 to 4, and the default is empty. There are 4 TKC case types. New lists: impact, product, category, queue and origin. No screen layout shows the fields yet (E8). | SUITE-66 |
 | Data model: case thread | Case updates get an entry type (internal note, agent reply, customer, customer via agent), a channel and the OSC import key. They also have room for long message texts (up to 1 MB). No thread screen yet (E9). | SUITE-68 |
 | Data model: Opportunities | Opportunities has 8 TKC fields (reference, closed amount, sales type, country, approach and three dates). Opportunity names can have up to 255 characters (core: 50). The sales stages are the 8 TKC stages, from "0% - Lead" to "Lost". The probability fills in per stage in the edit and create view. No screen layout shows the fields yet (E10). | SUITE-69 |
+| Data model: OSC import key | The OSC record ID `osc_id_c` (with an index) is now on Accounts, Contacts, Cases and Opportunities. The import uses it to update a record that it already created. No screen shows it. The Duplicate action no longer copies the import key, the quote number or the case reference. A copy keeps these fields empty. | SUITE-71 |
 
 ### What changes for admins and developers
 - Finance module (SUITE-64):
@@ -59,6 +60,12 @@
   - Follow-ups: SUITE-201 (My Opportunities dashlet) and SUITE-202 (create opportunity from a quote).
   - New test: `OpportunityProbabilityLogicTest`. New manifest: `suite69_opportunities.php`.
   - The index of `tkc_reference_c` is not unique. SUITE-139 plans the duplicate warning.
+- OSC import key (SUITE-71):
+  - Run `tkc:repair` so that Repair adds the column `osc_id_c` (varchar 20) and the index `idx_<table>_osc_id_c` on `accounts`, `contacts`, `cases` and `opportunities`.
+  - One new row is in the Overrides register: the D5 delta `extensions/tkc/config/tkc_duplicate_ignore.php`. Rebuild the container cache so that it applies.
+  - The index is not unique, because of soft deletes. The import code must enforce uniqueness (`WHERE osc_id_c = ? AND deleted = 0`). The upserter of the core modules (SUITE-75) must also read `deleted = 1` rows and never re-create a deleted record, abort a row with more than one live match, reject an empty or non-numeric key, and check after each run that no key has two live rows (SUITE-71 security F1). SUITE-132 has the same rules for the thread table.
+  - New test: `DuplicateIgnoreDeltaTest`. New manifest: `suite71_osc_id.php`. Contacts is not in `modules.php` yet.
+  - AOS_Contracts gets `osc_id_c` in SUITE-144.
 - Sequence service (SUITE-62):
   - Run `tkc:repair --execute` so that Repair creates the table `tkc_sequences` (one `CREATE TABLE`).
   - The new console command `tkc:sequence <show|next|set>` shows, advances or sets a counter. `set` writes only with `--execute`.

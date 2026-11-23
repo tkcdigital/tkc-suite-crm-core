@@ -29,6 +29,18 @@ One row for each counter name and year. The sequence service uses it (see `docs/
 - Repair SQL on a local database: one `CREATE TABLE tkc_sequences`. SUITE-72 does the authoritative run.
 - OSC source: none. The table holds the numbers that replace OSC counters (see `docs/osc-mapping/opportunity.md` § 6.2).
 
+### OSC import key `osc_id_c` (SUITE-71)
+- `osc_id_c` is the numeric OSC record ID. It is the only upsert key of the OSC import. The import finds a record with `WHERE osc_id_c = ? AND deleted = 0`. The upserter of the core modules (SUITE-75) must also read `deleted = 1` rows and never re-create a deleted record, abort a row with more than one live match, reject an empty or non-numeric key, and check after each run that no key has two live rows (SUITE-71 security F1). SUITE-132 has the same rules for the thread table.
+- `tkc_case_ref_c` is the human case reference. It is never the same value as `osc_id_c`. Never use one in place of the other.
+- A record that a user creates in SuiteCRM has an empty `osc_id_c`.
+- The field is in these modules: Accounts, Contacts, Cases, Opportunities (SUITE-71) and AOP_Case_Updates (SUITE-68). AOS_Contracts gets it in SUITE-144.
+- The vardef is the same in every module. Type varchar, length 20, nullable. `audited` false. `importable` true. `inline_edit` false. `massupdate` false. `unified_search` false. `duplicate_merge` `disabled`. Label `LBL_TKC_OSC_ID` ("OSC ID"). No layout shows the field.
+- The index is not unique, because of soft deletes. Names: `idx_accounts_osc_id_c`, `idx_contacts_osc_id_c`, `idx_cases_osc_id_c`, `idx_opportunities_osc_id_c`.
+- Files for each module `<M>`: `public/legacy/custom/Extension/modules/<M>/Ext/Vardefs/tkc_osc_id.php` and `public/legacy/custom/Extension/modules/<M>/Ext/Language/en_us.tkc_osc_id.php`. The `$dictionary` keys are `Account`, `Contact`, `Case` and `Opportunity`. The Contacts `Ext/Language` folder is new.
+- The Duplicate action does not copy `osc_id_c`. See `docs/architecture.md` § Overrides register (`tkc_duplicate_ignore.php`).
+- Repair SQL (local): for each of the four modules, one `add COLUMN osc_id_c varchar(20) NULL` and one `ADD INDEX idx_<table>_osc_id_c`. SUITE-72 does the authoritative run.
+- Contract test: the manifest is `Tests/Contract/Fields/suite71_osc_id.php`.
+
 ## Accounts
 Table `accounts`. Dictionary key `Account`. Story SUITE-63. Every field is importable. Vardef file: `public/legacy/custom/Extension/modules/Accounts/Ext/Vardefs/tkc_accounts.php`. Label file: `public/legacy/custom/Extension/modules/Accounts/Ext/Language/en_us.tkc_accounts.php`.
 
@@ -48,6 +60,7 @@ Table `accounts`. Dictionary key `Account`. Story SUITE-63. Every field is impor
 | `tkc_replicon_name_c` | varchar, 100 | Replicon name | `Org.C$Repliconname` | SUITE-63 | |
 | `tkc_sharepoint_name_c` | varchar, 40 | SharePoint name | `Org.C$Sharepointname` | SUITE-63 | |
 | `tkc_debtor_number_c` | varchar, 40 | Debtor number | `Org.C$Debiteurnummer` | SUITE-63 | Audited. Index `idx_accounts_tkc_debtor_number_c`. The planning name was `tkc_debiteurnummer_c`. It was renamed to an English name (A8). |
+| `osc_id_c` | varchar, 20 | OSC ID | `Org.OrgId` | SUITE-71 | Import key. Index `idx_accounts_osc_id_c` (not unique). `inline_edit` false. `massupdate` false. See § OSC import key. |
 
 The Yes/No fields have the type `enum` with `displayType` `radio`, not `bool`. The reason: a radio shows three states (Yes, No, Not set). A `bool` has no "not set" state.
 
@@ -101,7 +114,13 @@ Module `tkc_AccountFinance`. Label "Finance". Story SUITE-64. Table `tkc_account
 - Known core gap (SUITE-207): a GraphQL subpanel preset and the subpanel statistic do not check the list access of the child module. A user who can view the Account can get Finance data this way. SUITE-207 must close the gap before the real Finance import.
 
 ## Contacts
-Filled by SUITE-65.
+Filled by SUITE-65. The rest of this section is a placeholder.
+
+Table `contacts`. Dictionary key `Contact`. SUITE-71 built this row only:
+
+| Field | Type / length | Label | OSC source | Story | Notes |
+|---|---|---|---|---|---|
+| `osc_id_c` | varchar, 20 | OSC ID | `Contact.CId` | SUITE-71 | Import key. Index `idx_contacts_osc_id_c` (not unique). `inline_edit` false. `massupdate` false. See § OSC import key. |
 
 ## Cases
 Table `cases`. Dictionary key `Case` (the object name, not the module name). Story SUITE-66. SUITE-67 adds the relationship later. Every field is importable and has `comment = 'TKC SUITE-66'`. Vardef file: `public/legacy/custom/Extension/modules/Cases/Ext/Vardefs/tkc_cases.php`. Label file: `public/legacy/custom/Extension/modules/Cases/Ext/Language/en_us.tkc_cases.php`.
@@ -121,13 +140,14 @@ Table `cases`. Dictionary key `Case` (the object name, not the module name). Sto
 | `tkc_event_remark_c` | varchar, 255 | Event remark | `Incident.C$EventOpmerking` | SUITE-66 | |
 | `tkc_event_remarks_c` | text | Event remarks | `Incident.C$EventOpmerkingen` | SUITE-66 | |
 | `tkc_tfs_project_id_c` | varchar, 10 | TFS project ID | `Incident.C$TfsProjectId` | SUITE-66 | |
+| `osc_id_c` | varchar, 20 | OSC ID | `Incident.IId` | SUITE-71 | Import key. Index `idx_cases_osc_id_c` (not unique). `inline_edit` false. `massupdate` false. It is not the case reference `tkc_case_ref_c`. See § OSC import key. |
 
 Not built on Cases:
 - `tkc_disposition_c`. The owner has not decided about Disposition.
 - `tkc_assigned_group_c`.
 - The mail header field.
 - The two "collect before share" fields.
-- `osc_id_c` and the primary contact fields. The import and relationship stories build them.
+- The primary contact fields. The relationship story builds them. (`osc_id_c` is built in SUITE-71.)
 
 Repair SQL (local dry run, SUITE-66): one `ALTER TABLE cases` with 13 `ADD COLUMN` and 2 `ADD INDEX`. SUITE-72 does the authoritative run.
 
@@ -164,15 +184,16 @@ Table `opportunities`. Dictionary key `Opportunity` (the object name, not the mo
 | `tkc_quote_date_c` | date | Quote date | `Opportunity.C$Offertedatum` | SUITE-69 | Range search. |
 | `tkc_approach_c` | enum, 20 | Approach | `Opportunity.C$Benadering` | SUITE-69 | List `tkc_approach_list`. |
 | `tkc_initial_contact_c` | date | Initial contact | `Opportunity.InitialContact` | SUITE-69 | Range search. |
+| `osc_id_c` | varchar, 20 | OSC ID | `Opportunity.OpId` | SUITE-71 | Import key. Index `idx_opportunities_osc_id_c` (not unique). `inline_edit` false. `massupdate` false. See § OSC import key. |
 
 Not built on Opportunities:
 - The menu `waarschijnlijkheid`. The core `probability` field replaces it.
 - `type_medewerker` and `VERKOOP_ID`.
 - The hook that sets the actual close date on a won deal.
 - The quote number action and the reference validator (E10, SUITE-138 and SUITE-139). The index of `tkc_reference_c` is not unique. SUITE-139 plans the duplicate warning.
-- `osc_id_c` and the source-case relationship. The import story and SUITE-70 build them.
+- The source-case relationship. SUITE-70 builds it. (`osc_id_c` is built in SUITE-71.)
 
-SUITE-71 adds `tkc_reference_c` to the Duplicate exclusion list.
+SUITE-71 adds `tkc_reference_c` to the Duplicate exclusion list. The Duplicate action does not copy the quote number.
 
 The `name` length and the `probability` logic are core overrides. See § Core overrides.
 

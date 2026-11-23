@@ -62,7 +62,7 @@ New-field names follow the rules: suffix `_c`. Final names are for the architect
 |---|---|---|---|---|---|---|---|
 | Incident.Subject ("Onderwerp") | text, single line; verified: string, **maxLength 240**, nullable in REST (required by the workspace) | Algemeen | Cases.name | core | - | - | Required on new and edit (XML). Core `name` is varchar(255): OSC 240 fits. |
 | Incident.RefNo ("Meldingnr RN") | string, **maxLength 13**, not null, read-only (REST `referenceNumber`). Format `YYMMDD-NNNNNN` has 13 characters: length matches the screenshot example | Algemeen, read-only look | Cases.tkc_case_ref_c | new | varchar(13) (use 20 for safety) | - | Core `case_number` is an auto-increment integer and cannot hold this format. Keep `case_number` for new SuiteCRM cases. Index `tkc_case_ref_c`. |
-| Incident.IId | integer (REST `id`, up to 9223372036854775807) | Info panel only | Cases.osc_id_c | new | varchar(20), indexed | - | Import key per `suitecrm-customization.md`. |
+| Incident.IId | integer (REST `id`, up to 9223372036854775807) | Info panel only | Cases.osc_id_c | new | varchar(20), indexed | - | Import key per `suitecrm-customization.md`. **Status: built (SUITE-71).** `osc_id_c` is not `tkc_case_ref_c`. |
 | Incident.CId ("Contactpersoon") | relationship to Contact, 1:1 primary contact; verified: `primaryContact` object is **not nullable** (required in OSC) | Algemeen | Cases.tkc_primary_contact_c (relate to Contacts) + `tkc_primary_contact_id_c` | new | relate / id char(36) | - | Screenshot shows required (*). Core Cases has only M:N `contacts` (`contacts_cases`) and `contact_created_by` (portal creator). A primary-contact field is a gap. See Q3. |
 | Incident.OrgId ("Organisatie") | relationship to Org (verified: `organization`, nullable) | Algemeen | Cases.account_id / account_name | core | - | - | Core `account_cases`. |
 | Incident.SlaiId ("SLA-exemplaar") | relationship to SLA instance | Categorisatie | - | drop | - | - | Owner decision 2026-11-20: SLA dropped. |
@@ -134,7 +134,8 @@ Status values: planned, built, migrated. Details: `docs/data-model.md` § Cases.
 | Thread CC and BCC, attachments on thread entries | planned |
 | Import of thread data | not started (no row is migrated) |
 | `Cases.tkc_collect_before_share_c`, `tkc_collect_before_share_opt_c` | planned (Q10) |
-| `Cases.osc_id_c`, primary contact fields | planned (import and relationship stories) |
+| `Cases.osc_id_c` (varchar 20, index `idx_cases_osc_id_c`; import key of the cases) | built (SUITE-71). The thread key `AOP_Case_Updates.osc_id_c` is built in SUITE-68. |
+| Cases primary contact fields | planned (relationship story) |
 | Import of Cases data | not started (no row is migrated) |
 
 ### 2.2 Custom fields (package `c`, verified by REST schema 2026-11-20)
