@@ -114,13 +114,34 @@ Module `tkc_AccountFinance`. Label "Finance". Story SUITE-64. Table `tkc_account
 - Known core gap (SUITE-207): a GraphQL subpanel preset and the subpanel statistic do not check the list access of the child module. A user who can view the Account can get Finance data this way. SUITE-207 must close the gap before the real Finance import.
 
 ## Contacts
-Filled by SUITE-65. The rest of this section is a placeholder.
-
-Table `contacts`. Dictionary key `Contact`. SUITE-71 built this row only:
+Table `contacts`. Dictionary key `Contact` (the object name, not the module name). Story SUITE-65. Every new field is importable and has `comment = 'TKC SUITE-65'`. Vardef file: `public/legacy/custom/Extension/modules/Contacts/Ext/Vardefs/tkc_contacts.php`. Label file: `public/legacy/custom/Extension/modules/Contacts/Ext/Language/en_us.tkc_contacts.php`.
 
 | Field | Type / length | Label | OSC source | Story | Notes |
 |---|---|---|---|---|---|
+| `tkc_contact_type_c` | enum, 30 | Contact type | `Contact.CtypeId` | SUITE-65 | List `tkc_contact_type_list`. Audited. Index `idx_contacts_tkc_contact_type_c`. The SPAM filter reads it later (E7). |
+| `tkc_function_level_c` | enum, 10 | Function level | `Contact.CustomFields.c.functieniveau` | SUITE-65 | List `tkc_function_level_list`. |
+| `tkc_language_c` | enum, 10 | Language | `Contact.CustomFields.c.language` | SUITE-65 | List `tkc_language_list`. No default. |
+| `tkc_osc_usergroup_c` | enum, 10 | OSC usergroup | `Contact.CustomFields.c.oscusergroup` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. |
+| `tkc_kmm_c` | enum, 10 | KMM | `Contact.CustomFields.c.kmmdeelname` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. |
+| `tkc_cafe_c` | enum, 10 | TKC Cafe | `Contact.CustomFields.c.tkccafedeelname` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. The planning name was `tkc_tkc_cafe_c`. It was shortened (A8). |
+| `tkc_service_tomorrow_c` | enum, 10 | Service Tomorrow | `Contact.CustomFields.c.service_tomorrow` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. |
+| `tkc_newsletter_c` | enum, 10 | Newsletter | `Contact.CustomFields.c.nieuwsbrief` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. This is marketing consent: audited, and `massupdate` false, so every change is in the change log and no bulk action can set it (SUITE-65 security C1). An empty value means "not set" (A3). The import must not turn an empty value into No. |
+| `tkc_freshworks_usergroup_c` | enum, 10 | Freshworks usergroup | `Contact.CustomFields.c.freshworks_usergroup` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. |
 | `osc_id_c` | varchar, 20 | OSC ID | `Contact.CId` | SUITE-71 | Import key. Index `idx_contacts_osc_id_c` (not unique). `inline_edit` false. `massupdate` false. See § OSC import key. |
+
+- The Yes/No fields have the type `enum` with `displayType` `radio`, not `bool`. The reason is the same as on Accounts: a `bool` has no "not set" state, and the OSC flags have three states. An empty value stays empty (A3).
+- The contact type is varchar(30), not 10, because the longest key is `partner_h_supplier`. The import maps OSC menu ID 14 to the key `spam`.
+- Labels `C`, `M` and `O` of the function level stay until the owner gives the meaning (open question 13 in `docs/osc-mapping/contact.md`).
+- Lists: see § Lists.
+
+Not built on Contacts:
+- `tkc_crm_modules_c` (OSC `Contact.State`). The owner has not decided to keep it.
+- `lawful_basis`. It waits for the consent decision (open question 8 in `docs/osc-mapping/contact.md`).
+- `Login` and the SLA control. They are dropped.
+
+Repair SQL (local): one `ALTER TABLE contacts` with 9 `ADD COLUMN` and 1 `ADD INDEX idx_contacts_tkc_contact_type_c`. The audit table `contacts_audit` already existed. SUITE-72 does the authoritative run. No core override and no Overrides register row.
+
+Contract test: `Contacts` is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite65_contacts.php`. The metadata test has one allowed core defect for Contacts (see `docs/architecture.md` § Metadata contract test).
 
 ## Cases
 Table `cases`. Dictionary key `Case` (the object name, not the module name). Story SUITE-66. SUITE-67 adds the relationship later. Every field is importable and has `comment = 'TKC SUITE-66'`. Vardef file: `public/legacy/custom/Extension/modules/Cases/Ext/Vardefs/tkc_cases.php`. Label file: `public/legacy/custom/Extension/modules/Cases/Ext/Language/en_us.tkc_cases.php`.
@@ -206,7 +227,7 @@ The first key of every TKC list is the empty key `''` with an empty label. Excep
 
 | List | Keys (in order) | Used by | File | Story |
 |---|---|---|---|---|
-| `tkc_yes_no_list` | `''`, `yes` (Yes), `no` (No) | Accounts: `tkc_has_rightnow_c`, `tkc_auto_upgrade_c`, `tkc_projects_on_portal_c`. Later stories reuse it. | `en_us.tkc_shared_lists.php` | SUITE-63 |
+| `tkc_yes_no_list` | `''`, `yes` (Yes), `no` (No) | Accounts: `tkc_has_rightnow_c`, `tkc_auto_upgrade_c`, `tkc_projects_on_portal_c`. Contacts (SUITE-65): the six Yes/No flags (`tkc_osc_usergroup_c`, `tkc_kmm_c`, `tkc_cafe_c`, `tkc_service_tomorrow_c`, `tkc_newsletter_c`, `tkc_freshworks_usergroup_c`). Later stories reuse it. | `en_us.tkc_shared_lists.php` | SUITE-63 |
 | `tkc_rightnow_version_list` | `''`, then 21 keys `2012_02` to `2017_02` (quarterly: 02, 05, 08, 11). Labels such as "2012.02 February". | Accounts: `tkc_rightnow_version_c` | `en_us.tkc_accounts_lists.php` | SUITE-63 |
 | `tkc_rightnow_future_version_list` | `''`, then 36 keys `2012_02` to `2020_11`. Same label format. | Accounts: `tkc_rightnow_future_version_c` | `en_us.tkc_accounts_lists.php` | SUITE-63 |
 | `tkc_pod_list` | `''`, `ca_ap`, `wc`, `mw`, `pc`, `ps`, `gb`, `am`, `sy`, `jp` | Accounts: `tkc_pod_c` | `en_us.tkc_accounts_lists.php` | SUITE-63 |
@@ -221,6 +242,9 @@ The first key of every TKC list is the empty key `''` with an empty label. Excep
 | `tkc_sales_type_list` | `''`, `cross_sell` (Cross-sell), `up_sell` (Up-sell) | Opportunities: `tkc_sales_type_c` | `en_us.tkc_opportunities_lists.php` | SUITE-69 |
 | `tkc_country_list` | `''`, `nl` (Netherlands), `de` (Germany), `be` (Belgium), `other` (Other), `dk` (Denmark), `se` (Sweden), `no` (Norway), `lu` (Luxembourg). OSC order. | Opportunities: `tkc_country_c` | `en_us.tkc_opportunities_lists.php` | SUITE-69 |
 | `tkc_approach_list` | `''`, `website` (Website), `phone` (Phone), `social` (Social media), `network` (Network) | Opportunities: `tkc_approach_c` | `en_us.tkc_opportunities_lists.php` | SUITE-69 |
+| `tkc_contact_type_list` | `''`, `tkbc_prospect` (TKBC prospect), `tkbc_customer`, `tkbc_support`, `tkbc_sales`, `ssc_prospect`, `ssc_customer`, `ssc_support`, `ssc_sales`, `partner_g_customer` (Partner G customer), `partner_h_customer`, `partner_h_supplier`, `fs` (FS), `tkc_bodybuilder` (TKC bodybuilder), `spam` (Spam). OSC order, 14 keys. The keys hold no customer names. | Contacts: `tkc_contact_type_c` | `en_us.tkc_contacts_lists.php` | SUITE-65 |
+| `tkc_function_level_list` | `''`, `C`, `M`, `O`. The labels are the same letters until the owner gives the meaning (Q13). | Contacts: `tkc_function_level_c` | `en_us.tkc_contacts_lists.php` | SUITE-65 |
+| `tkc_language_list` | `''`, `nl` (Dutch), `en` (English) | Contacts: `tkc_language_c` | `en_us.tkc_contacts_lists.php` | SUITE-65 |
 
 The release lists use the key format `YYYY_MM`, in date order. The OSC menu order is not in date order, so the keys do not copy it. The release names are product data, not personal data.
 

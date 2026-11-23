@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`, `feature/SUITE-69-opportunities-fields`, `feature/SUITE-71-import-key`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`, `feature/SUITE-69-opportunities-fields`, `feature/SUITE-71-import-key`, `feature/SUITE-65-contacts-fields`)
 
 ### Delivered
 
@@ -25,6 +25,7 @@
 | Data model: case thread | Case updates get an entry type (internal note, agent reply, customer, customer via agent), a channel and the OSC import key. They also have room for long message texts (up to 1 MB). No thread screen yet (E9). | SUITE-68 |
 | Data model: Opportunities | Opportunities has 8 TKC fields (reference, closed amount, sales type, country, approach and three dates). Opportunity names can have up to 255 characters (core: 50). The sales stages are the 8 TKC stages, from "0% - Lead" to "Lost". The probability fills in per stage in the edit and create view. No screen layout shows the fields yet (E10). | SUITE-69 |
 | Data model: OSC import key | The OSC record ID `osc_id_c` (with an index) is now on Accounts, Contacts, Cases and Opportunities. The import uses it to update a record that it already created. No screen shows it. The Duplicate action no longer copies the import key, the quote number or the case reference. A copy keeps these fields empty. | SUITE-71 |
+| Data model: Contacts | Contacts has 9 TKC fields: contact type (14 types, every change is logged), function level, language and six Yes/No program flags, among them the newsletter. A Yes/No flag can stay empty ("not set"). No screen layout shows the fields yet (E7). | SUITE-65 |
 
 ### What changes for admins and developers
 - Finance module (SUITE-64):
@@ -64,8 +65,14 @@
   - Run `tkc:repair` so that Repair adds the column `osc_id_c` (varchar 20) and the index `idx_<table>_osc_id_c` on `accounts`, `contacts`, `cases` and `opportunities`.
   - One new row is in the Overrides register: the D5 delta `extensions/tkc/config/tkc_duplicate_ignore.php`. Rebuild the container cache so that it applies.
   - The index is not unique, because of soft deletes. The import code must enforce uniqueness (`WHERE osc_id_c = ? AND deleted = 0`). The upserter of the core modules (SUITE-75) must also read `deleted = 1` rows and never re-create a deleted record, abort a row with more than one live match, reject an empty or non-numeric key, and check after each run that no key has two live rows (SUITE-71 security F1). SUITE-132 has the same rules for the thread table.
-  - New test: `DuplicateIgnoreDeltaTest`. New manifest: `suite71_osc_id.php`. Contacts is not in `modules.php` yet.
+  - New test: `DuplicateIgnoreDeltaTest`. New manifest: `suite71_osc_id.php`. Contacts joined `modules.php` in SUITE-65.
   - AOS_Contracts gets `osc_id_c` in SUITE-144.
+- Contacts fields (SUITE-65):
+  - Run `tkc:repair` so that Repair adds 9 columns and 1 index on `contacts` and loads the 3 new lists.
+  - No row in the Overrides register. The metadata contract test allows a third core defect (the Contacts subpanel `ForContacts` lists `contact_id`).
+  - Seed data must use the keys of `tkc_contact_type_list`. The OSC value SPAM is the key `spam`. An empty flag stays empty.
+  - New manifest: `suite65_contacts.php`.
+  - QA hint: after a layout change, run `cache:pool:clear cache.app cache.system`. Do not clear caches while `scripts/test.sh` runs (see `docs/architecture.md` § Metadata contract test).
 - Sequence service (SUITE-62):
   - Run `tkc:repair --execute` so that Repair creates the table `tkc_sequences` (one `CREATE TABLE`).
   - The new console command `tkc:sequence <show|next|set>` shows, advances or sets a counter. `set` writes only with `--execute`.
