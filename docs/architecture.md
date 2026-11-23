@@ -185,7 +185,7 @@ Result of spike SUITE-9 S1 (2026-11-20).
 - It reads every file `extensions/tkc/backend/Tests/Contract/Fields/*.php`. One file for each story, named `suite<n>_<module>.php`. The first one is `Fields/suite63_accounts.php`.
 - A manifest file returns a list of entries. Each entry has this format:
   - `module`: the module name, for example `Accounts`.
-  - `fields`: `[field name => [type, len, options, default, dbType, audited, required, indexed, displayType]]`. The test checks only the attributes that an entry names. `dbType` (SUITE-68) is optional. It checks the column type of a field, for example `longtext` for `AOP_Case_Updates.description`.
+  - `fields`: `[field name => [type, len, options, default, dbType, audited, required, massupdate, indexed, displayType]]`. The test checks only the attributes that an entry names. `dbType` (SUITE-68) is optional. `massupdate` (SUITE-65) is optional: `false` means that the vardef must set `massupdate` to false, because core makes `enum` and similar types mass-updatable when the vardef does not set it. It checks the column type of a field, for example `longtext` for `AOP_Case_Updates.description`.
   - `absent`: field names that must not exist.
   - `lists`: `[list name => ordered keys]`.
   - `labels` (optional): `[list name => [key => label]]`.

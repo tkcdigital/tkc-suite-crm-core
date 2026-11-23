@@ -125,7 +125,7 @@ Table `contacts`. Dictionary key `Contact` (the object name, not the module name
 | `tkc_kmm_c` | enum, 10 | KMM | `Contact.CustomFields.c.kmmdeelname` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. |
 | `tkc_cafe_c` | enum, 10 | TKC Cafe | `Contact.CustomFields.c.tkccafedeelname` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. The planning name was `tkc_tkc_cafe_c`. It was shortened (A8). |
 | `tkc_service_tomorrow_c` | enum, 10 | Service Tomorrow | `Contact.CustomFields.c.service_tomorrow` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. |
-| `tkc_newsletter_c` | enum, 10 | Newsletter | `Contact.CustomFields.c.nieuwsbrief` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. This is marketing consent. An empty value means "not set" (A3). The import must not turn an empty value into No. |
+| `tkc_newsletter_c` | enum, 10 | Newsletter | `Contact.CustomFields.c.nieuwsbrief` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. This is marketing consent: audited, and `massupdate` false, so every change is in the change log and no bulk action can set it (SUITE-65 security C1). An empty value means "not set" (A3). The import must not turn an empty value into No. |
 | `tkc_freshworks_usergroup_c` | enum, 10 | Freshworks usergroup | `Contact.CustomFields.c.freshworks_usergroup` | SUITE-65 | List `tkc_yes_no_list`. Radio, row direction. |
 | `osc_id_c` | varchar, 20 | OSC ID | `Contact.CId` | SUITE-71 | Import key. Index `idx_contacts_osc_id_c` (not unique). `inline_edit` false. `massupdate` false. See § OSC import key. |
 

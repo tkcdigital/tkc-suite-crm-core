@@ -17,12 +17,13 @@ return [
             'tkc_kmm_c' => $yesNo,
             'tkc_cafe_c' => $yesNo,
             'tkc_service_tomorrow_c' => $yesNo,
-            'tkc_newsletter_c' => $yesNo,
+            // Marketing consent: audited, no mass update (SUITE-65 security C1, GDPR Art. 7(1)).
+            'tkc_newsletter_c' => $yesNo + ['audited' => true, 'massupdate' => false],
             'tkc_freshworks_usergroup_c' => $yesNo,
         ],
         'absent' => [
             // Not built (SUITE-65 prescription).
-            'tkc_crm_modules_c', 'tkc_tkc_cafe_c', 'lawful_basis_c', 'tkc_login_c', 'tkc_sla_c',
+            'tkc_crm_modules_c', 'tkc_tkc_cafe_c', 'lawful_basis_c', 'tkc_login_c', 'tkc_sla_c', 'tkc_ert_c',
         ],
         'lists' => [
             'tkc_contact_type_list' => [

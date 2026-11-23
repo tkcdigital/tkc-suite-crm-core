@@ -14,7 +14,7 @@ use Symfony\Component\Dotenv\Dotenv;
  * Compiled vardefs and dropdown lists must match the field manifests (C11, SUITE-63).
  * One manifest file per story in Fields/*.php. Each returns a list of entries:
  *   ['module' => 'Accounts',
- *    'fields' => [name => [type, len, options, default, dbType, audited, required, indexed, displayType]],
+ *    'fields' => [name => [type, len, options, default, dbType, audited, required, massupdate, indexed, displayType]],
  *    'absent' => [field names that must not exist],
  *    'lists'  => [list name => ordered keys],
  *    'labels' => [list name => [key => label]],
@@ -78,6 +78,10 @@ class FieldManifestTest extends TestCase
                 if (array_key_exists($flag, $expected)) {
                     $this->assertSame($expected[$flag], !empty($def[$flag]), "$module.$name: $flag");
                 }
+            }
+            // 'massupdate' => false: the field must set it explicitly (enum fields are mass-updatable by default).
+            if (array_key_exists('massupdate', $expected)) {
+                $this->assertSame($expected['massupdate'], $def['massupdate'] ?? true, "$module.$name: massupdate");
             }
             if (!empty($expected['indexed'])) {
                 $index = $data['indices']["idx_{$table}_$name"] ?? null;

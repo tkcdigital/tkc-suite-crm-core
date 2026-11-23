@@ -224,4 +224,4 @@ Business questions added by the REST data:
 12. **Fields not on the workspace.** 16 custom fields exist only in REST (section 2a-1). Confirm drop for all, or name those to keep (for example `support_contact_type` Manager/Medewerker).
 13. **Function level.** The menu `functieniveau` has the values C, M, O. What do they mean (labels for the SuiteCRM list)?
 14. **SPAM contacts.** 365 contacts have type SPAM (14) in tst1. Import them, skip them, or import without activity? Contact type values 7, 8, 9, 11 are unused: migrate the whole list of 14 or only the used values?
-15. **Flags with three states.** Import empty as No (proposal), or keep a three-state dropdown?
+15. **Flags with three states.** Closed by A3: the Yes/No fields are a three-state dropdown (empty, Yes, No). The import keeps an empty OSC value empty and never turns it into No. This also applies to the newsletter.

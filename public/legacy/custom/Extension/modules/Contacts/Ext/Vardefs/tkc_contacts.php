@@ -36,7 +36,8 @@ $tkcFields = [
     'tkc_kmm_c' => ['vname' => 'LBL_TKC_KMM'] + $tkcYesNo,
     'tkc_cafe_c' => ['vname' => 'LBL_TKC_CAFE'] + $tkcYesNo,
     'tkc_service_tomorrow_c' => ['vname' => 'LBL_TKC_SERVICE_TOMORROW'] + $tkcYesNo,
-    'tkc_newsletter_c' => ['vname' => 'LBL_TKC_NEWSLETTER'] + $tkcYesNo,
+    // Marketing consent: audited and never mass-updated, so a change is traceable (security C1, GDPR Art. 7(1)).
+    'tkc_newsletter_c' => ['vname' => 'LBL_TKC_NEWSLETTER', 'audited' => true, 'massupdate' => false] + $tkcYesNo,
     'tkc_freshworks_usergroup_c' => ['vname' => 'LBL_TKC_FRESHWORKS_USERGROUP'] + $tkcYesNo,
 ];
 
