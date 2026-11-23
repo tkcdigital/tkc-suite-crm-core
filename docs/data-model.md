@@ -30,7 +30,7 @@ One row for each counter name and year. The sequence service uses it (see `docs/
 - OSC source: none. The table holds the numbers that replace OSC counters (see `docs/osc-mapping/opportunity.md` § 6.2).
 
 ### OSC import key `osc_id_c` (SUITE-71)
-- `osc_id_c` is the numeric OSC record ID. It is the only upsert key of the OSC import. The import finds a record with `WHERE osc_id_c = ? AND deleted = 0`. The policy for deleted rows is open (SUITE-132).
+- `osc_id_c` is the numeric OSC record ID. It is the only upsert key of the OSC import. The import finds a record with `WHERE osc_id_c = ? AND deleted = 0`. The upserter of the core modules (SUITE-75) must also read `deleted = 1` rows and never re-create a deleted record, abort a row with more than one live match, reject an empty or non-numeric key, and check after each run that no key has two live rows (SUITE-71 security F1). SUITE-132 has the same rules for the thread table.
 - `tkc_case_ref_c` is the human case reference. It is never the same value as `osc_id_c`. Never use one in place of the other.
 - A record that a user creates in SuiteCRM has an empty `osc_id_c`.
 - The field is in these modules: Accounts, Contacts, Cases, Opportunities (SUITE-71) and AOP_Case_Updates (SUITE-68). AOS_Contracts gets it in SUITE-144.

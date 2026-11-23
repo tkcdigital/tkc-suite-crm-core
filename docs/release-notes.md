@@ -63,7 +63,7 @@
 - OSC import key (SUITE-71):
   - Run `tkc:repair` so that Repair adds the column `osc_id_c` (varchar 20) and the index `idx_<table>_osc_id_c` on `accounts`, `contacts`, `cases` and `opportunities`.
   - One new row is in the Overrides register: the D5 delta `extensions/tkc/config/tkc_duplicate_ignore.php`. Rebuild the container cache so that it applies.
-  - The index is not unique, because of soft deletes. The import code must enforce uniqueness (`WHERE osc_id_c = ? AND deleted = 0`). The policy for deleted rows is open (SUITE-132).
+  - The index is not unique, because of soft deletes. The import code must enforce uniqueness (`WHERE osc_id_c = ? AND deleted = 0`). The upserter of the core modules (SUITE-75) must also read `deleted = 1` rows and never re-create a deleted record, abort a row with more than one live match, reject an empty or non-numeric key, and check after each run that no key has two live rows (SUITE-71 security F1). SUITE-132 has the same rules for the thread table.
   - New test: `DuplicateIgnoreDeltaTest`. New manifest: `suite71_osc_id.php`. Contacts is not in `modules.php` yet.
   - AOS_Contracts gets `osc_id_c` in SUITE-144.
 - Sequence service (SUITE-62):
