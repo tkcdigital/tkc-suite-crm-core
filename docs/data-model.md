@@ -152,7 +152,33 @@ Repair SQL (local): one `ALTER TABLE aop_case_updates`. It has one `modify COLUM
 Contract test: `AOP_Case_Updates` is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite68_aop_case_updates.php`. The long text test is `Tests/Integration/Thread/LongDescriptionTest.php` (see `docs/architecture.md` § Tests).
 
 ## Opportunities
-Filled by SUITE-69 and SUITE-70.
+Table `opportunities`. Dictionary key `Opportunity` (the object name, not the module name). Story SUITE-69. SUITE-70 adds the source-case relationship later. Every new field is importable and has `comment = 'TKC SUITE-69'`. Vardef file: `public/legacy/custom/Extension/modules/Opportunities/Ext/Vardefs/tkc_opportunities.php`. Label file: `public/legacy/custom/Extension/modules/Opportunities/Ext/Language/en_us.tkc_opportunities.php`.
+
+| Field | Type / length | Label | OSC source | Story | Notes |
+|---|---|---|---|---|---|
+| `tkc_closed_amount_c` | currency, decimal(26,6) | Closed amount | `Opportunity.ClosedValue` | SUITE-69 | `massupdate` false. |
+| `tkc_date_closed_actual_c` | date | Actual close date | `Opportunity.Closed` | SUITE-69 | Range search. |
+| `tkc_sales_type_c` | enum, 20 | Sales type | `Opportunity.C$Typeverkoop` | SUITE-69 | List `tkc_sales_type_list`. |
+| `tkc_country_c` | enum, 10 | Country | `Opportunity.Terr` | SUITE-69 | List `tkc_country_list`. |
+| `tkc_reference_c` | varchar, 12 | Reference | `Opportunity.C$Reference` | SUITE-69 | Quote number (E10). Non-unique index `idx_opportunities_tkc_reference_c`. `inline_edit` false. `massupdate` false. |
+| `tkc_quote_date_c` | date | Quote date | `Opportunity.C$Offertedatum` | SUITE-69 | Range search. |
+| `tkc_approach_c` | enum, 20 | Approach | `Opportunity.C$Benadering` | SUITE-69 | List `tkc_approach_list`. |
+| `tkc_initial_contact_c` | date | Initial contact | `Opportunity.InitialContact` | SUITE-69 | Range search. |
+
+Not built on Opportunities:
+- The menu `waarschijnlijkheid`. The core `probability` field replaces it.
+- `type_medewerker` and `VERKOOP_ID`.
+- The hook that sets the actual close date on a won deal.
+- The quote number action and the reference validator (E10, SUITE-138 and SUITE-139). The index of `tkc_reference_c` is not unique. SUITE-139 plans the duplicate warning.
+- `osc_id_c` and the source-case relationship. The import story and SUITE-70 build them.
+
+SUITE-71 adds `tkc_reference_c` to the Duplicate exclusion list.
+
+The `name` length and the `probability` logic are core overrides. See § Core overrides.
+
+Repair SQL (local): one `ALTER TABLE opportunities` with one `modify COLUMN name varchar(255) NULL`, 8 `add COLUMN tkc_*_c` and one `ADD INDEX idx_opportunities_tkc_reference_c`. SUITE-72 does the authoritative run.
+
+Contract test: `Opportunities` is in `Tests/Contract/modules.php`. The manifest is `Tests/Contract/Fields/suite69_opportunities.php`. The probability test is `Tests/Contract/OpportunityProbabilityLogicTest.php` (see `docs/architecture.md` § Tests).
 
 ## Lists
 The first key of every TKC list is the empty key `''` with an empty label. Exception: `tkc_entry_type_list` has no empty key, because every thread entry has a type. A radio field shows it as "Not set" (SUITE-186). Application lists are in `public/legacy/custom/Extension/application/Ext/Language/`. Never change a TKC list in Studio or in the Dropdown Editor (see `docs/admin-guide.md`).
@@ -171,6 +197,9 @@ The first key of every TKC list is the empty key `''` with an empty label. Excep
 | `tkc_case_origin_list` | `''`, `email`, `selfservice`, `staff`, `other` | Cases: `tkc_case_origin_c` | `en_us.tkc_cases_lists.php` | SUITE-66 |
 | `tkc_entry_type_list` | `note` (Internal note), `staff` (Agent reply), `customer` (Customer), `customer_proxy` (Customer (logged by agent)). No empty key. | AOP_Case_Updates: `tkc_entry_type_c` | `en_us.tkc_thread_lists.php` | SUITE-68 |
 | `tkc_channel_list` | `''`, `email`, `phone`, `web`, `chat`, `fax`, `social`, `other` | AOP_Case_Updates: `tkc_channel_c` | `en_us.tkc_thread_lists.php` | SUITE-68 |
+| `tkc_sales_type_list` | `''`, `cross_sell` (Cross-sell), `up_sell` (Up-sell) | Opportunities: `tkc_sales_type_c` | `en_us.tkc_opportunities_lists.php` | SUITE-69 |
+| `tkc_country_list` | `''`, `nl` (Netherlands), `de` (Germany), `be` (Belgium), `other` (Other), `dk` (Denmark), `se` (Sweden), `no` (Norway), `lu` (Luxembourg). OSC order. | Opportunities: `tkc_country_c` | `en_us.tkc_opportunities_lists.php` | SUITE-69 |
+| `tkc_approach_list` | `''`, `website` (Website), `phone` (Phone), `social` (Social media), `network` (Network) | Opportunities: `tkc_approach_c` | `en_us.tkc_opportunities_lists.php` | SUITE-69 |
 
 The release lists use the key format `YYYY_MM`, in date order. The OSC menu order is not in date order, so the keys do not copy it. The release names are product data, not personal data.
 
@@ -196,6 +225,14 @@ Each row is also in `docs/architecture.md` § Overrides register.
 | String `case_priority_default_key` | Set to `''`. Core sets `P2`. Core reads it only in `modules/Cases/CasesQuickCreate.php:61` (legacy quick create). The core vardef of `priority` has no default. | same file | SUITE-66 |
 | Vardef `AOP_Case_Updates.description` | `dbType` is `longtext` (C8). Reason: OSC thread texts can be longer than `text` (64 KB). The field type stays `text`. Check at merge: the core `description` definition of AOP_Case_Updates and the Basic template. Upgrade risk: medium. | `public/legacy/custom/Extension/modules/AOP_Case_Updates/Ext/Vardefs/tkc_description_longtext.php` | SUITE-68 |
 | List `case_type_dom` | Replaced by `''`, `tkc_support_request` (Support request), `tkc_general_communication` (General communication), `tkc_info_message` (Info message), `tkc_project_communication` (Project communication). The core keys Administration, Product and User are hidden. | same file | SUITE-66 |
+| Vardef `Opportunity.name` | `len` is 255 (C8). Core has 50. OSC names are longer. Repair gives one `MODIFY` of the length only. | `public/legacy/custom/Extension/modules/Opportunities/Ext/Vardefs/tkc_name_len.php` | SUITE-69 |
+| Vardef `Opportunity.probability` | Adds only the key `logic`: 8 `updateValue` entries (ids `tkc_prob_<stage>`, modes edit and create, `fieldDependencies` `sales_stage`, `activeOnFields` one stage each, `targetValue` is the `sales_probability_dom` value). In the Angular edit and create view, the probability follows the stage (spike S11). Repair gives no SQL. Accepted gap: a stage change outside the Angular edit and create view does not recompute the probability. Core `Opportunity::save()` still fills an empty probability. | `public/legacy/custom/Extension/modules/Opportunities/Ext/Vardefs/tkc_probability_logic.php` | SUITE-69 |
+| List `sales_stage_dom` | Replaced by 8 keys (C7), in this order: `Prospecting` (0% - Lead), `Qualification` (5% - Qualify), `Needs Analysis` (10% - Analysis), `tkc_quote_multi` (25% - Quote, several vendors), `tkc_quote_single` (50% - Quote, single vendor), `Negotiation/Review` (80% - Verbal commitment), `Closed Won` (100% - Won), `Closed Lost` (Lost). The core keys `Value Proposition`, `Id. Decision Makers`, `Perception Analysis` and `Proposal/Price Quote` are hidden. No core key is renamed (D7). | `public/legacy/custom/Extension/application/Ext/Language/en_us.tkc_sales_stage_dom.php` | SUITE-69 |
+| List `sales_probability_dom` | Replaced. Same 8 keys. Values: 0, 5, 10, 25, 50, 80, 100 and 0 (`Closed Lost`). Core has other values (for example `Prospecting` 10). Keep it in line with the `logic` file. | same file | SUITE-69 |
+
+Known gaps of the Opportunities core overrides (check at each upstream merge):
+- `modules/AOS_Quotes/createOpportunity.php:49-50` writes the hidden key `Proposal/Price Quote` and reads its probability. Follow-up: SUITE-202.
+- The My Opportunities dashlet filters on core stage keys. Follow-up: SUITE-201.
 
 Known gaps of the Cases core overrides (check at each upstream merge):
 - AOP derives `state` from the key prefix (`modules/AOP_Case_Updates/CaseUpdatesHook.php:308`). Keep the prefixes.

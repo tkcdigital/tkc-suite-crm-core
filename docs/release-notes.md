@@ -3,7 +3,7 @@
 > Status truth: the `SUITE` planning project. Narrative and decisions: `docs/backlog.md`.
 > One section per sprint. Owner: document-agent.
 
-## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`)
+## Since Sprint 0 (branches `feature/SUITE-180-brand-colour`, `feature/SUITE-189-roboto`, `feature/SUITE-186-radio-focus`, `feature/SUITE-183-dependency-advisories`, `fix/SUITE-194-actions-menu`, `feature/SUITE-63-accounts-fields`, `fix/SUITE-204-language-cache`, `feature/SUITE-62-sequences`, `fix/SUITE-205-sequence-set`, `feature/SUITE-64-account-finance`, `feature/SUITE-66-cases-fields`, `feature/SUITE-68-thread-fields`, `feature/SUITE-69-opportunities-fields`)
 
 ### Delivered
 
@@ -23,6 +23,7 @@
 | Data model: Finance module | A protected Finance module on Accounts holds hourly rates, expected revenue and other financial terms. Only admins can use it until the roles story is done. The module logs every change. The Accounts record has a "Finance" subpanel. | SUITE-64 |
 | Data model: Cases | Cases has 13 TKC fields (case reference, impact, product, category, queue, origin, dates, event remarks, TFS project ID, among others). The status list has the 12 TKC statuses in OSC order. Priority has the values 1 to 4, and the default is empty. There are 4 TKC case types. New lists: impact, product, category, queue and origin. No screen layout shows the fields yet (E8). | SUITE-66 |
 | Data model: case thread | Case updates get an entry type (internal note, agent reply, customer, customer via agent), a channel and the OSC import key. They also have room for long message texts (up to 1 MB). No thread screen yet (E9). | SUITE-68 |
+| Data model: Opportunities | Opportunities has 8 TKC fields (reference, closed amount, sales type, country, approach and three dates). Opportunity names can have up to 255 characters (core: 50). The sales stages are the 8 TKC stages, from "0% - Lead" to "Lost". The probability fills in per stage in the edit and create view. No screen layout shows the fields yet (E10). | SUITE-69 |
 
 ### What changes for admins and developers
 - Finance module (SUITE-64):
@@ -50,6 +51,14 @@
   - Set `max_allowed_packet` to 16 MB or more. Plan the `MODIFY` time on Azure (see `docs/environments.md`).
   - `FieldManifestTest` has a new optional key `dbType`. The metadata contract test allows a second core defect (the `AOP_Case_Updates` detail view).
   - New test: `LongDescriptionTest`.
+- Opportunities fields (SUITE-69):
+  - Run `tkc:repair` so that Repair changes `opportunities`: one `MODIFY` of `name` to `varchar(255)`, 8 new columns and one index.
+  - Four new rows are in the Overrides register: the `name` length, the `probability` logic, `sales_stage_dom` and `sales_probability_dom`.
+  - Existing opportunities that use a hidden core stage key (for example `Proposal/Price Quote`) show no label. Seed data must use the new keys.
+  - Accepted gap: a stage change outside the Angular edit and create view does not recompute the probability.
+  - Follow-ups: SUITE-201 (My Opportunities dashlet) and SUITE-202 (create opportunity from a quote).
+  - New test: `OpportunityProbabilityLogicTest`. New manifest: `suite69_opportunities.php`.
+  - The index of `tkc_reference_c` is not unique. SUITE-139 plans the duplicate warning.
 - Sequence service (SUITE-62):
   - Run `tkc:repair --execute` so that Repair creates the table `tkc_sequences` (one `CREATE TABLE`).
   - The new console command `tkc:sequence <show|next|set>` shows, advances or sets a counter. `set` writes only with `--execute`.
