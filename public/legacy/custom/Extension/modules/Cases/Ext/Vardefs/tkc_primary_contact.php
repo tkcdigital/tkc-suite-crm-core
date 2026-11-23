@@ -18,6 +18,9 @@ $dictionary['Case']['fields']['tkc_primary_contact_c'] = [
     'type' => 'relate',
     'source' => 'non-db',
     'required' => true,
+    // Core makes relate fields mass-updatable by default. A bulk change would make one person
+    // the primary contact of many cases (SUITE-67 QA finding).
+    'massupdate' => false,
     'save' => true,
     'id_name' => 'tkc_primary_contact_id_c',
     'link' => 'tkc_contacts_cases_primary',
